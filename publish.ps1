@@ -19,6 +19,17 @@ $destAssets = Join-Path $dest "assets"
 New-Item -ItemType Directory -Path $destAssets -Force | Out-Null
 Copy-Item -Path (Join-Path $sourceAssets "*") -Destination $destAssets -Recurse -Force
 
+# Bust browser caches for the app's local CSS/JS on every publish.
+$indexPath = Join-Path $dest "index.html"
+$cacheStamp = Get-Date -Format "yyyyMMddHHmmss"
+$indexHtml = Get-Content -LiteralPath $indexPath -Raw
+$indexHtml = [regex]::Replace(
+  $indexHtml,
+  '(styles\.css|content\.js|audio\.js|game\.js)(\?v=[^"]*)?',
+  '$1?v=' + $cacheStamp
+)
+Set-Content -LiteralPath $indexPath -Value $indexHtml -Encoding UTF8 -NoNewline
+
 node --check (Join-Path $dest "game.js")
 node --check (Join-Path $dest "content.js")
 node --check (Join-Path $dest "audio.js")
