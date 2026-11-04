@@ -14,6 +14,7 @@ const fallbackShelf = ["umbrella", "coffee", "lunchbox"];
 const emptyStock = Object.fromEntries(Object.keys(products).map((key) => [key, 0]));
 const dialogIds = [
   "intro-dialog",
+  "finale-dialog",
   "trade-dialog",
   "interlude-dialog",
   "item-dialog",
@@ -36,6 +37,12 @@ let typeComplete = false;
 let currentPrologueText = "";
 let prologueLines = [];
 let prologueLineIndex = 0;
+let finaleSteps = [];
+let finaleIndex = 0;
+let finaleChoice = null;
+let finaleTimer;
+let finaleTypeComplete = false;
+let finaleCurrentText = "";
 const vnHistory = [];
 
 const elements = {
@@ -61,6 +68,18 @@ const elements = {
   vnSettings: document.querySelector("#vn-settings"),
   vnSkip: document.querySelector("#vn-skip"),
   startShift: document.querySelector("#start-shift"),
+  finaleDialog: document.querySelector("#finale-dialog"),
+  finaleDialogue: document.querySelector("#finale-dialogue"),
+  finaleStage: document.querySelector("#finale-stage"),
+  finaleSpeaker: document.querySelector("#finale-speaker"),
+  finaleHint: document.querySelector("#finale-hint"),
+  finaleText: document.querySelector("#finale-text"),
+  finaleNext: document.querySelector("#finale-next"),
+  finaleContinue: document.querySelector("#finale-continue"),
+  finaleCharacter: document.querySelector("#finale-character"),
+  finaleCharacterInitial: document.querySelector("#finale-character-initial"),
+  finaleCharacterRole: document.querySelector("#finale-character-role"),
+  finaleSceneLabel: document.querySelector("#finale-scene-label"),
   interludeDialog: document.querySelector("#interlude-dialog"),
   interludeTitle: document.querySelector("#interlude-title"),
   interludeBody: document.querySelector("#interlude-body"),
@@ -344,6 +363,7 @@ function showTitleScreen() {
   closeDialog(elements.historyDialog);
   closeDialog(elements.settingsDialog);
   window.GameAudio?.restoreAmbience();
+  document.body.classList.remove("finale-active");
   document.body.classList.remove("intro-active");
   document.body.classList.add("title-active");
   elements.titleScreen.hidden = false;
@@ -374,6 +394,7 @@ function startNewGameFromTitle() {
   state = createInitialState();
   dialogIds.forEach((id) => closeDialog(document.querySelector(`#${id}`)));
   elements.titleScreen.hidden = true;
+  document.body.classList.remove("finale-active");
   document.body.classList.remove("title-active");
   render();
   openIntroDialog();
@@ -684,6 +705,18 @@ function addMemory(text) {
     night: currentNight().number,
     place: currentNight().place
   });
+  pulseElement(elements.memoryCount);
+  pulseElement(elements.memoryNavCount);
+}
+
+function pulseElement(element) {
+  if (!element) {
+    return;
+  }
+  element.classList.remove("is-pulsing");
+  void element.offsetWidth;
+  element.classList.add("is-pulsing");
+  window.setTimeout(() => element.classList.remove("is-pulsing"), 480);
 }
 
 function addFlags(flagsOn = [], flagsOff = []) {
@@ -709,6 +742,7 @@ function addTransaction(transaction, customer) {
     customer,
     night: currentNight().number
   });
+  pulseElement(elements.cash);
 }
 
 function showToast(message) {
@@ -773,8 +807,8 @@ function renderShell() {
   elements.closingIntro.textContent = night.closingIntro;
   const resolvedCount = resolvedCharacterArcs().length;
   elements.goalProgress.textContent = night.number === 8
-    ? `第一班车将在今夜到站 · 人物支线 ${resolvedCount}/5`
-    : `距离第一班车还有 ${8 - night.number} 夜 · 人物支线 ${resolvedCount}/5`;
+    ? `第一班车今夜到站 · 已经记住 ${resolvedCount}/5 个人`
+    : `离第一班车还有 ${8 - night.number} 夜 · 已经记住 ${resolvedCount}/5 个人`;
   elements.goalRoute.textContent = state.finished
     ? "包裹已经找到去处"
     : route
@@ -800,7 +834,8 @@ function renderShift() {
   elements.timeLamps.replaceChildren();
   for (let index = 0; index < SHIFT_LENGTH; index += 1) {
     const lamp = document.createElement("span");
-    lamp.className = `time-lamp${index >= state.time ? " is-off" : ""}`;
+    const isCurrent = state.time > 0 && index === state.time - 1;
+    lamp.className = `time-lamp${index >= state.time ? " is-off" : ""}${isCurrent ? " is-current" : ""}`;
     elements.timeLamps.append(lamp);
   }
 
@@ -815,7 +850,7 @@ function renderShift() {
       ? "已经抵达首章终点"
       : ticketRequirement.met
         ? "通行条件已达成，打烊后会得到车票"
-        : "完成今夜通行条件，才能拿到车票";
+        : "完成今晚的上车条件，旧票机才会吐出车票";
   elements.memoryCount.textContent = state.memories.length;
   elements.memoryNavCount.textContent = state.memories.length;
   elements.counterClock.textContent = clockLabel();
@@ -1039,8 +1074,8 @@ function renderTasks() {
   passCard.className = `pass-card${requirement.met ? " is-met" : ""}`;
   passCard.innerHTML = `
     <div class="pass-head">
-      <strong>今夜通行条件</strong>
-      <span>${requirement.met ? "已达成" : "未达成"}</span>
+      <strong>今晚怎样才能上车</strong>
+      <span>${requirement.met ? "可以上车" : "还不能上车"}</span>
     </div>
     <p>${requirement.label}</p>
     <small>${requirement.detail}</small>
@@ -1049,7 +1084,7 @@ function renderTasks() {
         ? requirement.channel
         : ticketEarned
           ? `已获得车票 · ${requirement.channel}`
-          : `达成后从${requirement.channel}取得车票`
+          : `做到之后，${requirement.channel}会吐出一张车票`
     }</small>
   `;
   elements.taskList.append(passCard);
@@ -1070,7 +1105,7 @@ function renderTasks() {
 
   const note = document.createElement("p");
   note.className = "task-note";
-  note.textContent = "小事是达成通行条件的一条路；客人留下的东西、商品用途变化也算。查看商品、对话和记忆册不耗时间。";
+  note.textContent = "小事、客人留下的东西和商品的新用途，都会算进今晚的上车条件。";
   elements.taskList.append(note);
 }
 
@@ -2079,7 +2114,11 @@ function finishShift(choice) {
   }
   commit();
   closeDialog(document.querySelector("#closing-dialog"));
-  showSummary();
+  if (currentNight().number === 8) {
+    startFinale(choice);
+  } else {
+    showSummary();
+  }
 }
 
 function receiptRows() {
@@ -2125,6 +2164,200 @@ function receiptRows() {
   return rows;
 }
 
+function overallFinaleData(choice) {
+  const unresolved = unresolvedCharacterArcs();
+  if (choice === "sealParcel") {
+    if (unresolved.length === 0) {
+      return CONTENT.finale.overall.sealParcelFull;
+    }
+    if (unresolved.length === 5) {
+      return CONTENT.finale.overall.sealParcel;
+    }
+    return CONTENT.finale.overall.sealParcelPartial;
+  }
+  if (unresolved.length === 0) {
+    return CONTENT.finale.overall.openParcel.full;
+  }
+  if (unresolved.length === 5) {
+    return CONTENT.finale.overall.openParcel.none;
+  }
+  return CONTENT.finale.overall.openParcel.partial;
+}
+
+function buildFinaleSteps(choice) {
+  const data = CONTENT.finale;
+  const sceneByArc = {
+    acheng: "counter",
+    shen: "shen",
+    clerk: "clerk",
+    xiaoman: "xiaoman",
+    traveler: "traveler"
+  };
+  const steps = [
+    {
+      speaker: "旁白",
+      text: data.opening[0],
+      scene: "rain",
+      sceneLabel: "终章 · 第一班车"
+    },
+    {
+      speaker: "旁白",
+      text: data.opening[1],
+      scene: "counter",
+      sceneLabel: "终章 · 柜台中央"
+    }
+  ];
+
+  ["acheng", "shen", "clerk", "xiaoman", "traveler"].forEach((id) => {
+    const arc = CONTENT.characterArcs[id];
+    const resolved = Boolean(state.flags[arc.closureFlag]);
+    const ending = data.characters[id][resolved ? "resolved" : "unresolved"];
+    steps.push({
+      speaker: arc.name,
+      text: ending.text,
+      title: ending.title,
+      character: arc.initial,
+      role: arc.role,
+      scene: sceneByArc[id] || "counter",
+      sceneLabel: `终章 · ${arc.name}`
+    });
+  });
+
+  const overall = overallFinaleData(choice);
+  steps.push({
+    speaker: "旁白",
+    text: overall.text,
+    title: overall.title,
+    scene: choice === "sealParcel" ? "door" : "counter",
+    sceneLabel: "终章 · 总体结局"
+  });
+
+  const unresolved = unresolvedCharacterArcs();
+  if (choice === "openParcel" && unresolved.length > 0 && unresolved.length < 5) {
+    steps.push({
+      speaker: "旁白",
+      text: `还没读到自己的那一页：${unresolved.map((arc) => arc.name).join("、")}。`,
+      scene: "counter",
+      sceneLabel: "终章 · 没有读完的页"
+    });
+  }
+
+  steps.push({
+    speaker: "旁白",
+    text: data.closing,
+    scene: "rain",
+    sceneLabel: "终章 · 店又向前走了一夜"
+  });
+  return steps;
+}
+
+function startFinale(choice) {
+  finaleChoice = choice;
+  finaleSteps = buildFinaleSteps(choice);
+  finaleIndex = 0;
+  document.body.classList.add("finale-active");
+  if (!elements.finaleDialog.open) {
+    elements.finaleDialog.showModal();
+  }
+  showFinaleStep();
+}
+
+function showFinaleStep() {
+  const step = finaleSteps[finaleIndex];
+  if (!step) {
+    finishFinale();
+    return;
+  }
+  clearTimeout(finaleTimer);
+  finaleTypeComplete = false;
+  finaleCurrentText = step.text || "";
+  elements.finaleStage.dataset.scene = step.scene || "rain";
+  elements.finaleSceneLabel.textContent = step.sceneLabel || "终章 · 第一班车";
+  elements.finaleSpeaker.textContent = step.speaker || "旁白";
+  elements.finaleCharacter.hidden = !step.character;
+  elements.finaleCharacterInitial.textContent = step.character || "";
+  elements.finaleCharacterRole.textContent = step.role || step.speaker || "";
+  elements.finaleNext.hidden = true;
+  elements.finaleHint.textContent = "点击或按空格继续";
+  elements.finaleContinue.textContent = finaleIndex >= finaleSteps.length - 1
+    ? "查看收据与结局"
+    : "继续";
+  logVnLine(step.speaker, finaleCurrentText, step.sceneLabel || "终章");
+  typeFinaleText(finaleCurrentText);
+}
+
+function typeFinaleText(text) {
+  elements.finaleText.textContent = "";
+  elements.finaleNext.hidden = true;
+  const characters = Array.from(text);
+  if (characters.length === 0) {
+    completeFinaleText();
+    return;
+  }
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    elements.finaleText.textContent = text;
+    completeFinaleText();
+    return;
+  }
+
+  let index = 0;
+  const tick = () => {
+    const character = characters[index];
+    if (index % 3 === 0 && !"。！？，、；：".includes(character)) {
+      playSfx("type");
+    }
+    const glyph = document.createElement("span");
+    glyph.className = "vn-char";
+    glyph.textContent = character;
+    elements.finaleText.append(glyph);
+    index += 1;
+    if (index >= characters.length) {
+      completeFinaleText();
+      return;
+    }
+    finaleTimer = window.setTimeout(tick, characterRevealDelay(character));
+  };
+  tick();
+}
+
+function completeFinaleText() {
+  clearTimeout(finaleTimer);
+  if (elements.finaleText.textContent !== finaleCurrentText) {
+    elements.finaleText.textContent = finaleCurrentText;
+  }
+  finaleTypeComplete = true;
+  elements.finaleNext.hidden = false;
+  elements.finaleHint.textContent = finaleIndex >= finaleSteps.length - 1
+    ? "准备好后结束终章"
+    : "点击或按空格继续";
+}
+
+function advanceFinale() {
+  if (!elements.finaleDialog.open) {
+    return;
+  }
+  if (!finaleTypeComplete) {
+    completeFinaleText();
+    playSfx("advance");
+    return;
+  }
+  if (finaleIndex >= finaleSteps.length - 1) {
+    finishFinale();
+    return;
+  }
+  finaleIndex += 1;
+  showFinaleStep();
+  playSfx("advance");
+}
+
+function finishFinale() {
+  clearTimeout(finaleTimer);
+  closeDialog(elements.finaleDialog);
+  document.body.classList.remove("finale-active");
+  showSummary();
+  playSfx("page");
+}
+
 function showSummary() {
   const night = currentNight();
   if (night.number === 8) {
@@ -2159,6 +2392,7 @@ function showSummary() {
 
   let actions = "";
   let ending = "";
+  let finaleRecap = "";
   const ticketCostLabel = state.tickets > 0 ? "1 张车票" : "无票漂流 · -¥5";
   const passCopy = requirement.met
     ? `通行条件已达成。${requirement.channel}给了你一张车票。`
@@ -2198,18 +2432,35 @@ function showSummary() {
     `;
   } else {
     const unresolved = unresolvedCharacterArcs();
-    const partialOpen = state.closingChoice === "openParcel" && unresolved.length > 0;
-    const endingData = partialOpen
-      ? (unresolved.length === 5 ? CONTENT.partialOpenParcelNone : CONTENT.partialOpenParcel)
-      : CONTENT.endings[route.id][state.closingChoice];
+    const overall = overallFinaleData(state.closingChoice);
+    const recapRows = ["acheng", "shen", "clerk", "xiaoman", "traveler"].map((id) => {
+      const arc = CONTENT.characterArcs[id];
+      const resolved = Boolean(state.flags[arc.closureFlag]);
+      const item = CONTENT.finale.characters[id][resolved ? "resolved" : "unresolved"];
+      return `
+        <div class="finale-recap-row">
+          <div>
+            <strong>${arc.name}</strong>
+            <span>${item.title}</span>
+          </div>
+          <p>${item.text}</p>
+        </div>
+      `;
+    }).join("");
+    finaleRecap = `
+      <section class="finale-recap">
+        <h3>终章 · 人物结局</h3>
+        ${recapRows}
+      </section>
+    `;
     ending = `
       <div class="ending-card">
-        <span>${endingData.title}</span>
-        <p>${endingData.text}</p>
-        ${partialOpen ? `<small>还没读到自己的那一页：${unresolved.map((arc) => arc.name).join("、")}。</small>` : ""}
+        <span>${overall.title}</span>
+        <p>${overall.text}</p>
       </div>
     `;
     actions = `
+      <button class="secondary-button" type="button" id="replay-finale">重看终章</button>
       <button class="secondary-button" type="button" id="summary-characters">查看人物档案</button>
       <button class="primary-button" type="button" id="restart-night">从第一夜重新开始</button>
     `;
@@ -2227,9 +2478,9 @@ function showSummary() {
         ${transactionRows}
         ${state.suppliesCost > 0 ? `<li><span>补货支出</span><span>-¥${state.suppliesCost}</span></li>` : ""}
         ${detailRows}
-        <li><span>今夜通行条件</span><span>${requirement.met ? "已达成" : "未达成"}</span></li>
-        <li><span>通行车票</span><span>${night.number === 8 ? "最后一夜" : ticketEarned ? "获得 1 张" : "没有获得"}</span></li>
-        <li><span>当前车票</span><span>${state.tickets} 张</span></li>
+        <li><span>上车条件</span><span>${requirement.met ? "已达成" : "未达成"}</span></li>
+        <li><span>拿到的车票</span><span>${night.number === 8 ? "最后一夜" : ticketEarned ? "获得 1 张" : "没有获得"}</span></li>
+        <li><span>手上的车票</span><span>${state.tickets} 张</span></li>
         <li><span>今晚回来的人</span><span>${servedNames}</span></li>
         <li><span>今晚记住的事</span><span>${state.memories.filter((item) => item.night === night.number).length} 件</span></li>
       </ul>
@@ -2246,6 +2497,7 @@ function showSummary() {
         <span>最后留下</span>
         ${closingMemory}
       </div>
+      ${finaleRecap}
       ${ending}
       <div class="receipt-actions receipt-actions-stack">
         ${actions}
@@ -2261,6 +2513,10 @@ function showSummary() {
   body.querySelector("#summary-characters")?.addEventListener("click", () => {
     closeDialog(dialog);
     openCharacterDialog();
+  });
+  body.querySelector("#replay-finale")?.addEventListener("click", () => {
+    closeDialog(dialog);
+    startFinale(state.closingChoice);
   });
   body.querySelector("#restart-night")?.addEventListener("click", resetGame);
   openDialog(dialog);
@@ -2778,6 +3034,7 @@ function resetGame() {
   closeDialog(elements.characterDialog);
   closeDialog(elements.historyDialog);
   closeDialog(elements.settingsDialog);
+  document.body.classList.remove("finale-active");
   saveState();
   render();
   if (!state.introSeen) {
@@ -2796,7 +3053,7 @@ document.querySelectorAll("[data-close]").forEach((button) => {
 dialogIds.forEach((id) => {
   const dialog = document.querySelector(`#${id}`);
   dialog.addEventListener("click", (event) => {
-    if (event.target === dialog && id !== "intro-dialog" && id !== "interlude-dialog") {
+    if (event.target === dialog && id !== "intro-dialog" && id !== "interlude-dialog" && id !== "finale-dialog") {
       dialog.close();
     }
   });
@@ -2808,6 +3065,16 @@ document.querySelector("#intro-dialog").addEventListener("cancel", (event) => {
 elements.interludeDialog.addEventListener("cancel", (event) => {
   event.preventDefault();
 });
+elements.finaleDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+});
+elements.finaleDialogue.addEventListener("click", (event) => {
+  if (!event.target.closest("button")) {
+    advanceFinale();
+  }
+});
+elements.finaleStage.addEventListener("click", advanceFinale);
+elements.finaleContinue.addEventListener("click", advanceFinale);
 elements.vnDialogue.addEventListener("click", (event) => {
   if (!event.target.closest("button")) {
     advancePrologue();
@@ -2834,13 +3101,18 @@ elements.settingsDialog.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if (!document.querySelector("#intro-dialog").open) {
-    return;
-  }
   if (event.key !== " " && event.key !== "Enter") {
     return;
   }
   if (event.target instanceof Element && event.target.closest("button")) {
+    return;
+  }
+  if (elements.finaleDialog.open) {
+    event.preventDefault();
+    advanceFinale();
+    return;
+  }
+  if (!document.querySelector("#intro-dialog").open) {
     return;
   }
   event.preventDefault();
@@ -2914,3 +3186,35 @@ applyAudioSettings();
 
 render();
 showTitleScreen();
+
+const previewMode = new URLSearchParams(window.location.search).get("preview");
+if (previewMode === "night") {
+  document.querySelector(".title-main h1")?.remove();
+  state = createInitialState();
+  state.introSeen = true;
+  state.memories = [
+    {
+      text: "阿澄把透明雨伞留在门边，说明天再来拿。",
+      time: "22:40",
+      night: 1,
+      place: "雾港公交站"
+    }
+  ];
+  elements.titleScreen.hidden = true;
+  document.body.classList.remove("title-active");
+  render();
+}
+if (previewMode === "finale") {
+  state.route = "station";
+  state.nightIndex = 7;
+  state.finished = true;
+  state.closingChoice = "openParcel";
+  state.flags = {
+    parcelOnCounter: true,
+    achengClosure: true,
+    xiaomanClosure: true
+  };
+  elements.titleScreen.hidden = true;
+  document.body.classList.remove("title-active");
+  startFinale("openParcel");
+}

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#edf1ed">
+    <meta name="theme-color" content="#0c0b09">
     <title>世界尽头的便利店 · 第一夜</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -25,8 +25,8 @@
           </div>
           <div class="title-actions">
             <button class="title-action primary-button" id="new-game-button" type="button">
-              <span>新游戏</span>
-              <small id="new-game-meta">从第一夜开始</small>
+              <span>推门进去</span>
+              <small id="new-game-meta">新游戏 · 从第一夜开始</small>
             </button>
             <button class="title-action secondary-button" id="continue-game-button" type="button">
               <span id="continue-game-label">继续游戏</span>
@@ -40,22 +40,20 @@
             <button class="text-button title-help-button" id="open-settings" type="button">设置</button>
           </div>
         </div>
-        <aside class="title-side" aria-label="首章路线">
-          <div class="title-package" aria-hidden="true">
-            <div class="title-package-box"><span>?</span></div>
-            <span class="title-package-thread"></span>
+        <aside class="title-side" aria-label="夜里的店">
+          <div class="title-street" aria-hidden="true">
+            <div class="title-window">
+              <span class="title-window-sign">营业中</span>
+              <span class="title-window-lamp"></span>
+              <span class="title-window-counter"></span>
+              <span class="title-window-parcel">?</span>
+              <span class="title-window-rain"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
           </div>
           <div class="title-route-copy">
-            <strong>八夜，一只包裹</strong>
-            <p>在打烊前留下什么，第一班车就会把什么带到下一处。</p>
+            <strong>“请在第八夜第一班车前，替我找到去处。”</strong>
+            <p>雨还没有停。柜台比你的记忆更早认识你。</p>
           </div>
-          <ol class="title-route-list">
-            <li><span>雾港公交站</span><small>起点</small></li>
-            <li><span>无眠车站</span><small>第一条线索</small></li>
-            <li><span>倒着走的夏天</span><small>另一条线索</small></li>
-            <li><span>无名公路与隧道</span><small>路线汇合</small></li>
-            <li><span>第一班车</span><small>决定去处</small></li>
-          </ol>
         </aside>
       </div>
     </section>
@@ -81,7 +79,7 @@
             <span class="nav-count" id="memory-nav-count">0</span>
           </button>
           <button class="nav-item" id="open-characters" type="button">
-            人物
+            遇见的人
             <span class="nav-count" id="character-nav-count">0 / 5</span>
           </button>
           <button class="nav-item" id="open-settings-nav" type="button">
@@ -127,7 +125,7 @@
           </div>
 
           <section class="chapter-goal" aria-label="首章目标">
-            <span class="goal-label">首章目标</span>
+            <span class="goal-label">包裹的去处</span>
             <div class="goal-copy">
               <strong>让没有收件人的包裹找到去处</strong>
               <span id="goal-progress">距离第一班车还有 8 夜</span>
@@ -137,14 +135,14 @@
 
           <section class="shift-strip" aria-label="今晚营业情况">
             <div class="shift-cell shift-time-cell">
-              <span class="cell-label">还能做几件事</span>
+              <span class="cell-label">今晚还剩</span>
               <div class="time-readout">
                 <div class="time-lamps" id="time-lamps" aria-label="剩余六个营业时间格"></div>
                 <strong id="time-copy">6 件事</strong>
               </div>
             </div>
             <div class="shift-cell">
-              <span class="cell-label">收银台</span>
+              <span class="cell-label">收银盒</span>
               <strong>¥<span id="cash-value">30</span></strong>
               <small>现金会跟着店去下一站</small>
             </div>
@@ -164,8 +162,8 @@
             <section class="panel shop-panel" aria-labelledby="shop-title">
               <header class="panel-head">
                 <div>
-                  <h2 id="shop-title">货架与柜台</h2>
-                  <p>点商品看用途；卡片右下角可直接补货，柜台缺货时也能就地补齐。</p>
+                  <h2 id="shop-title">店里的东西</h2>
+                  <p>点一件东西，看看它今晚能变成什么。</p>
                 </div>
                 <span class="status-badge" id="shop-status">营业中</span>
               </header>
@@ -203,7 +201,7 @@
             <aside class="right-rail" aria-label="今晚事项">
               <section class="rail-card tasks-card">
                 <header class="rail-head">
-                  <h2>小事与通行</h2>
+                  <h2>打烊前的小事</h2>
                   <span>每项 1 格</span>
                 </header>
                 <div class="task-list" id="task-list"></div>
@@ -211,7 +209,7 @@
 
               <section class="rail-card memory-card">
                 <header class="rail-head">
-                  <h2>已经记住的事</h2>
+                  <h2>今晚记住的事</h2>
                   <button class="text-button" id="open-memory-secondary" type="button">打开记忆册</button>
                 </header>
                 <div id="memory-preview"></div>
@@ -256,6 +254,40 @@
             <button class="text-button" id="vn-settings" type="button">设置</button>
             <button class="text-button" id="vn-skip" type="button">跳过序章</button>
             <button class="primary-button" id="start-shift" type="button" hidden>开门营业</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="game-dialog finale-dialog" id="finale-dialog" aria-labelledby="finale-speaker">
+      <div class="vn-shell">
+        <div class="vn-stage" id="finale-stage" data-scene="rain">
+          <div class="vn-rain" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="vn-window" aria-hidden="true">
+            <span>第一班车</span>
+          </div>
+          <div class="vn-shelves" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </div>
+          <div class="vn-counter" aria-hidden="true"></div>
+          <div class="vn-door" aria-hidden="true"></div>
+          <div class="vn-character" id="finale-character" hidden>
+            <span id="finale-character-initial">?</span>
+            <small id="finale-character-role"></small>
+          </div>
+          <div class="vn-scene-label" id="finale-scene-label">终章 · 第一班车</div>
+        </div>
+        <div class="vn-dialogue" id="finale-dialogue">
+          <div class="vn-dialogue-head">
+            <strong id="finale-speaker">旁白</strong>
+            <span id="finale-hint">点击继续</span>
+          </div>
+          <p class="vn-text" id="finale-text"></p>
+          <span class="vn-next" id="finale-next" hidden aria-hidden="true">▼</span>
+          <div class="vn-controls">
+            <button class="primary-button" id="finale-continue" type="button">继续</button>
           </div>
         </div>
       </div>
