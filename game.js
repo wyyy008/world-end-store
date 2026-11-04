@@ -384,6 +384,9 @@ function nightAtIndex(index, routeId = state.route) {
   if (index <= 2) {
     return CONTENT.routes[routeId].nights[index - 1];
   }
+  if (index === 5 && CONTENT.finalArc.routeSix?.[routeId]) {
+    return CONTENT.finalArc.routeSix[routeId];
+  }
   return CONTENT.finalArc.nights[index - 3];
 }
 
@@ -520,6 +523,26 @@ function nightPassRequirement(night = currentNight()) {
   }
 
   if (number === 6) {
+    if (routeId === "summer") {
+      return {
+        id: "summer-six-light",
+        label: "让夏天停在最后一个下午",
+        detail: "把最后一段阳光装进玻璃瓶，或让小满 / 阿澄把花与围巾留下。",
+        channel: "玻璃瓶里的夕阳",
+        met: hasAnyFlag([
+          "summerSunBottle",
+          "summerFlowerBottle",
+          "summerFlowerCounter",
+          "summerAccepted",
+          "xiaomanSummerSix",
+          "achengSummerSix",
+          "flowerInBottle",
+          "flowerOnCounter",
+          "catFound",
+          "catTrail"
+        ])
+      };
+    }
     return {
       id: "clock-minute",
       label: "让停摆的钟再走一分钟",
@@ -614,6 +637,9 @@ function counterPair(night = currentNight()) {
 
 function counterGuests() {
   const night = currentNight();
+  if (state.nightClosed || state.finished || state.stage === "end") {
+    return [];
+  }
   if (night.simultaneous && !state.nightClosed && !state.finished) {
     const waiting = counterPair(night).filter((guest) => !state.served[guest.id]);
     if (waiting.length > 0) {

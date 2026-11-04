@@ -2346,7 +2346,252 @@ window.GAME_CONTENT = {
           flagsOn: ["parcelOnCounter"]
         }
       }
-    ]
+    ],
+    routeSix: {
+      summer: {
+        id: "summer-return-six",
+        number: 6,
+        place: "倒着走的夏天",
+        scope: "第 6 夜 · 倒着走的夏天",
+        title: "夏天把最后一班车藏起来了",
+        subtitle: "店回到夏天时，太阳已经退到柜台后面。今晚没有人催你打烊，夏天却先开始变短。",
+        weather: "晴天 · 下午正在往回收",
+        windowTitle: "倒着走的夏天",
+        shelf: ["umbrella", "lunchbox", "radio", "glassBottle", "postcard", "scarf"],
+        localStock: { glassBottle: 1, postcard: 1 },
+        clockStart: "17:40",
+        closingTitle: "夏天结束前，留下什么？",
+        closingIntro: "夏天没有下一班车。今晚留下的东西，会决定它停在哪个下午。",
+        cast: [
+          {
+            id: "xiaoman-summer-six",
+            name: "小满",
+            initial: "满",
+            avatarClass: "xiaoman",
+            arrival: "来还最后一束花的人",
+            line: "她抱着一束已经没有香味的花，说夏天快要把下午用完了。",
+            note: "她没有问明天有没有太阳，只问今天的灯还能亮多久。",
+            action: "接待小满",
+            cost: "会花掉 1 个营业时间格",
+            mode: "special",
+            choices: [
+              {
+                id: "summer-flower-bottle",
+                label: "把最后一束花放进玻璃瓶",
+                detail: "瓶子少一只，夏天会多停一个下午",
+                quote: "“那就让它在这里多待一会儿。”",
+                requiresStock: { glassBottle: 1 },
+                unavailable: "货架上的玻璃汽水瓶不够",
+                effect: {
+                  time: 1,
+                  stock: { glassBottle: -1 },
+                  flagsOn: ["summerFlowerBottle", "xiaomanSummerSix"],
+                  memory: "小满把最后一束花插进玻璃瓶。瓶口的风停了，夏天第一次没有往后退。",
+                  toast: "柜台上多了一瓶夏天。"
+                }
+              },
+              {
+                id: "summer-flower-counter",
+                label: "把花留在柜台上",
+                detail: "不带走，让明天路过的人还能看见",
+                quote: "“留在这里，也算开过。”",
+                effect: {
+                  time: 1,
+                  flagsOn: ["summerFlowerCounter", "xiaomanSummerSix"],
+                  memory: "小满把花留在柜台上。她说不用带走，明天路过还能看见。",
+                  toast: "最后一束花留在了柜台上。"
+                }
+              },
+              {
+                id: "summer-accepted",
+                label: "告诉她，夏天已经够长了",
+                detail: "不承诺明天，只承认这个下午已经足够",
+                quote: "“那我就先把今天过完。”",
+                effect: {
+                  time: 1,
+                  flagsOn: ["summerAccepted", "xiaomanSummerSix"],
+                  memory: "小满点点头，把花放下。她第一次没有问明天有没有太阳。",
+                  toast: "小满把最后一束花放下了。"
+                }
+              }
+            ]
+          },
+          {
+            id: "acheng-summer-six",
+            name: "阿澄",
+            initial: "澄",
+            avatarClass: "",
+            arrival: "来取回红围巾的人",
+            line: "她带来一张已经晒褪色的照片，说想把门边那条红围巾带走。",
+            note: "夏天一直在后退，她却第一次往前走了一步。",
+            action: "接待阿澄",
+            cost: "会花掉 1 个营业时间格",
+            mode: "special",
+            choices: [
+              {
+                id: "summer-scarf-back",
+                label: "把红围巾还给她",
+                detail: "围巾离开柜台，她带走一个可以收好的下午",
+                quote: "“原来有些颜色，带走了也不会褪。”",
+                requiresFlag: "roadScarf",
+                unavailable: "无名公路上没有留下那条红围巾",
+                effect: {
+                  time: 1,
+                  flagsOff: ["roadScarf"],
+                  flagsOn: ["achengSummerScarf", "achengSummerSix"],
+                  memory: "阿澄接过红围巾，没有把它围上。她说这次带走的不是等待，是一个可以收好的下午。",
+                  toast: "阿澄带走了红围巾。"
+                }
+              },
+              {
+                id: "summer-photo-counter",
+                label: "让她把照片留在柜台",
+                detail: "照片里的伞已经干了，夏天还在慢慢后退",
+                quote: "“这张留给你。下次下雨再看。”",
+                effect: {
+                  time: 1,
+                  flagsOn: ["achengSummerPhoto", "achengSummerSix"],
+                  memory: "阿澄把照片留在柜台玻璃下。照片里的伞已经干了，夏天还在慢慢后退。",
+                  toast: "旧照片留在了柜台玻璃下。"
+                }
+              },
+              {
+                id: "summer-sit",
+                label: "陪她在夏天里坐一会儿",
+                detail: "不看站牌，也不问雨什么时候来",
+                quote: "“就坐一会儿。雨还没来。”",
+                effect: {
+                  time: 1,
+                  flagsOn: ["achengSummerRest", "achengSummerSix"],
+                  memory: "阿澄在柜台边坐了一会儿，没有看站牌。夏天从她脚边退过去，她没有起身。",
+                  toast: "阿澄在柜台边坐了一会儿。"
+                }
+              }
+            ]
+          },
+          {
+            id: "flower-girl",
+            name: "卖花的女孩",
+            initial: "花",
+            avatarClass: "xiaoman",
+            arrival: "来换一只瓶子的客人",
+            line: "她抱着一束快要谢掉的白色小花，问夏天还能不能把花留在店里。",
+            note: "她说小满刚才也在这里，花却一直朝着店里的灯开。",
+            action: "接待卖花的女孩",
+            cost: "会花掉 1 个营业时间格",
+            mode: "special",
+            choices: [
+              {
+                id: "flower-bottle",
+                label: "用玻璃汽水瓶换她一朵花",
+                detail: "瓶子少一只，花会在夏天里多开一晚",
+                quote: "“小满说，只要有人看见，花就不算白开。”",
+                requiresStock: { glassBottle: 1 },
+                unavailable: "货架上的玻璃汽水瓶不够",
+                effect: {
+                  time: 1,
+                  stock: { glassBottle: -1 },
+                  flagsOn: ["flowerInBottle", "flowerGirlMet"],
+                  memory: "女孩把花插进玻璃瓶。瓶口的风停了，花在倒退的夏天里多开了一晚。",
+                  toast: "柜台上多了一瓶白花。"
+                }
+              },
+              {
+                id: "flower-counter",
+                label: "把花留在柜台上，不收她的钱",
+                detail: "花不需要地址，只需要有一个人看见",
+                quote: "“那就让它替我在这里待一会儿。”",
+                effect: {
+                  time: 1,
+                  flagsOn: ["flowerOnCounter", "flowerGirlMet"],
+                  memory: "女孩把花留在柜台上。她说花不需要地址，只要有一个人看见。",
+                  toast: "柜台上留下了一小束白花。"
+                }
+              },
+              {
+                id: "flower-refuse",
+                label: "告诉她，店里没有能装花的瓶子",
+                detail: "不换瓶子，也不留下花",
+                quote: "“没关系，花还会再开一次。”",
+                effect: {
+                  time: 1,
+                  flagsOn: ["flowerGirlRefused", "flowerGirlMet"],
+                  memory: "女孩抱着花走出门。夏天把她的影子拉得很长。",
+                  toast: "卖花的女孩走进了倒退的夏天。"
+                }
+              }
+            ]
+          },
+          {
+            id: "cat-finder",
+            name: "找猫的人",
+            initial: "猫",
+            avatarClass: "traveler",
+            arrival: "沿着盐粒走来的人",
+            line: "她沿着盐粒一路找来，说猫跑进了夏天最慢的那个下午。",
+            note: "她说 0217 提过，只要钟还停着，猫就会回来。",
+            action: "帮她找猫",
+            cost: "会花掉 1 个营业时间格",
+            mode: "special",
+            choices: [
+              {
+                id: "cat-candle",
+                label: "把停电蜡烛借给她",
+                detail: "蜡烛少一支，夏天里会多一声很轻的猫叫",
+                quote: "“0217说它怕黑，也怕我不去找它。”",
+                requiresStock: { candle: 1 },
+                unavailable: "货架上的停电蜡烛不够",
+                effect: {
+                  time: 1,
+                  stock: { candle: -1 },
+                  flagsOn: ["catFound", "catFinderMet"],
+                  memory: "她举着蜡烛走进夏天最慢的下午。黑暗里传来一声很轻的猫叫，像有人终于应了她的名字。",
+                  toast: "夏天深处传来了一声猫叫。"
+                }
+              },
+              {
+                id: "cat-salt",
+                label: "把盐撒到钟座下面",
+                detail: "盐少一包，猫会沿着这条线回来",
+                quote: "“它记得自己走过的路。”",
+                requiresStock: { salt: 1 },
+                unavailable: "货架上的盐包不够",
+                effect: {
+                  time: 1,
+                  stock: { salt: -1 },
+                  flagsOn: ["catTrail", "catFinderMet"],
+                  memory: "盐粒在钟座下排成一条细线。她说猫会沿着这条线回来，因为猫记得自己走过的路。",
+                  toast: "钟座下多了一条盐粒小路。"
+                }
+              },
+              {
+                id: "cat-gone",
+                label: "告诉她，猫可能已经先走了",
+                detail: "不借蜡烛，也不撒盐",
+                quote: "“那我再找一站。它总得在某一站等我。”",
+                effect: {
+                  time: 1,
+                  flagsOn: ["catGone", "catFinderMet"],
+                  memory: "她把空猫笼抱在怀里，说那就再找一站。",
+                  toast: "找猫的人走向了下一盏灯。"
+                }
+              }
+            ]
+          }
+        ],
+        task: {
+          id: "summerSunBottle",
+          name: "把最后一段阳光装进玻璃瓶",
+          detail: "让一个普通的瓶子收住夏天",
+          cost: "1 格",
+          doneLabel: "夕阳已经在瓶子里",
+          doneDetail: "盖紧以后没有立刻暗下去",
+          memory: "你把玻璃瓶举向夕阳。瓶口收住了一小段夏天，盖紧以后没有立刻暗下去。",
+          toast: "玻璃瓶里留下了一小段夕阳。",
+          flagsOn: ["summerSunBottle"]
+        }
+      }
+    }
   },
   characterArcs: {
     acheng: {
