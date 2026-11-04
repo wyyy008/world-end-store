@@ -1152,6 +1152,29 @@ function guestVnShell(guest, innerHtml) {
     </div>`;
 }
 
+function keptEchoForGuest(guest) {
+  const kept = state.keptItems || [];
+  if (guest.name === "阿澄" && kept.includes("coffee")) {
+    return "<p class=\"kept-echo\">她看了一眼柜台上的那罐咖啡，没有问是谁留下的。</p>";
+  }
+  if (guest.name === "沈伯" && kept.includes("umbrella")) {
+    return "<p class=\"kept-echo\">他看了一眼门边的伞，问阿澄今天有没有来。</p>";
+  }
+  if (guest.name === "沈伯" && kept.includes("scarf")) {
+    return "<p class=\"kept-echo\">他认出了那条红围巾，说阿澄母亲也戴过这个颜色。</p>";
+  }
+  if (guest.name === "小满" && kept.includes("lunchbox")) {
+    return "<p class=\"kept-echo\">她看见柜台上的保温饭盒，问是不是还给明天留着。</p>";
+  }
+  if (guest.name === "0217" && kept.includes("coin")) {
+    return "<p class=\"kept-echo\">她看见收银盒下面的旧工资币，没有伸手去拿。</p>";
+  }
+  if (guest.name === "无名旅人" && kept.includes("postcard")) {
+    return "<p class=\"kept-echo\">他看见那张明信片，像看见一个已经写过的地址。</p>";
+  }
+  return "";
+}
+
 function openTradeDialog(guest) {
   if (state.nightClosed || state.finished) {
     return;
@@ -1182,6 +1205,7 @@ function openTradeDialog(guest) {
 
   body.innerHTML = guestVnShell(guest, `
     <div class="trade-scene">
+      ${keptEchoForGuest(guest)}
       ${guest.scene.map((line) => `<p>${line}</p>`).join("")}
     </div>
     <div class="price-options">
@@ -1349,6 +1373,7 @@ function openSpecialDialog(guest) {
   const stockNeeds = specialStockNeeds(guest);
   const eventInner = `
     <div class="trade-scene">
+      ${keptEchoForGuest(guest)}
       <p>${guest.line}</p>
       <p>${guest.note}</p>
     </div>
@@ -1630,6 +1655,27 @@ function closingChoices() {
       detail: "背面的字只有火光能看见"
     });
   }
+  if (state.flags.brokenUmbrellaKept) {
+    choices.push({
+      id: "brokenUmbrella",
+      title: "把断骨的伞留在门边",
+      detail: "它撑不开，却替一个人占着位置"
+    });
+  }
+  if (state.flags.flowerInBottle || state.flags.flowerOnCounter) {
+    choices.push({
+      id: "flower",
+      title: "把白花留在柜台上",
+      detail: "花不需要地址，只需要有人看见"
+    });
+  }
+  if (state.flags.catFound || state.flags.catTrail) {
+    choices.push({
+      id: "catTrail",
+      title: "把盐粒小路留在钟座下",
+      detail: "猫记得自己走过的路"
+    });
+  }
   choices.push({
     id: "receipt",
     title: "把今晚的收据夹进记忆册",
@@ -1707,7 +1753,10 @@ function openClosingDialog(config = {}) {
       postcard: "明信片",
       bottle: "玻璃瓶",
       badge: "旧工牌",
-      ticket: "旧车票"
+      ticket: "旧车票",
+      brokenUmbrella: "断骨的伞",
+      flower: "白花",
+      catTrail: "猫的盐粒小路"
     };
     const keptText = state.keptItems.length > 0
       ? ` 跟着店留下的：${state.keptItems.map((id) => keptLabels[id] || id).join("、")}。`

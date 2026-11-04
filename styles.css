@@ -2472,6 +2472,14 @@ body.intro-active .app-shell {
   font-size: 12px;
 }
 
+.trade-scene .kept-echo {
+  margin-bottom: 8px;
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+  color: var(--muted);
+  font-style: italic;
+}
+
 .trade-scene p {
   animation: vn-line-in 320ms ease-out both;
 }
