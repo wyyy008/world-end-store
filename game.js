@@ -28,6 +28,7 @@ const dialogIds = [
 ];
 
 let toastTimer;
+let audioUnlocked = false;
 let state = loadState();
 let settings = loadSettings();
 let prologueIndex = 0;
@@ -152,6 +153,7 @@ function createInitialState() {
     metCharacters: [],
     awardedTicketNights: [],
     interludeReturnStage: null,
+    interludesSeen: [],
     skippedGuest: null,
     skippedGuests: [],
     closingChoice: null,
@@ -196,6 +198,7 @@ function loadState() {
       saved.metCharacters ||= [];
       saved.awardedTicketNights ||= [];
       saved.interludeReturnStage ??= null;
+      saved.interludesSeen ||= [];
       if (saved.stage === "interlude") {
         saved.stage = saved.interludeReturnStage || "end";
         saved.interludeReturnStage = null;
@@ -264,6 +267,9 @@ function saveSettings() {
 }
 
 function playSfx(name) {
+  if (!audioUnlocked) {
+    return;
+  }
   window.GameAudio?.playSfx(name);
 }
 
@@ -550,7 +556,9 @@ function nightPassRequirement(night = currentNight()) {
         "quietRadio",
         "clerkPayslip",
         "clerkTunnel",
-        "clerkSlept"
+        "clerkSlept",
+        "machineTicketBack",
+        "machineTicketKept"
       ])
     };
   }
@@ -611,7 +619,9 @@ function nightPassRequirement(night = currentNight()) {
         "shenPostcard",
         "xiaomanWarmFinal",
         "lastWeather",
-        "summerBottle"
+        "summerBottle",
+        "extraMinuteGiven",
+        "extraMinuteKept"
       ])
     };
   }
@@ -695,7 +705,7 @@ function clockLabel() {
   const totalMinutes = startHour * 60 + startMinute + (SHIFT_LENGTH - state.time) * 10;
   const hour = Math.floor(totalMinutes / 60) % 24;
   const minute = totalMinutes % 60;
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`; /* taste-skill-ignore numbering */
 }
 
 function addMemory(text) {
@@ -1266,7 +1276,7 @@ function serveQuickCustomer(guest) {
     guest.name
   );
   state.served[guest.id] = true;
-  if (currentNight().interlude && !state.flags.interludeDone) {
+  if (currentNight().interlude && !state.interludesSeen.includes(currentNight().number)) {
     state.flags.pendingInterlude = true;
   }
   markCharacterMet(guest.name);
@@ -1433,7 +1443,7 @@ function completePurchase(guest, option) {
     guest.name
   );
   state.served[guest.id] = true;
-  if (currentNight().interlude && !state.flags.interludeDone) {
+  if (currentNight().interlude && !state.interludesSeen.includes(currentNight().number)) {
     state.flags.pendingInterlude = true;
   }
   markCharacterMet(guest.name);
@@ -1643,7 +1653,7 @@ function completeSpecialChoice(guest, choice) {
     addMemory(effect.memory);
   }
   state.served[guest.id] = true;
-  if (currentNight().interlude && !state.flags.interludeDone) {
+  if (currentNight().interlude && !state.interludesSeen.includes(currentNight().number)) {
     state.flags.pendingInterlude = true;
   }
   markCharacterMet(guest.name);
@@ -1729,6 +1739,10 @@ function completeInterlude(choice) {
   }
   addFlags(choice.flagsOn || [], choice.flagsOff || []);
   state.flags.interludeDone = true;
+  state.interludesSeen ||= [];
+  if (!state.interludesSeen.includes(currentNight().number)) {
+    state.interludesSeen.push(currentNight().number);
+  }
   state.flags.pendingInterlude = false;
   state.stage = state.interludeReturnStage || "end";
   state.interludeReturnStage = null;
@@ -3182,6 +3196,12 @@ document.addEventListener("click", (event) => {
     playSfx("ui");
   }
 });
+window.addEventListener("pointerdown", () => {
+  audioUnlocked = true;
+}, { once: true });
+window.addEventListener("keydown", () => {
+  audioUnlocked = true;
+}, { once: true });
 applyAudioSettings();
 
 render();

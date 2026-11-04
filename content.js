@@ -1370,6 +1370,28 @@ window.GAME_CONTENT = {
         clockStart: "03:20",
         closingTitle: "隧道打烊前，留下什么？",
         closingIntro: "自动售货机不收钱，只收一段你愿意留下的声音。",
+        interlude: {
+          title: "投币口里没有名字",
+          text: "第一位客人离开后，隧道里的自动售货机忽然亮起。投币口没有投币，却吐出一张空白小票。小票很轻，像一句还没有决定要不要说出口的话。",
+          choices: [
+            {
+              id: "machine-ticket-back",
+              label: "把小票翻到背面",
+              detail: "看看机器替谁保留了一句话",
+              flagsOn: ["machineTicketBack"],
+              memory: "小票背面只有一句话：下一站请替我记得。",
+              toast: "空白小票背面浮出了一行字。"
+            },
+            {
+              id: "machine-ticket-kept",
+              label: "把小票留在投币口",
+              detail: "不拿走机器留给下一个人的东西",
+              flagsOn: ["machineTicketKept"],
+              memory: "你没有拿走小票。机器亮了一会儿，又慢慢暗下去。",
+              toast: "小票留在了投币口。"
+            }
+          ]
+        },
         cast: [
           {
             id: "traveler-2",
@@ -1833,6 +1855,28 @@ window.GAME_CONTENT = {
         clockStart: "16:40",
         closingTitle: "夏天打烊前，留下什么？",
         closingIntro: "这是最后一个倒着走的下午。留下一件东西，它就不会跟着时间消失。",
+        interlude: {
+          title: "夏天多出来的一分钟",
+          text: "第一位客人离开后，柜台后的夕阳忽然停住。钟没有走，夏天却多出一分钟。门外没有人，只有一盏灯还亮着。",
+          choices: [
+            {
+              id: "extra-minute-outside",
+              label: "把这一分钟留给门外的人",
+              detail: "让还没有走到的人多一盏灯的时间",
+              flagsOn: ["extraMinuteGiven"],
+              memory: "你把多出来的一分钟留在门外。灯影里有人停了一下，又继续往前走。",
+              toast: "门外多亮了一分钟。"
+            },
+            {
+              id: "extra-minute-counter",
+              label: "把这一分钟收进柜台",
+              detail: "不催夏天，也不催还没说完的话",
+              flagsOn: ["extraMinuteKept"],
+              memory: "你把这一分钟收进柜台。店里的钟没有动，夏天却慢了一点。",
+              toast: "柜台里多了一分钟。"
+            }
+          ]
+        },
         cast: [
           {
             id: "acheng-summer-final",
