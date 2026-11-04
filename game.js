@@ -41,6 +41,7 @@ let prologueLineIndex = 0;
 let finaleSteps = [];
 let finaleIndex = 0;
 let finaleChoice = null;
+let finaleMode = "finale";
 let finaleTimer;
 let finaleTypeComplete = false;
 let finaleCurrentText = "";
@@ -58,6 +59,7 @@ const elements = {
   vnCharacter: document.querySelector("#vn-character"),
   vnCharacterInitial: document.querySelector("#vn-character-initial"),
   vnCharacterRole: document.querySelector("#vn-character-role"),
+  vnCharacterPortrait: document.querySelector("#vn-character-portrait"),
   vnSpeaker: document.querySelector("#vn-speaker"),
   vnHint: document.querySelector("#vn-hint"),
   vnText: document.querySelector("#vn-text"),
@@ -80,6 +82,7 @@ const elements = {
   finaleCharacter: document.querySelector("#finale-character"),
   finaleCharacterInitial: document.querySelector("#finale-character-initial"),
   finaleCharacterRole: document.querySelector("#finale-character-role"),
+  finaleCharacterPortrait: document.querySelector("#finale-character-portrait"),
   finaleSceneLabel: document.querySelector("#finale-scene-label"),
   interludeDialog: document.querySelector("#interlude-dialog"),
   interludeTitle: document.querySelector("#interlude-title"),
@@ -113,6 +116,7 @@ const elements = {
   shopWeather: document.querySelector("#shop-weather"),
   timeLamps: document.querySelector("#time-lamps"),
   timeCopy: document.querySelector("#time-copy"),
+  nightProgressFill: document.querySelector("#night-progress-fill"),
   cash: document.querySelector("#cash-value"),
   tickets: document.querySelector("#ticket-value"),
   ticketHint: document.querySelector("#ticket-hint"),
@@ -154,6 +158,7 @@ function createInitialState() {
     awardedTicketNights: [],
     interludeReturnStage: null,
     interludesSeen: [],
+    openedNights: [],
     skippedGuest: null,
     skippedGuests: [],
     closingChoice: null,
@@ -199,6 +204,7 @@ function loadState() {
       saved.awardedTicketNights ||= [];
       saved.interludeReturnStage ??= null;
       saved.interludesSeen ||= [];
+      saved.openedNights ||= [];
       if (saved.stage === "interlude") {
         saved.stage = saved.interludeReturnStage || "end";
         saved.interludeReturnStage = null;
@@ -389,6 +395,8 @@ function continueGame() {
     showSummary();
   } else if (!state.introSeen) {
     openIntroDialog();
+  } else if (!state.openedNights.includes(currentNight().number)) {
+    startNightOpening();
   } else {
     elements.customerActions.querySelector("button")?.focus({ preventScroll: true });
   }
@@ -848,6 +856,7 @@ function renderShift() {
     lamp.className = `time-lamp${index >= state.time ? " is-off" : ""}${isCurrent ? " is-current" : ""}`;
     elements.timeLamps.append(lamp);
   }
+  elements.nightProgressFill.style.width = `${(state.time / SHIFT_LENGTH) * 100}%`;
 
   elements.timeLamps.setAttribute("aria-label", `剩余 ${state.time} 个营业时间格`);
   elements.timeCopy.textContent = `${state.time} 件事`;
@@ -985,16 +994,17 @@ function renderCustomer() {
 
   if (guests.length === 1) {
     const guest = guests[0];
-    const avatar = document.createElement("div");
-    avatar.className = `customer-avatar ${guest.avatarClass || ""}`;
-    avatar.textContent = guest.initial;
-
-    const arrival = document.createElement("p");
-    arrival.className = "customer-arrival";
-    arrival.textContent = guest.arrival;
-
-    const name = document.createElement("h3");
-    name.textContent = guest.name;
+    const person = document.createElement("div");
+    person.className = "customer-person";
+    person.innerHTML = `
+      ${portraitSvg(guest.name, "customer-portrait")}
+      <div class="customer-person-copy">
+        <h3></h3>
+        <p class="customer-arrival"></p>
+      </div>
+    `;
+    person.querySelector("h3").textContent = guest.name;
+    person.querySelector(".customer-arrival").textContent = guest.arrival;
 
     const line = document.createElement("p");
     line.className = "customer-line";
@@ -1004,7 +1014,7 @@ function renderCustomer() {
     note.className = "customer-note";
     note.textContent = guest.note;
 
-    elements.customerScene.append(avatar, name, arrival, line, note);
+    elements.customerScene.append(person, line, note);
 
     const action = document.createElement("button");
     action.type = "button";
@@ -1036,9 +1046,8 @@ function renderCustomer() {
     const card = document.createElement("section");
     card.className = "counter-person";
 
-    const avatar = document.createElement("div");
-    avatar.className = `customer-avatar ${guest.avatarClass || ""}`;
-    avatar.textContent = guest.initial;
+    const portrait = document.createElement("div");
+    portrait.innerHTML = portraitSvg(guest.name, "counter-person-portrait");
 
     const name = document.createElement("h3");
     name.textContent = guest.name;
@@ -1061,7 +1070,7 @@ function renderCustomer() {
     action.textContent = guest.action;
     action.addEventListener("click", () => openGuestFlow(guest));
 
-    card.append(avatar, name, arrival, line, note, action);
+    card.append(portrait.firstElementChild, name, arrival, line, note, action);
     pair.append(card);
   });
 
@@ -2225,6 +2234,79 @@ function overallFinaleData(choice) {
   return CONTENT.finale.overall.openParcel.partial;
 }
 
+function buildNightOpeningSteps() {
+  const night = currentNight();
+  const first = night.cast[0];
+  const arc = characterArcEntries().find((item) => item.name === first.name);
+  const sceneByArc = {
+    acheng: "counter",
+    shen: "shen",
+    clerk: "clerk",
+    xiaoman: "xiaoman",
+    traveler: "traveler"
+  };
+  const steps = [
+    {
+      speaker: "旁白",
+      text: `第 ${night.number} 夜，${night.place}。${night.weather}。店里的六盏灯一盏一盏亮起来。`,
+      scene: "rain",
+      sceneLabel: `第 ${night.number} 夜 · ${night.place}`
+    },
+    {
+      speaker: "旁白",
+      text: "柜台下的包裹轻轻动了一下。里面有一页信，认出了门外的人。",
+      scene: "counter",
+      sceneLabel: "包裹 · 一页信"
+    }
+  ];
+
+  if (arc) {
+    steps.push({
+      speaker: arc.name,
+      text: arc.waiting,
+      character: arc.initial,
+      portrait: arc.id,
+      role: arc.role,
+      scene: sceneByArc[arc.id] || "counter",
+      sceneLabel: `门外 · ${arc.name}`
+    });
+  } else {
+    steps.push({
+      speaker: first.name,
+      text: first.line,
+      character: first.initial,
+      portrait: portraitIdForName(first.name),
+      role: first.arrival,
+      scene: first.avatarClass || "counter",
+      sceneLabel: `门外 · ${first.name}`
+    });
+  }
+
+  steps.push({
+    speaker: "旁白",
+    text: night.number === 1
+      ? "五个人都在等第一班车。包裹里有五封没有送出的信；这间店，是他们最后的地址。"
+      : "他们还在等同一班车。只是每个人等的，不是同一件东西。",
+    scene: "door",
+    sceneLabel: "同一班车"
+  });
+  return steps;
+}
+
+function startNightOpening() {
+  if (state.nightClosed || state.finished) {
+    return;
+  }
+  finaleMode = "night-open";
+  finaleSteps = buildNightOpeningSteps();
+  finaleIndex = 0;
+  document.body.classList.add("finale-active");
+  if (!elements.finaleDialog.open) {
+    elements.finaleDialog.showModal();
+  }
+  showFinaleStep();
+}
+
 function buildFinaleSteps(choice) {
   const data = CONTENT.finale;
   const sceneByArc = {
@@ -2258,6 +2340,7 @@ function buildFinaleSteps(choice) {
       text: ending.text,
       title: ending.title,
       character: arc.initial,
+      portrait: id,
       role: arc.role,
       scene: sceneByArc[id] || "counter",
       sceneLabel: `终章 · ${arc.name}`
@@ -2293,6 +2376,7 @@ function buildFinaleSteps(choice) {
 }
 
 function startFinale(choice) {
+  finaleMode = "finale";
   finaleChoice = choice;
   finaleSteps = buildFinaleSteps(choice);
   finaleIndex = 0;
@@ -2318,10 +2402,14 @@ function showFinaleStep() {
   elements.finaleCharacter.hidden = !step.character;
   elements.finaleCharacterInitial.textContent = step.character || "";
   elements.finaleCharacterRole.textContent = step.role || step.speaker || "";
+  const portraitName = step.portrait && CONTENT.characterArcs[step.portrait]
+    ? CONTENT.characterArcs[step.portrait].name
+    : step.speaker;
+  elements.finaleCharacterPortrait.innerHTML = step.character ? portraitSvg(portraitName) : "";
   elements.finaleNext.hidden = true;
   elements.finaleHint.textContent = "点击或按空格继续";
   elements.finaleContinue.textContent = finaleIndex >= finaleSteps.length - 1
-    ? "查看收据与结局"
+    ? (finaleMode === "night-open" ? "开门营业" : "查看收据与结局")
     : "继续";
   logVnLine(step.speaker, finaleCurrentText, step.sceneLabel || "终章");
   typeFinaleText(finaleCurrentText);
@@ -2369,7 +2457,7 @@ function completeFinaleText() {
   finaleTypeComplete = true;
   elements.finaleNext.hidden = false;
   elements.finaleHint.textContent = finaleIndex >= finaleSteps.length - 1
-    ? "准备好后结束终章"
+    ? (finaleMode === "night-open" ? "准备好后开门" : "准备好后结束终章")
     : "点击或按空格继续";
 }
 
@@ -2395,6 +2483,17 @@ function finishFinale() {
   clearTimeout(finaleTimer);
   closeDialog(elements.finaleDialog);
   document.body.classList.remove("finale-active");
+  if (finaleMode === "night-open") {
+    state.openedNights ||= [];
+    if (!state.openedNights.includes(currentNight().number)) {
+      state.openedNights.push(currentNight().number);
+    }
+    saveState();
+    render();
+    playSfx("door");
+    elements.customerActions.querySelector("button")?.focus({ preventScroll: true });
+    return;
+  }
   showSummary();
   playSfx("page");
 }
@@ -2604,9 +2703,13 @@ function startNextNight(routeId = null) {
   closeDialog(document.querySelector("#summary-dialog"));
   commit();
   window.scrollTo({ top: 0, behavior: "smooth" });
-  showToast(hasTicket
-    ? `第 ${currentNight().number} 夜：${currentNight().place}`
-    : "没有车票，店被动漂移，损失 ¥5。");
+  if (!state.openedNights.includes(currentNight().number)) {
+    startNightOpening();
+  } else {
+    showToast(hasTicket
+      ? `第 ${currentNight().number} 夜：${currentNight().place}`
+      : "没有车票，店被动漂移，损失 ¥5。");
+  }
 }
 
 function startPrologue() {
@@ -2639,6 +2742,7 @@ function renderPrologueStep() {
   elements.vnCharacter.hidden = !step.character;
   elements.vnCharacterInitial.textContent = step.character || "";
   elements.vnCharacterRole.textContent = step.speaker;
+  elements.vnCharacterPortrait.innerHTML = step.character ? portraitSvg(step.speaker) : "";
   elements.vnChoices.replaceChildren();
   elements.vnChoices.hidden = true;
   elements.vnTips.replaceChildren();
@@ -2820,6 +2924,10 @@ function finishPrologue() {
     state.flags.prologueMemoryWritten = true;
   }
   state.introSeen = true;
+  state.openedNights ||= [];
+  if (!state.openedNights.includes(1)) {
+    state.openedNights.push(1);
+  }
   saveState();
   closeDialog(document.querySelector("#intro-dialog"));
   document.body.classList.remove("intro-active");

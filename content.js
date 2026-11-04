@@ -109,6 +109,12 @@ window.GAME_CONTENT = {
         ]
       },
       {
+        scene: "counter",
+        sceneLabel: "便利店 · 柜台后",
+        speaker: "旁白",
+        text: "纸箱里有五页没有寄出的信。每一页都没有收件人，只有一个相同的站名：雾港。第一班车到站前，会有五个人先后走进店里。他们都在等同一班车，只是每个人等的，不是同一件东西。"
+      },
+      {
         scene: "door",
         sceneLabel: "便利店 · 即将营业",
         speaker: "旁白",

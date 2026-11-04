@@ -58,7 +58,7 @@
             <h1 id="game-title"><span>世界尽头的</span><span>便利店</span></h1>
             <p class="title-subtitle">没有收件人的包裹</p>
             <p class="title-edition">免费试玩 · 八夜 · 约 25–40 分钟</p>
-            <p class="title-premise">在八夜内替一只没有地址的包裹找到去处。接待谁、留下什么，都会改变第一班车到站时的答案。</p>
+            <p class="title-premise">包裹里有五封没有送出的信。五个等同一班车的人，会在八夜内先后走进店里。接待谁、留下什么，都会改变第一班车到站时的答案。</p>
             <div class="title-ticket" aria-hidden="true">
               <span class="title-ticket-stub">雾港 · 末班车</span>
               <strong>第八夜 · 第一班车</strong>
@@ -174,7 +174,7 @@
           <section class="chapter-goal" aria-label="首章目标">
             <span class="goal-label">包裹的去处</span>
             <div class="goal-copy">
-              <strong>让没有收件人的包裹找到去处</strong>
+              <strong>把五封没有送出的信送到五个人手里</strong>
               <span id="goal-progress">距离第一班车还有 8 夜</span>
             </div>
             <span class="goal-route" id="goal-route">包裹还没有地址</span>
@@ -186,6 +186,9 @@
               <div class="time-readout">
                 <div class="time-lamps" id="time-lamps" aria-label="剩余六个营业时间格"></div>
                 <strong id="time-copy">6 件事</strong>
+              </div>
+              <div class="night-progress" aria-hidden="true">
+                <span id="night-progress-fill"></span>
               </div>
             </div>
             <div class="shift-cell">
@@ -282,7 +285,7 @@
           <div class="vn-counter" aria-hidden="true"></div>
           <div class="vn-door" aria-hidden="true"></div>
           <div class="vn-character" id="vn-character" hidden>
-            <div class="vn-portrait" id="vn-character-portrait"></div>
+            <div class="vn-portrait-slot" id="vn-character-portrait"></div>
             <div class="vn-character-copy">
               <span id="vn-character-initial">?</span>
               <small id="vn-character-role">门外的声音</small>
@@ -324,7 +327,7 @@
           <div class="vn-counter" aria-hidden="true"></div>
           <div class="vn-door" aria-hidden="true"></div>
           <div class="vn-character" id="finale-character" hidden>
-            <div class="vn-portrait" id="finale-character-portrait"></div>
+            <div class="vn-portrait-slot" id="finale-character-portrait"></div>
             <div class="vn-character-copy">
               <span id="finale-character-initial">?</span>
               <small id="finale-character-role"></small>
