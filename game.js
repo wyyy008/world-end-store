@@ -605,6 +605,31 @@ function currentGuest() {
   return currentNight().cast.find((guest) => guest.id === state.stage) || null;
 }
 
+function counterPair(night = currentNight()) {
+  if (!night.simultaneous) {
+    return [];
+  }
+  return night.cast.filter((guest) => guest.mode !== "quick").slice(0, 2);
+}
+
+function counterGuests() {
+  const night = currentNight();
+  if (night.simultaneous && !state.nightClosed && !state.finished) {
+    const waiting = counterPair(night).filter((guest) => !state.served[guest.id]);
+    if (waiting.length > 0) {
+      return waiting;
+    }
+  }
+  const guest = currentGuest();
+  return guest ? [guest] : [];
+}
+
+function guestLine(guest) {
+  const pair = counterPair();
+  const partnerServed = pair.some((partner) => partner.id !== guest.id && state.served[partner.id]);
+  return partnerServed && guest.waitedLine ? guest.waitedLine : guest.line;
+}
+
 function clockLabel() {
   const night = currentNight();
   const [startHour, startMinute] = night.clockStart.split(":").map(Number);
@@ -840,12 +865,25 @@ function renderShelf() {
   });
 }
 
+function openGuestFlow(guest) {
+  if (currentNight().simultaneous && state.stage !== guest.id) {
+    state.stage = guest.id;
+  }
+  if (guest.mode === "quick") {
+    serveQuickCustomer(guest);
+  } else if (guest.mode === "special") {
+    openSpecialDialog(guest);
+  } else {
+    openTradeDialog(guest);
+  }
+}
+
 function renderCustomer() {
-  const guest = currentGuest();
+  const guests = counterGuests();
   elements.customerScene.replaceChildren();
   elements.customerActions.replaceChildren();
 
-  if (!guest) {
+  if (guests.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-counter";
     const isClosed = state.nightClosed || state.finished;
@@ -862,52 +900,95 @@ function renderCustomer() {
     return;
   }
 
-  const avatar = document.createElement("div");
-  avatar.className = `customer-avatar ${guest.avatarClass || ""}`;
-  avatar.textContent = guest.initial;
+  if (guests.length === 1) {
+    const guest = guests[0];
+    const avatar = document.createElement("div");
+    avatar.className = `customer-avatar ${guest.avatarClass || ""}`;
+    avatar.textContent = guest.initial;
 
-  const arrival = document.createElement("p");
-  arrival.className = "customer-arrival";
-  arrival.textContent = guest.arrival;
+    const arrival = document.createElement("p");
+    arrival.className = "customer-arrival";
+    arrival.textContent = guest.arrival;
 
-  const name = document.createElement("h3");
-  name.textContent = guest.name;
+    const name = document.createElement("h3");
+    name.textContent = guest.name;
 
-  const line = document.createElement("p");
-  line.className = "customer-line";
-  line.textContent = guest.line;
+    const line = document.createElement("p");
+    line.className = "customer-line";
+    line.textContent = guestLine(guest);
 
-  const note = document.createElement("p");
-  note.className = "customer-note";
-  note.textContent = guest.note;
+    const note = document.createElement("p");
+    note.className = "customer-note";
+    note.textContent = guest.note;
 
-  elements.customerScene.append(avatar, name, arrival, line, note);
+    elements.customerScene.append(avatar, name, arrival, line, note);
 
-  const action = document.createElement("button");
-  action.type = "button";
-  action.className = "primary-button";
-  action.textContent = guest.action;
-  action.addEventListener("click", () => {
-    if (guest.mode === "quick") {
-      serveQuickCustomer(guest);
-    } else if (guest.mode === "special") {
-      openSpecialDialog(guest);
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "primary-button";
+    action.textContent = guest.action;
+    action.addEventListener("click", () => openGuestFlow(guest));
+
+    const cost = document.createElement("span");
+    cost.className = "action-cost";
+    if (state.time <= 0 && guest.mode !== "quick") {
+      cost.textContent = "时间已用完；只剩柜台前这一位可以收尾，后面的人不会再来";
+    } else if (state.stock[guest.product] < (guest.quantity || 1) && guest.mode !== "special") {
+      cost.textContent = `${products[guest.product].name}库存不够，点开后可在柜台补货`;
     } else {
-      openTradeDialog(guest);
+      cost.textContent = guest.cost;
     }
-  });
 
-  const cost = document.createElement("span");
-  cost.className = "action-cost";
-  if (state.time <= 0 && guest.mode !== "quick") {
-    cost.textContent = "时间已用完；只剩柜台前这一位可以收尾，后面的人不会再来";
-  } else if (state.stock[guest.product] < (guest.quantity || 1) && guest.mode !== "special") {
-    cost.textContent = `${products[guest.product].name}库存不够，点开后可在柜台补货`;
-  } else {
-    cost.textContent = guest.cost;
+    elements.customerActions.append(action, cost);
+    return;
   }
 
-  elements.customerActions.append(action, cost);
+  const hint = document.createElement("p");
+  hint.className = "customer-pair-hint";
+  hint.textContent = "两个人同时站在柜台前。先接待谁，另一个人的话会变。";
+
+  const pair = document.createElement("div");
+  pair.className = "customer-pair";
+  guests.forEach((guest) => {
+    const card = document.createElement("section");
+    card.className = "counter-person";
+
+    const avatar = document.createElement("div");
+    avatar.className = `customer-avatar ${guest.avatarClass || ""}`;
+    avatar.textContent = guest.initial;
+
+    const name = document.createElement("h3");
+    name.textContent = guest.name;
+
+    const arrival = document.createElement("p");
+    arrival.className = "customer-arrival";
+    arrival.textContent = guest.arrival;
+
+    const line = document.createElement("p");
+    line.className = "customer-line";
+    line.textContent = guestLine(guest);
+
+    const note = document.createElement("p");
+    note.className = "customer-note";
+    note.textContent = guest.note;
+
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "primary-button";
+    action.textContent = guest.action;
+    action.addEventListener("click", () => openGuestFlow(guest));
+
+    card.append(avatar, name, arrival, line, note, action);
+    pair.append(card);
+  });
+
+  elements.customerScene.append(hint, pair);
+  const pairCost = document.createElement("span");
+  pairCost.className = "action-cost";
+  pairCost.textContent = state.time <= 0
+    ? "时间已用完；只能收尾其中一位，另一位今晚不会再来"
+    : "接待其中一位 · 各花 1 个营业时间格";
+  elements.customerActions.append(pairCost);
 }
 
 function renderTasks() {
@@ -1374,7 +1455,7 @@ function openSpecialDialog(guest) {
   const eventInner = `
     <div class="trade-scene">
       ${keptEchoForGuest(guest)}
-      <p>${guest.line}</p>
+      <p>${guestLine(guest)}</p>
       <p>${guest.note}</p>
     </div>
     <div class="special-options">
@@ -1423,7 +1504,7 @@ function openSpecialDialog(guest) {
   `;
   body.innerHTML = guestVnShell(guest, eventInner);
   dialog.classList.add("is-vn");
-  logVnLine(guest.name, guest.line, currentNight().place);
+  logVnLine(guest.name, guestLine(guest), currentNight().place);
   logVnLine(guest.name, guest.note, currentNight().place);
   body.querySelector("[data-vn-history]")?.addEventListener("click", openHistoryDialog);
 
@@ -1516,18 +1597,41 @@ function renderSpecialResult(guest, choice) {
 }
 
 function advanceStage() {
-  const cast = currentNight().cast;
+  const night = currentNight();
+  const cast = night.cast;
+  const pair = counterPair(night);
+  if (pair.length === 2) {
+    const waitingPair = pair.filter((guest) => !state.served[guest.id]);
+    if (state.time <= 0) {
+      waitingPair.forEach(markGuestSkipped);
+      cast
+        .filter((guest) => !pair.includes(guest))
+        .forEach(markGuestSkipped);
+      state.stage = "end";
+      return;
+    }
+    if (waitingPair.length > 0) {
+      state.stage = waitingPair[0].id;
+      return;
+    }
+    const next = cast.find((guest) => !pair.includes(guest) && !state.served[guest.id]);
+    state.stage = next ? next.id : "end";
+    return;
+  }
+
   const index = cast.findIndex((guest) => guest.id === state.stage);
   if (state.time <= 0 && index >= 0 && index < cast.length - 1) {
-    cast.slice(index + 1).forEach((guest) => {
-      if (!state.served[guest.id] && !state.skippedGuests.includes(guest.name)) {
-        state.skippedGuests.push(guest.name);
-      }
-    });
+    cast.slice(index + 1).forEach(markGuestSkipped);
     state.stage = "end";
     return;
   }
   state.stage = index >= 0 && index < cast.length - 1 ? cast[index + 1].id : "end";
+}
+
+function markGuestSkipped(guest) {
+  if (!state.served[guest.id] && !state.skippedGuests.includes(guest.name)) {
+    state.skippedGuests.push(guest.name);
+  }
 }
 
 function openItemDialog(key) {

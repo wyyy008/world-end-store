@@ -1181,6 +1181,49 @@ button:active:not(:disabled) {
   font-size: 13px;
 }
 
+.customer-pair-hint {
+  width: 100%;
+  margin: 0 0 9px;
+  color: var(--accent-ink);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.customer-pair {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.counter-person {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  padding: 12px;
+}
+
+.counter-person .customer-avatar {
+  width: 42px;
+  height: 42px;
+  font-size: 15px;
+}
+
+.counter-person h3 {
+  margin: 7px 0 0;
+  font-size: 15px;
+}
+
+.counter-person .primary-button {
+  width: 100%;
+  min-height: 38px;
+  margin-top: 12px;
+}
+
 .customer-actions {
   display: flex;
   flex-direction: column;
@@ -3523,6 +3566,10 @@ body.intro-active .app-shell {
   .settings-actions button {
     width: 100%;
     min-height: 44px;
+  }
+
+  .customer-pair {
+    grid-template-columns: 1fr;
   }
 
   .toast {

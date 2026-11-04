@@ -11,7 +11,7 @@
 在源项目里改完 `index.html`、`styles.css`、`game.js`、`content.js`、`audio.js` 或 `assets/` 之后：
 
 1. 双击本目录的 `发布更新.cmd`
-2. 等窗口显示“已推送”
+2. 等窗口显示 “Published via GitHub API”
 3. GitHub Pages 会自动重新发布，通常一到两分钟
 
 也可以直接用 PowerShell：
@@ -19,5 +19,7 @@
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\publish.ps1 -Message "更新说明"
 ```
+
+发布脚本通过 GitHub API 直接提交，不依赖 `git push`；即使本机到 `github.com` 的 Git 端口不稳定也能发布。
 
 网址不会改变。玩家的浏览器存档也留在同一个域名下。
