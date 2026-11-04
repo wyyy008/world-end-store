@@ -1293,6 +1293,7 @@ function serveQuickCustomer(guest) {
 function guestVnShell(guest, innerHtml) {
   const night = currentNight();
   const scene = guest.avatarClass || "counter";
+  const portraitClass = portraitIdForName(guest.name);
   return `
     <div class="vn-shell">
       <div class="vn-stage" data-scene="${scene}">
@@ -1303,9 +1304,12 @@ function guestVnShell(guest, innerHtml) {
         <div class="vn-shelves" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <div class="vn-counter" aria-hidden="true"></div>
         <div class="vn-door" aria-hidden="true"></div>
-        <div class="vn-character">
-          <span>${guest.initial}</span>
-          <small>${guest.name}</small>
+        <div class="vn-character portrait-${portraitClass}">
+          ${portraitSvg(guest.name, "vn-portrait")}
+          <div class="vn-character-copy">
+            <span>${guest.initial}</span>
+            <small>${guest.name}</small>
+          </div>
         </div>
         <div class="vn-scene-label">${night.place}</div>
       </div>
@@ -1320,6 +1324,29 @@ function guestVnShell(guest, innerHtml) {
         ${innerHtml}
       </div>
     </div>`;
+}
+
+const PORTRAIT_IDS = {
+  "阿澄": "acheng",
+  "沈伯": "shen",
+  "0217": "clerk",
+  "小满": "xiaoman",
+  "无名旅人": "traveler"
+};
+
+function portraitIdForName(name) {
+  return PORTRAIT_IDS[name] || "generic";
+}
+
+function portraitSvg(name, className = "") {
+  const id = portraitIdForName(name);
+  return `
+    <div class="portrait-frame portrait-${id} ${className}">
+      <svg class="portrait-svg" viewBox="0 0 120 160" aria-hidden="true">
+        <use href="#portrait-${id}"></use>
+      </svg>
+    </div>
+  `;
 }
 
 function keptEchoForGuest(guest) {

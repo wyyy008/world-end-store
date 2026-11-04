@@ -14,6 +14,43 @@
     <script src="game.js" defer></script>
   </head>
   <body>
+    <svg class="portrait-sprite" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="portrait-acheng" viewBox="0 0 120 160">
+          <circle cx="60" cy="48" r="24" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M36 44c0-20 10-32 24-32s24 12 24 32v16c-8-3-16-9-24-9s-16 6-24 9V44Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M20 160c2-38 18-56 40-56s38 18 40 56" fill="currentColor" fill-opacity=".1" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M98 66v38c0 12-8 18-16 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="portrait-shen" viewBox="0 0 120 160">
+          <circle cx="60" cy="50" r="23" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M36 38h48l-4-14H40Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M28 38h64M40 92l20 16 20-16M20 160c2-38 18-56 40-56s38 18 40 56" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="78" y="110" width="13" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+        </symbol>
+        <symbol id="portrait-clerk" viewBox="0 0 120 160">
+          <circle cx="60" cy="48" r="23" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M38 40c2-16 10-26 22-26s20 10 22 26" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M20 160c2-38 18-56 40-56s38 18 40 56M42 98h36v50H42Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="76" y="106" width="12" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+        </symbol>
+        <symbol id="portrait-xiaoman" viewBox="0 0 120 160">
+          <circle cx="60" cy="48" r="23" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M37 44c0-18 10-30 23-30s23 12 23 30v12c-8-3-15-8-23-8s-15 5-23 8V44Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M82 38c13 5 15 19 6 29M20 160c2-38 18-56 40-56s38 18 40 56" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <rect x="78" y="112" width="22" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/>
+        </symbol>
+        <symbol id="portrait-traveler" viewBox="0 0 120 160">
+          <circle cx="60" cy="50" r="23" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M30 62c0-28 12-44 30-44s30 16 30 44l-7 22H37Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M40 92h40v10H40ZM20 160c2-38 18-56 40-56s38 18 40 56" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="portrait-generic" viewBox="0 0 120 160">
+          <circle cx="60" cy="48" r="23" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M20 160c2-38 18-56 40-56s38 18 40 56" fill="currentColor" fill-opacity=".1" stroke="currentColor" stroke-width="2.5"/>
+        </symbol>
+      </defs>
+    </svg>
     <section class="title-screen" id="title-screen" aria-labelledby="game-title">
       <div class="title-panel">
         <div class="title-main">
@@ -245,8 +282,11 @@
           <div class="vn-counter" aria-hidden="true"></div>
           <div class="vn-door" aria-hidden="true"></div>
           <div class="vn-character" id="vn-character" hidden>
-            <span id="vn-character-initial">?</span>
-            <small id="vn-character-role">门外的声音</small>
+            <div class="vn-portrait" id="vn-character-portrait"></div>
+            <div class="vn-character-copy">
+              <span id="vn-character-initial">?</span>
+              <small id="vn-character-role">门外的声音</small>
+            </div>
           </div>
           <div class="vn-scene-label" id="vn-scene-label">雾港公交站 · 尚未营业</div>
         </div>
@@ -284,8 +324,11 @@
           <div class="vn-counter" aria-hidden="true"></div>
           <div class="vn-door" aria-hidden="true"></div>
           <div class="vn-character" id="finale-character" hidden>
-            <span id="finale-character-initial">?</span>
-            <small id="finale-character-role"></small>
+            <div class="vn-portrait" id="finale-character-portrait"></div>
+            <div class="vn-character-copy">
+              <span id="finale-character-initial">?</span>
+              <small id="finale-character-role"></small>
+            </div>
           </div>
           <div class="vn-scene-label" id="finale-scene-label">终章 · 第一班车</div>
         </div>
