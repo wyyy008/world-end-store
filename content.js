@@ -445,6 +445,8 @@ window.GAME_CONTENT = {
                   id: "coin",
                   label: "请她喝一罐，收下那枚硬币",
                   detail: "咖啡少一罐，柜台上多一枚没有年份的工资币",
+                  requiresStock: { coffee: 1 },
+                  unavailable: "货架上的咖啡不够",
                   effect: {
                     time: 1,
                     stock: { coffee: -1 },
@@ -457,6 +459,8 @@ window.GAME_CONTENT = {
                   id: "paid",
                   label: "照价卖给她",
                   detail: "收 ¥6，她把硬币丢进收银盒就不再说话",
+                  requiresStock: { coffee: 1 },
+                  unavailable: "货架上的咖啡不够",
                   effect: {
                     time: 1,
                     stock: { coffee: -1 },
@@ -470,6 +474,8 @@ window.GAME_CONTENT = {
                   id: "work",
                   label: "让她整理一次货架来换",
                   detail: "不收钱，但货架会被摆得比原来更整齐",
+                  requiresStock: { coffee: 1 },
+                  unavailable: "货架上的咖啡不够",
                   effect: {
                     time: 1,
                     stock: { coffee: -1 },

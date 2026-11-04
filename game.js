@@ -1103,7 +1103,9 @@ function renderTasks() {
         ? requirement.channel
         : ticketEarned
           ? `已获得车票 · ${requirement.channel}`
-          : `做到之后，${requirement.channel}会吐出一张车票`
+          : requirement.met
+            ? `打烊时，${requirement.channel}会吐出一张车票`
+            : `做到之后，${requirement.channel}会吐出一张车票`
     }</small>
   `;
   elements.taskList.append(passCard);
@@ -1669,9 +1671,17 @@ function completeSpecialChoice(guest, choice) {
     return;
   }
 
-  playSfx("success");
   logVnChoice(choice.label);
   const effect = choice.effect || {};
+  const stockShortage = Object.entries(effect.stock || {}).find(
+    ([key, delta]) => delta < 0 && state.stock[key] + delta < 0
+  );
+  if (stockShortage) {
+    showToast(`${products[stockShortage[0]].name}不够。`);
+    playSfx("blocked");
+    return;
+  }
+  playSfx("success");
   if (Number.isFinite(effect.time)) {
     spendTime(effect.time);
   }
