@@ -15,6 +15,7 @@ const emptyStock = Object.fromEntries(Object.keys(products).map((key) => [key, 0
 const dialogIds = [
   "intro-dialog",
   "trade-dialog",
+  "interlude-dialog",
   "item-dialog",
   "closing-dialog",
   "summary-dialog",
@@ -60,6 +61,9 @@ const elements = {
   vnSettings: document.querySelector("#vn-settings"),
   vnSkip: document.querySelector("#vn-skip"),
   startShift: document.querySelector("#start-shift"),
+  interludeDialog: document.querySelector("#interlude-dialog"),
+  interludeTitle: document.querySelector("#interlude-title"),
+  interludeBody: document.querySelector("#interlude-body"),
   historyDialog: document.querySelector("#history-dialog"),
   historyList: document.querySelector("#history-list"),
   characterDialog: document.querySelector("#character-dialog"),
@@ -128,6 +132,7 @@ function createInitialState() {
     keptItems: [],
     metCharacters: [],
     awardedTicketNights: [],
+    interludeReturnStage: null,
     skippedGuest: null,
     skippedGuests: [],
     closingChoice: null,
@@ -171,6 +176,11 @@ function loadState() {
       saved.achievements ||= [];
       saved.metCharacters ||= [];
       saved.awardedTicketNights ||= [];
+      saved.interludeReturnStage ??= null;
+      if (saved.stage === "interlude") {
+        saved.stage = saved.interludeReturnStage || "end";
+        saved.interludeReturnStage = null;
+      }
       return saved;
     }
   } catch (error) {
@@ -497,7 +507,9 @@ function nightPassRequirement(night = currentNight()) {
         "saltRoad",
         "clerkRoadRest",
         "umbrellaMended",
-        "brokenUmbrellaKept"
+        "brokenUmbrellaKept",
+        "roadsideLight",
+        "counterLight"
       ])
     };
   }
@@ -1219,12 +1231,18 @@ function serveQuickCustomer(guest) {
     guest.name
   );
   state.served[guest.id] = true;
+  if (currentNight().interlude && !state.flags.interludeDone) {
+    state.flags.pendingInterlude = true;
+  }
   markCharacterMet(guest.name);
   unlockAchievement("first-trade");
   addMemory(guest.memory);
   advanceStage();
   commit();
   showToast(guest.toast);
+  if (state.flags.pendingInterlude) {
+    openInterlude();
+  }
 }
 
 function guestVnShell(guest, innerHtml) {
@@ -1380,6 +1398,9 @@ function completePurchase(guest, option) {
     guest.name
   );
   state.served[guest.id] = true;
+  if (currentNight().interlude && !state.flags.interludeDone) {
+    state.flags.pendingInterlude = true;
+  }
   markCharacterMet(guest.name);
   unlockAchievement("first-trade");
   if (option === "gift") {
@@ -1437,6 +1458,10 @@ function renderPurchaseResult(guest, amount, option) {
   }
   document.querySelector("#trade-continue").addEventListener("click", () => {
     closeDialog(document.querySelector("#trade-dialog"));
+    if (state.flags.pendingInterlude) {
+      openInterlude();
+      return;
+    }
     showToast(amount > 0 ? `${guest.name}的交易记进了今晚的收据。` : `你把东西送给了${guest.name}。`);
   });
 }
@@ -1583,6 +1608,9 @@ function completeSpecialChoice(guest, choice) {
     addMemory(effect.memory);
   }
   state.served[guest.id] = true;
+  if (currentNight().interlude && !state.flags.interludeDone) {
+    state.flags.pendingInterlude = true;
+  }
   markCharacterMet(guest.name);
   unlockAchievement("first-trade");
   advanceStage();
@@ -1618,8 +1646,66 @@ function renderSpecialResult(guest, choice) {
   }
   document.querySelector("#trade-continue").addEventListener("click", () => {
     closeDialog(document.querySelector("#trade-dialog"));
+    if (state.flags.pendingInterlude) {
+      openInterlude();
+      return;
+    }
     showToast(choice.effect?.toast || `${guest.name}离开了柜台。`);
   });
+}
+
+function openInterlude() {
+  const data = currentNight().interlude;
+  if (!data) {
+    return;
+  }
+  if (state.stage !== "interlude") {
+    state.interludeReturnStage = state.stage;
+    state.stage = "interlude";
+    saveState();
+    render();
+  }
+  elements.interludeTitle.textContent = data.title;
+  elements.interludeBody.innerHTML = `
+    <p class="interlude-text">${data.text}</p>
+    <div class="interlude-choices">
+      ${data.choices.map((choice) => `
+        <button class="keepsake-button" type="button" data-interlude-choice="${choice.id}">
+          <span>
+            <strong>${choice.label}</strong>
+            <span>${choice.detail}</span>
+          </span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+  elements.interludeBody.querySelectorAll("[data-interlude-choice]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const choice = data.choices.find((item) => item.id === button.dataset.interludeChoice);
+      completeInterlude(choice);
+    });
+  });
+  openDialog(elements.interludeDialog);
+}
+
+function completeInterlude(choice) {
+  if (!choice) {
+    return;
+  }
+  addFlags(choice.flagsOn || [], choice.flagsOff || []);
+  state.flags.interludeDone = true;
+  state.flags.pendingInterlude = false;
+  state.stage = state.interludeReturnStage || "end";
+  state.interludeReturnStage = null;
+  if (choice.memory) {
+    addMemory(choice.memory);
+  }
+  commit();
+  closeDialog(elements.interludeDialog);
+  playSfx("page");
+  if (choice.toast) {
+    showToast(choice.toast);
+  }
 }
 
 function advanceStage() {
@@ -1806,6 +1892,27 @@ function closingChoices() {
       detail: "猫记得自己走过的路"
     });
   }
+  if (state.flags.summerSunBottle) {
+    choices.push({
+      id: "summerBottle",
+      title: "把装着夕阳的玻璃瓶留在柜台上",
+      detail: "让夏天有一个可以带走的下午"
+    });
+  }
+  if (state.flags.summerFlowerBottle) {
+    choices.push({
+      id: "summerFlower",
+      title: "把最后一束花留在瓶里",
+      detail: "花不需要地址，也能在灯下多开一晚"
+    });
+  }
+  if (state.flags.achengSummerScarf) {
+    choices.push({
+      id: "summerScarf",
+      title: "把红围巾折好，留在柜台",
+      detail: "有些颜色带走了也不会褪"
+    });
+  }
   choices.push({
     id: "receipt",
     title: "把今晚的收据夹进记忆册",
@@ -1886,7 +1993,10 @@ function openClosingDialog(config = {}) {
       ticket: "旧车票",
       brokenUmbrella: "断骨的伞",
       flower: "白花",
-      catTrail: "猫的盐粒小路"
+      catTrail: "猫的盐粒小路",
+      summerBottle: "装着夕阳的玻璃瓶",
+      summerFlower: "最后一束花",
+      summerScarf: "红围巾"
     };
     const keptText = state.keptItems.length > 0
       ? ` 跟着店留下的：${state.keptItems.map((id) => keptLabels[id] || id).join("、")}。`
@@ -2686,13 +2796,16 @@ document.querySelectorAll("[data-close]").forEach((button) => {
 dialogIds.forEach((id) => {
   const dialog = document.querySelector(`#${id}`);
   dialog.addEventListener("click", (event) => {
-    if (event.target === dialog && id !== "intro-dialog") {
+    if (event.target === dialog && id !== "intro-dialog" && id !== "interlude-dialog") {
       dialog.close();
     }
   });
 });
 
 document.querySelector("#intro-dialog").addEventListener("cancel", (event) => {
+  event.preventDefault();
+});
+elements.interludeDialog.addEventListener("cancel", (event) => {
   event.preventDefault();
 });
 elements.vnDialogue.addEventListener("click", (event) => {

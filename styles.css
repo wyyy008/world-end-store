@@ -2179,6 +2179,23 @@ dialog::backdrop {
   margin-top: 4px;
 }
 
+.interlude-dialog {
+  width: min(560px, calc(100vw - 32px));
+}
+
+.interlude-text {
+  margin: 14px 0 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.interlude-choices {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
 .title-help-button span {
   margin-left: 6px;
   color: var(--muted);

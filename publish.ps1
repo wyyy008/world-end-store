@@ -35,6 +35,20 @@ if (-not (Test-Path -LiteralPath $gh)) {
   $gh = $ghCommand.Source
 }
 
+$tokenPath = Join-Path $dest ".gh-token"
+if (-not $env:GH_TOKEN -and (Test-Path -LiteralPath $tokenPath)) {
+  $env:GH_TOKEN = (Get-Content -LiteralPath $tokenPath -Raw).Trim()
+}
+if (-not $env:GH_TOKEN) {
+  $tokenFromGh = (& $gh auth token 2>$null)
+  if ($tokenFromGh) {
+    $env:GH_TOKEN = $tokenFromGh.Trim()
+  }
+}
+if (-not $env:GH_TOKEN) {
+  throw "GitHub auth not found. Run: gh auth login"
+}
+
 $repo = "wyyy008/world-end-store"
 $branch = "main"
 $files = @()
@@ -46,31 +60,37 @@ Get-ChildItem -LiteralPath $destAssets -Recurse -File | ForEach-Object {
   $files += @{ path = $relative; source = $_.FullName }
 }
 
-$parentSha = (& $gh api "repos/$repo/git/ref/heads/$branch" --jq ".object.sha").Trim()
-if ($LASTEXITCODE -ne 0) { throw "Could not read the current GitHub branch." }
-$baseTree = (& $gh api "repos/$repo/git/commits/$parentSha" --jq ".tree.sha").Trim()
-if ($LASTEXITCODE -ne 0) { throw "Could not read the current GitHub commit." }
+$parentRaw = & $gh api "repos/$repo/git/ref/heads/$branch" --jq ".object.sha"
+if ($LASTEXITCODE -ne 0 -or -not $parentRaw) { throw "Could not read the current GitHub branch." }
+$parentSha = "$parentRaw".Trim()
+
+$treeRaw = & $gh api "repos/$repo/git/commits/$parentSha" --jq ".tree.sha"
+if ($LASTEXITCODE -ne 0 -or -not $treeRaw) { throw "Could not read the current GitHub commit." }
+$baseTree = "$treeRaw".Trim()
 
 $entries = @()
 foreach ($file in $files) {
   $encoded = [Convert]::ToBase64String([IO.File]::ReadAllBytes($file.source))
   $blobBody = @{ content = $encoded; encoding = "base64" } | ConvertTo-Json -Compress
-  $blobSha = ($blobBody | & $gh api --method POST "repos/$repo/git/blobs" --input - --jq ".sha").Trim()
-  if ($LASTEXITCODE -ne 0) { throw "Could not upload $($file.path)." }
+  $blobRaw = $blobBody | & $gh api --method POST "repos/$repo/git/blobs" --input - --jq ".sha"
+  if ($LASTEXITCODE -ne 0 -or -not $blobRaw) { throw "Could not upload $($file.path)." }
+  $blobSha = "$blobRaw".Trim()
   $entries += @{ path = $file.path; mode = "100644"; type = "blob"; sha = $blobSha }
 }
 
 $treeBody = @{ base_tree = $baseTree; tree = $entries } | ConvertTo-Json -Depth 6 -Compress
-$newTree = ($treeBody | & $gh api --method POST "repos/$repo/git/trees" --input - --jq ".sha").Trim()
-if ($LASTEXITCODE -ne 0) { throw "Could not create the new GitHub tree." }
+$newTreeRaw = $treeBody | & $gh api --method POST "repos/$repo/git/trees" --input - --jq ".sha"
+if ($LASTEXITCODE -ne 0 -or -not $newTreeRaw) { throw "Could not create the new GitHub tree." }
+$newTree = "$newTreeRaw".Trim()
 if ($newTree -eq $baseTree) {
   Write-Host "No changes to publish."
   return
 }
 
 $commitBody = @{ message = $Message; tree = $newTree; parents = @($parentSha) } | ConvertTo-Json -Depth 4 -Compress
-$newCommit = ($commitBody | & $gh api --method POST "repos/$repo/git/commits" --input - --jq ".sha").Trim()
-if ($LASTEXITCODE -ne 0) { throw "Could not create the GitHub commit." }
+$newCommitRaw = $commitBody | & $gh api --method POST "repos/$repo/git/commits" --input - --jq ".sha"
+if ($LASTEXITCODE -ne 0 -or -not $newCommitRaw) { throw "Could not create the GitHub commit." }
+$newCommit = "$newCommitRaw".Trim()
 
 $refBody = @{ sha = $newCommit; force = $false } | ConvertTo-Json -Compress
 $refBody | & $gh api --method PATCH "repos/$repo/git/refs/heads/$branch" --input - | Out-Null

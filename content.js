@@ -412,7 +412,7 @@ window.GAME_CONTENT = {
           place: "无眠车站",
           scope: "第 2 夜 · 无眠车站",
           title: "没有钟的车站",
-          subtitle: "每个人都说自己不困。六盏灯照着六件还能做的事。",
+          subtitle: "两个人同时站在柜台前，每个人都说自己不困。六盏灯照着六件还能做的事。",
           weather: "无风 · 夜班车不停",
           windowTitle: "无眠车站",
           shelf: ["umbrella", "coffee", "lunchbox", "candle", "salt"],
@@ -745,7 +745,7 @@ window.GAME_CONTENT = {
           place: "倒着走的夏天",
           scope: "第 2 夜 · 倒着走的夏天",
           title: "有人先说了再见",
-          subtitle: "门外是傍晚，阴影却倒向早晨。六盏灯照着六件还没发生的事。",
+          subtitle: "两个人同时站在门外，阴影却倒向早晨。六盏灯照着六件还没发生的事。",
           weather: "晴天之后下雨 · 影子向西",
           windowTitle: "倒着走的夏天",
           shelf: ["umbrella", "coffee", "lunchbox", "radio", "lighter", "glassBottle"],
@@ -1112,9 +1112,9 @@ window.GAME_CONTENT = {
         id: "nameless-road",
         number: 4,
         place: "无名公路",
-        scope: "第 4 夜 · 无名公路",
+        scope: "第 4 夜 · 无名公路 · 长夜",
         title: "没有路牌的那一段",
-        subtitle: "导航在这里失去声音。六件旧货和六件事，是店能给你的全部方向。",
+        subtitle: "导航在这里失去声音。这一夜会很长，六件旧货和六件事是店能给你的全部方向。",
         weather: "没有天空 · 车灯只照见前方",
         windowTitle: "无名公路",
         shelf: ["scarf", "slippers", "postcard", "lunchbox", "coffee", "salt"],
@@ -1122,6 +1122,28 @@ window.GAME_CONTENT = {
         clockStart: "02:10",
         closingTitle: "无名公路打烊前，留下什么？",
         closingIntro: "这里没有地址，留下什么，什么就会成为路标。",
+        interlude: {
+          title: "路边的第二盏灯",
+          text: "第一位客人离开后，公路边忽然亮起第二盏灯。它照着路肩上一只没有主人的箱子，也照着店里还没有说完的话。远处没有车声，只有灯丝在雨里轻轻响。你忽然意识到，这一夜还没有结束，只是暂时没有人在柜台前。",
+          choices: [
+            {
+              id: "roadside-light",
+              label: "把车灯转向路肩",
+              detail: "先看看没有名字的地方留下了什么",
+              flagsOn: ["roadsideLight"],
+              memory: "你把车灯转向路肩。箱子旁边有一串很浅的脚印，像有人刚刚离开。",
+              toast: "车灯照见了路肩上的脚印。"
+            },
+            {
+              id: "counter-light",
+              label: "让灯留在柜台上",
+              detail: "先照顾店里还没有说完的话",
+              flagsOn: ["counterLight"],
+              memory: "你没有把灯转开。柜台上的影子停了一会儿，像在等下一句话。",
+              toast: "柜台的灯继续亮着。"
+            }
+          ]
+        },
         cast: [
           {
             id: "traveler-1",
@@ -2726,6 +2748,9 @@ window.GAME_CONTENT = {
     brokenUmbrella: "你把断骨的伞留在门边。它撑不开，却替一个还没回来的人占着位置。",
     flower: "你把白花留在柜台上。没有地址的花，也在灯下多开了一晚。",
     catTrail: "你没有扫掉钟座下的盐粒。也许下一只没有影子的猫会沿着它回来。",
+    summerBottle: "你把装着夕阳的玻璃瓶留在柜台上。夏天在瓶口停了一小会儿。",
+    summerFlower: "你把最后一束花留在瓶里。花没有地址，却在灯下多开了一晚。",
+    summerScarf: "你把红围巾折好，留在柜台。夏天从围巾边上慢慢退了过去。",
     receipt: "今晚的收据被夹进记忆册，字迹已经开始变淡。",
     nothing: "你没有留下特别的东西。门上的灯一盏一盏暗了。",
     openParcel: "你拆开没有收件人的包裹，把里面的五页交给五个终于走到自己答案的人。",
