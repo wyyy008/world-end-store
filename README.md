@@ -23,3 +23,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\publish.ps1 -Message "更�
 发布脚本通过 GitHub API 直接提交，不依赖 `git push`；即使本机到 `github.com` 的 Git 端口不稳定也能发布。
 
 网址不会改变。玩家的浏览器存档也留在同一个域名下。
+
+## 安全
+
+本目录里的 `.gh-token` 只保存在你这台电脑上，已加入 `.gitignore`，并限制为当前 Windows 用户可读写。不要把整个 `world_end_store_pages` 文件夹发给别人；要分享游戏，只发公开网址：
+
+[https://wyyy008.github.io/world-end-store/](https://wyyy008.github.io/world-end-store/)
