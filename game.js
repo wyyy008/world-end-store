@@ -2408,9 +2408,10 @@ function renderCharacters(expandId) {
   }
   list.replaceChildren();
   const met = state.metCharacters || [];
+  const finalReveal = Boolean(state.finished && state.closingChoice === "openParcel");
 
   Object.entries(CONTENT.characterArcs).forEach(([id, arc]) => {
-    const unlocked = met.includes(id);
+    const unlocked = met.includes(id) || finalReveal;
     const card = document.createElement("article");
     card.className = `character-card${unlocked ? " is-unlocked" : " is-locked"}`;
     card.dataset.characterId = id;
@@ -2430,7 +2431,7 @@ function renderCharacters(expandId) {
       return;
     }
 
-    const letterUnlocked = Boolean(state.finished && state.closingChoice === "openParcel");
+    const letterUnlocked = finalReveal;
     card.innerHTML = `
       <details>
         <summary class="character-card-head">
