@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#edf1ed">
+    <title>世界尽头的便利店 · 第一夜</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <script src="content.js" defer></script>
+    <script src="audio.js" defer></script>
+    <script src="game.js" defer></script>
+  </head>
+  <body>
+    <section class="title-screen" id="title-screen" aria-labelledby="game-title">
+      <div class="title-panel">
+        <div class="title-main">
+          <div>
+            <h1 id="game-title"><span>世界尽头的</span><span>便利店</span></h1>
+            <p class="title-subtitle">没有收件人的包裹</p>
+            <p class="title-edition">免费试玩 · 八夜 · 约 20–35 分钟</p>
+            <p class="title-premise">在八夜内替一只没有地址的包裹找到去处。接待谁、留下什么，都会改变第一班车到站时的答案。</p>
+          </div>
+          <div class="title-actions">
+            <button class="title-action primary-button" id="new-game-button" type="button">
+              <span>新游戏</span>
+              <small id="new-game-meta">从第一夜开始</small>
+            </button>
+            <button class="title-action secondary-button" id="continue-game-button" type="button">
+              <span id="continue-game-label">继续游戏</span>
+              <small id="continue-game-meta">暂无存档</small>
+            </button>
+            <button class="text-button title-help-button" id="open-help" type="button">玩法说明</button>
+            <button class="text-button title-help-button" id="open-achievements" type="button">
+              成就
+              <span id="achievement-count">0 / 9</span>
+            </button>
+            <button class="text-button title-help-button" id="open-settings" type="button">设置</button>
+          </div>
+        </div>
+        <aside class="title-side" aria-label="首章路线">
+          <div class="title-package" aria-hidden="true">
+            <div class="title-package-box"><span>?</span></div>
+            <span class="title-package-thread"></span>
+          </div>
+          <div class="title-route-copy">
+            <strong>八夜，一只包裹</strong>
+            <p>在打烊前留下什么，第一班车就会把什么带到下一处。</p>
+          </div>
+          <ol class="title-route-list">
+            <li><span>雾港公交站</span><small>起点</small></li>
+            <li><span>无眠车站</span><small>第一条线索</small></li>
+            <li><span>倒着走的夏天</span><small>另一条线索</small></li>
+            <li><span>无名公路与隧道</span><small>路线汇合</small></li>
+            <li><span>第一班车</span><small>决定去处</small></li>
+          </ol>
+        </aside>
+      </div>
+    </section>
+
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="主菜单">
+        <a class="brand" id="brand-home" href="#" aria-label="返回游戏标题页">
+          <span class="brand-mark" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </span>
+          <span>
+            <strong>世界尽头</strong>
+            <small>便利店</small>
+          </span>
+        </a>
+
+        <nav class="side-nav" aria-label="游戏功能">
+          <button class="nav-item is-active" type="button" aria-current="page">
+            今夜营业
+          </button>
+          <button class="nav-item" id="open-memory" type="button">
+            记忆册
+            <span class="nav-count" id="memory-nav-count">0</span>
+          </button>
+          <button class="nav-item" id="open-characters" type="button">
+            人物
+            <span class="nav-count" id="character-nav-count">0 / 5</span>
+          </button>
+          <button class="nav-item" id="open-settings-nav" type="button">
+            设置
+          </button>
+          <button class="nav-item" id="route-nav" type="button" disabled>
+            <span id="route-nav-label">明日路线</span>
+            <span class="nav-note" id="route-nav-note">打烊后</span>
+          </button>
+        </nav>
+
+        <div class="side-place">
+          <strong id="side-night">第一夜 · 雾港公交站</strong>
+          <span id="side-night-detail">小雨，22:40，末班车晚点</span>
+        </div>
+
+        <button class="quiet-button side-reset" id="reset-side" type="button">重新营业</button>
+      </aside>
+
+      <div class="frame-main">
+        <header class="topbar">
+          <button class="mobile-menu-button" id="open-nav" type="button" aria-label="打开菜单">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="mobile-brand">
+            <span class="mini-mark" aria-hidden="true"></span>
+            世界尽头的便利店
+          </div>
+          <p class="topbar-scope" id="topbar-scope">第 1 夜 · 雾港公交站</p>
+          <div class="topbar-status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="topbar-status-text">正在营业</span>
+          </div>
+        </header>
+
+        <main class="sheet">
+          <div class="page-head">
+            <div>
+              <h1 id="page-title">今晚的便利店</h1>
+              <p id="page-subtitle">店里亮着六盏灯。先照顾谁，今晚就会记住谁。</p>
+            </div>
+            <button class="secondary-button" id="open-closing" type="button">准备打烊</button>
+          </div>
+
+          <section class="chapter-goal" aria-label="首章目标">
+            <span class="goal-label">首章目标</span>
+            <div class="goal-copy">
+              <strong>让没有收件人的包裹找到去处</strong>
+              <span id="goal-progress">距离第一班车还有 8 夜</span>
+            </div>
+            <span class="goal-route" id="goal-route">包裹还没有地址</span>
+          </section>
+
+          <section class="shift-strip" aria-label="今晚营业情况">
+            <div class="shift-cell shift-time-cell">
+              <span class="cell-label">还能做几件事</span>
+              <div class="time-readout">
+                <div class="time-lamps" id="time-lamps" aria-label="剩余六个营业时间格"></div>
+                <strong id="time-copy">6 件事</strong>
+              </div>
+            </div>
+            <div class="shift-cell">
+              <span class="cell-label">收银台</span>
+              <strong>¥<span id="cash-value">30</span></strong>
+              <small>现金会跟着店去下一站</small>
+            </div>
+            <div class="shift-cell">
+              <span class="cell-label">车票</span>
+              <strong><span id="ticket-value">7</span> 张</strong>
+              <small id="ticket-hint">还能再坐 7 次车</small>
+            </div>
+            <div class="shift-cell">
+              <span class="cell-label">记忆</span>
+              <strong><span id="memory-count">0</span> 件</strong>
+              <small>自动写进记忆册</small>
+            </div>
+          </section>
+
+          <div class="workspace">
+            <section class="panel shop-panel" aria-labelledby="shop-title">
+              <header class="panel-head">
+                <div>
+                  <h2 id="shop-title">货架与柜台</h2>
+                  <p>点商品看用途；卡片右下角可直接补货，柜台缺货时也能就地补齐。</p>
+                </div>
+                <span class="status-badge" id="shop-status">营业中</span>
+              </header>
+
+              <div class="shop-interior">
+                <div class="window-strip">
+                  <div>
+                    <span class="window-label">店外</span>
+                    <strong id="shop-place">雾港公交站</strong>
+                  </div>
+                  <span class="weather" id="shop-weather">小雨 · 末班车晚点</span>
+                </div>
+
+                <div class="scene-grid">
+                  <div class="shelf-zone">
+                    <div class="section-line">
+                      <h3>货架</h3>
+                      <span>6 个位置</span>
+                    </div>
+                    <div class="shelf-grid" id="shelf-grid"></div>
+                  </div>
+
+                  <div class="counter-zone">
+                    <div class="counter-top">
+                      <span>柜台</span>
+                      <span id="counter-clock">22:40</span>
+                    </div>
+                    <div class="customer-frame" id="customer-scene"></div>
+                    <div id="customer-actions" class="customer-actions"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <aside class="right-rail" aria-label="今晚事项">
+              <section class="rail-card tasks-card">
+                <header class="rail-head">
+                  <h2>小事与通行</h2>
+                  <span>每项 1 格</span>
+                </header>
+                <div class="task-list" id="task-list"></div>
+              </section>
+
+              <section class="rail-card memory-card">
+                <header class="rail-head">
+                  <h2>已经记住的事</h2>
+                  <button class="text-button" id="open-memory-secondary" type="button">打开记忆册</button>
+                </header>
+                <div id="memory-preview"></div>
+              </section>
+            </aside>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <dialog class="game-dialog intro-dialog prologue-dialog" id="intro-dialog" aria-labelledby="vn-speaker">
+      <div class="vn-shell">
+        <div class="vn-stage" id="vn-stage" data-scene="rain">
+          <div class="vn-rain" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="vn-window" aria-hidden="true">
+            <span>雾港公交站</span>
+          </div>
+          <div class="vn-shelves" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </div>
+          <div class="vn-counter" aria-hidden="true"></div>
+          <div class="vn-door" aria-hidden="true"></div>
+          <div class="vn-character" id="vn-character" hidden>
+            <span id="vn-character-initial">?</span>
+            <small id="vn-character-role">门外的声音</small>
+          </div>
+          <div class="vn-scene-label" id="vn-scene-label">雾港公交站 · 尚未营业</div>
+        </div>
+        <div class="vn-dialogue" id="vn-dialogue">
+          <div class="vn-dialogue-head">
+            <strong id="vn-speaker">旁白</strong>
+            <span id="vn-hint">点击或按空格继续</span>
+          </div>
+          <p class="vn-text" id="vn-text"></p>
+          <span class="vn-next" id="vn-next" hidden aria-hidden="true">▼</span>
+          <ul class="vn-tips" id="vn-tips" hidden></ul>
+          <div class="vn-choices" id="vn-choices" hidden></div>
+          <div class="vn-controls">
+            <button class="text-button" id="vn-history" type="button">历史</button>
+            <button class="text-button" id="vn-settings" type="button">设置</button>
+            <button class="text-button" id="vn-skip" type="button">跳过序章</button>
+            <button class="primary-button" id="start-shift" type="button" hidden>开门营业</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="game-dialog trade-dialog" id="trade-dialog" aria-labelledby="trade-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="trade-title">阿澄想要一把伞</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="trade-dialog" aria-label="关闭">×</button>
+      </div>
+      <div id="trade-body"></div>
+    </dialog>
+
+    <dialog class="game-dialog item-dialog" id="item-dialog" aria-labelledby="item-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="item-title">透明雨伞</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="item-dialog" aria-label="关闭">×</button>
+      </div>
+      <div id="item-body"></div>
+    </dialog>
+
+    <dialog class="game-dialog closing-dialog" id="closing-dialog" aria-labelledby="closing-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="closing-title">打烊前，今晚留下什么？</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="closing-dialog" aria-label="关闭">×</button>
+      </div>
+      <p class="dialog-intro" id="closing-intro">商品总会被卖掉，留下的东西才会跟着店去下一站。</p>
+      <div class="keepsake-list" id="keepsake-list"></div>
+    </dialog>
+
+    <dialog class="game-dialog summary-dialog" id="summary-dialog" aria-labelledby="summary-title">
+      <div id="summary-body"></div>
+    </dialog>
+
+    <dialog class="game-dialog memory-dialog" id="memory-dialog" aria-labelledby="memory-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="memory-title">记忆册</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="memory-dialog" aria-label="关闭">×</button>
+      </div>
+      <div id="memory-list"></div>
+      <p class="dialog-intro" id="memory-intro">像一张不肯退色的收据，只记下你亲眼见过的事。</p>
+    </dialog>
+
+    <dialog class="game-dialog nav-dialog" id="nav-dialog" aria-labelledby="nav-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="nav-title">世界尽头的便利店 · 第一夜</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="nav-dialog" aria-label="关闭">×</button>
+      </div>
+      <div class="mobile-nav-list">
+        <button class="mobile-nav-item is-active" type="button">今夜营业</button>
+        <button class="mobile-nav-item" id="mobile-memory" type="button">记忆册</button>
+        <button class="mobile-nav-item" id="mobile-characters" type="button">人物档案</button>
+        <button class="mobile-nav-item" id="mobile-settings" type="button">设置</button>
+        <button class="mobile-nav-item" id="mobile-route-nav" type="button" disabled>明日路线 · 打烊后</button>
+      </div>
+    </dialog>
+
+    <dialog class="game-dialog new-game-dialog" id="new-game-dialog" aria-labelledby="new-game-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="new-game-title">从第一夜重新开始？</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="new-game-dialog" aria-label="关闭">×</button>
+      </div>
+      <p class="dialog-intro">当前进度会被新游戏覆盖。已经记住的事情也会重新变成空白。</p>
+      <div class="dialog-choice-actions">
+        <button class="secondary-button" type="button" data-close="new-game-dialog">保留当前进度</button>
+        <button class="primary-button" id="confirm-new-game" type="button">开始新游戏</button>
+      </div>
+    </dialog>
+
+    <dialog class="game-dialog help-dialog" id="help-dialog" aria-labelledby="help-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="help-title">怎么玩</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="help-dialog" aria-label="关闭">×</button>
+      </div>
+      <div class="help-list">
+        <p><strong>目标</strong>在第八夜第一班车到站前，让没有收件人的包裹找到去处。</p>
+        <p><strong>时间</strong>每夜有六盏灯，也就是六件可以做的事。补货、整理和接待常客会消耗一格，查看商品与对话不耗时。</p>
+        <p><strong>顾客</strong>读他们做了什么、留下了什么，而不是刷好感度。</p>
+        <p><strong>打烊</strong>选择留下一件东西。它会跟着店进入下一夜。</p>
+        <p><strong>通行</strong>每夜都有通行条件。达成后打烊时会从特殊渠道得到一张车票；没有车票也能走，但店会被动漂移并损失 ¥5。</p>
+        <p><strong>小事</strong>每夜的小事是达成通行条件的一条路，也会在后面打开新的回应。</p>
+        <p><strong>结局</strong>最后一夜决定把包裹留在某个地方，或者带着它继续上路。</p>
+      </div>
+    </dialog>
+
+    <dialog class="game-dialog settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="settings-title">设置</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="settings-dialog" aria-label="关闭">×</button>
+      </div>
+      <p class="dialog-intro">声音会在第一次点击后开始播放。所有设置会自动保存在本机。</p>
+      <div class="settings-list">
+        <label class="setting-row" for="setting-master">
+          <span>
+            <strong>总音量</strong>
+            <small>所有声音的最终音量</small>
+          </span>
+          <input id="setting-master" type="range" min="0" max="100" step="1" value="80">
+          <output id="setting-master-value" for="setting-master">80%</output>
+        </label>
+        <label class="setting-row" for="setting-bgm">
+          <span>
+            <strong>音乐与氛围</strong>
+            <small>雨声、低频和缓慢的旋律</small>
+          </span>
+          <input id="setting-bgm" type="range" min="0" max="100" step="1" value="55">
+          <output id="setting-bgm-value" for="setting-bgm">55%</output>
+        </label>
+        <label class="setting-row" for="setting-sfx">
+          <span>
+            <strong>音效</strong>
+            <small>点击、翻页、硬币与门铃</small>
+          </span>
+          <input id="setting-sfx" type="range" min="0" max="100" step="1" value="70">
+          <output id="setting-sfx-value" for="setting-sfx">70%</output>
+        </label>
+        <label class="setting-row setting-row-toggle" for="setting-muted">
+          <span>
+            <strong>静音</strong>
+            <small>保留当前设置，暂时关闭所有声音</small>
+          </span>
+          <input id="setting-muted" type="checkbox">
+        </label>
+        <div class="setting-row setting-row-speed">
+          <span>
+            <strong>文字速度</strong>
+            <small>影响序章逐字出现的速度</small>
+          </span>
+          <div class="speed-options" role="group" aria-label="文字速度">
+            <button class="speed-option" type="button" data-text-speed="slow">慢</button>
+            <button class="speed-option is-active" type="button" data-text-speed="normal">标准</button>
+            <button class="speed-option" type="button" data-text-speed="fast">快</button>
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button class="secondary-button" id="setting-test-sound" type="button">试听音效</button>
+          <button class="primary-button" type="button" data-close="settings-dialog">完成</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="game-dialog achievement-dialog" id="achievement-dialog" aria-labelledby="achievement-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="achievement-title">成就</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="achievement-dialog" aria-label="关闭">×</button>
+      </div>
+      <p class="dialog-intro">一次选择、一条路线、一个结局，都会被留在这里。</p>
+      <div class="achievement-list" id="achievement-list"></div>
+    </dialog>
+
+    <dialog class="game-dialog character-dialog" id="character-dialog" aria-labelledby="character-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="character-title">人物档案</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="character-dialog" aria-label="关闭">×</button>
+      </div>
+      <p class="dialog-intro">接待过的人会留下完整前史。他们为什么在这里等、又为什么一直没有离开，都能在这里读到。</p>
+      <div class="character-list" id="character-list"></div>
+    </dialog>
+
+    <dialog class="game-dialog history-dialog" id="history-dialog" aria-labelledby="history-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="history-title">对话历史</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close="history-dialog" aria-label="关闭">×</button>
+      </div>
+      <div class="history-list" id="history-list"></div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
