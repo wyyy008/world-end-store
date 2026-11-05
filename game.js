@@ -144,6 +144,7 @@ let finaleIndex = 0;
 let finaleChoice = null;
 let finaleMode = "finale";
 let currentPastArc = null;
+let pastReturnDialogId = null;
 let finaleTimer;
 let finaleTypeComplete = false;
 let finaleCurrentText = "";
@@ -2597,6 +2598,17 @@ function startPastScene(arcId) {
   if (!pastUnlocked(arcId)) {
     return;
   }
+  const tradeDialog = document.querySelector("#trade-dialog");
+  pastReturnDialogId = elements.characterDialog.open
+    ? "character-dialog"
+    : tradeDialog?.open
+      ? "trade-dialog"
+      : null;
+  if (pastReturnDialogId === "character-dialog") {
+    closeDialog(elements.characterDialog);
+  } else if (pastReturnDialogId === "trade-dialog") {
+    closeDialog(tradeDialog);
+  }
   currentPastArc = arcId;
   finaleMode = "past";
   finaleSteps = buildPastSteps(arcId);
@@ -2799,6 +2811,7 @@ function finishFinale() {
   if (finaleMode === "past") {
     const pastArc = currentPastArc;
     const arc = pastArc ? CONTENT.characterArcs[pastArc] : null;
+    const returnDialogId = pastReturnDialogId;
     state.pastSeen ||= [];
     if (pastArc && !state.pastSeen.includes(pastArc)) {
       state.pastSeen.push(pastArc);
@@ -2808,18 +2821,24 @@ function finishFinale() {
       : false;
     saveState();
     render();
-    if (elements.characterDialog.open) {
+    if (returnDialogId === "character-dialog") {
       renderCharacters(pastArc);
     }
     const openTrade = document.querySelector("#trade-dialog");
-    const tradePastButton = openTrade?.open
+    const tradePastButton = returnDialogId === "trade-dialog"
       ? openTrade.querySelector("[data-guest-past]")
       : null;
     if (tradePastButton && arc) {
       tradePastButton.textContent = `重看${arc.name}的过去`;
       tradePastButton.dataset.pastDirect = "true";
     }
+    if (returnDialogId === "trade-dialog" && openTrade && !openTrade.open) {
+      openTrade.showModal();
+    } else if (returnDialogId === "character-dialog" && !elements.characterDialog.open) {
+      elements.characterDialog.showModal();
+    }
     currentPastArc = null;
+    pastReturnDialogId = null;
     playSfx("page");
     if (arc && !pastAchievement) {
       showToast(`${arc.name}的过去已经记进人物档案。`);
