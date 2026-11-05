@@ -22,7 +22,7 @@ Copy-Item -Path (Join-Path $sourceAssets "*") -Destination $destAssets -Recurse 
 # Bust browser caches for the app's local CSS/JS on every publish.
 $indexPath = Join-Path $dest "index.html"
 $cacheStamp = Get-Date -Format "yyyyMMddHHmmss"
-$indexHtml = Get-Content -LiteralPath $indexPath -Raw
+$indexHtml = Get-Content -LiteralPath $indexPath -Raw -Encoding UTF8
 $indexHtml = [regex]::Replace(
   $indexHtml,
   '(styles\.css|content\.js|audio\.js|game\.js)(\?v=[^"]*)?',
