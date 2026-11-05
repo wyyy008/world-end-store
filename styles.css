@@ -2318,6 +2318,82 @@ dialog::backdrop {
   padding-right: 4px;
 }
 
+.character-web {
+  margin-top: 14px;
+  border-left: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 12px 14px;
+}
+
+.character-web strong {
+  display: block;
+  color: var(--text);
+  font-family: var(--display-font);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.character-web p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.character-web p span {
+  color: var(--accent);
+}
+
+.character-past-entry {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 10px 12px;
+}
+
+.character-past-entry p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.character-past-button {
+  min-height: 34px;
+  font-size: 12px;
+}
+
+.character-past-locked {
+  margin: 0 !important;
+}
+
+.character-past-condition {
+  display: block;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.character-connection {
+  border-left: 2px solid var(--accent);
+}
+
+.character-relationship-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.character-player-link {
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.trade-past-button {
+  text-align: left;
+}
+
 .character-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-control);
@@ -3439,8 +3515,7 @@ body.finale-active .app-shell {
     padding: 9px 12px;
   }
 
-  .goal-label,
-  .goal-route {
+  .goal-label {
     display: none;
   }
 
@@ -3448,6 +3523,19 @@ body.finale-active .app-shell {
     display: flex;
     flex-wrap: wrap;
     gap: 2px 8px;
+  }
+
+  .goal-copy span {
+    width: 100%;
+  }
+
+  .goal-route {
+    display: block;
+    width: 100%;
+    max-width: none;
+    border-top: 1px solid var(--rule);
+    padding-top: 6px;
+    text-align: left;
   }
 
   .shift-strip {
@@ -3657,6 +3745,10 @@ body.finale-active .app-shell {
     padding: 4px 12px 12px;
   }
 
+  .character-relationship-grid {
+    grid-template-columns: 1fr;
+  }
+
   .setting-row {
     grid-template-columns: 1fr;
   }
@@ -3734,6 +3826,60 @@ body.finale-active .app-shell {
   .customer-actions {
     padding-block: 9px 12px;
   }
+}
+
+@media (max-width: 640px) {
+  .chapter-goal {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chapter-goal .goal-copy,
+  .chapter-goal .goal-route {
+    grid-column: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .chapter-goal .goal-route {
+    display: block;
+  }
+}
+
+.brand-mark,
+.mini-mark {
+  overflow: hidden;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  padding: 0;
+}
+
+.brand-mark img,
+.mini-mark img,
+.title-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.brand-mark img,
+.mini-mark img {
+  object-fit: cover;
+}
+
+.title-window {
+  aspect-ratio: 1;
+  border-color: #403528;
+  border-radius: 50%;
+  background: #0c0b09;
+}
+
+.title-window::after {
+  display: none;
+}
+
+.title-logo {
+  object-fit: contain;
 }
 
 @media (max-width: 640px), (max-height: 780px) and (min-width: 1100px) {
@@ -4360,7 +4506,7 @@ body {
 
 .goal-label {
   color: var(--accent);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .goal-copy strong {
@@ -4373,7 +4519,13 @@ body {
 .goal-copy span,
 .goal-route {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
+}
+
+.goal-route {
+  max-width: 340px;
+  font-size: 13px;
+  text-align: right;
 }
 
 .shift-strip {
@@ -5621,6 +5773,39 @@ body {
   .window-strip {
     min-height: 42px;
     padding: 7px 14px;
+  }
+}
+
+body.title-active .app-shell,
+body.intro-active .app-shell,
+body.finale-active .app-shell {
+  display: none;
+}
+
+.title-window {
+  aspect-ratio: 1;
+}
+
+@media (max-width: 640px) {
+  body.title-active {
+    overflow: hidden;
+  }
+
+  .title-screen {
+    overflow-y: auto;
+  }
+
+  .title-panel {
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .title-side {
+    flex: none;
+  }
+
+  .title-window {
+    height: auto;
   }
 }
 

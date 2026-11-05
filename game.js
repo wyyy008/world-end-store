@@ -12,6 +12,107 @@ const SHIFT_LENGTH = CONTENT.shiftLength;
 const products = CONTENT.products;
 const fallbackShelf = ["umbrella", "coffee", "lunchbox"];
 const emptyStock = Object.fromEntries(Object.keys(products).map((key) => [key, 0]));
+const PAST_UNLOCK_RULES = {
+  acheng: {
+    flags: [
+      "doorUmbrella",
+      "oldPhoto",
+      "achengLetGo",
+      "achengRoad",
+      "achengForward",
+      "achengLetter",
+      "achengOldUmbrella",
+      "achengSummerScarf",
+      "achengSummerPhoto",
+      "achengSummerRest",
+      "achengClosure",
+      "achengStillWaiting"
+    ],
+    hint: "替阿澄留下伞、收下旧照片，或在无名公路听她说完。",
+    done: "你已经替阿澄留住过一个位置。"
+  },
+  shen: {
+    flags: [
+      "unopenedCoffee",
+      "shenReunion",
+      "shenClosed",
+      "blankSign",
+      "shenOffDuty",
+      "shenHasTicket",
+      "shenSits",
+      "shenClosedLoop",
+      "shenTicketLit",
+      "shenPostcard",
+      "shenSecondCoffee",
+      "shenDrives",
+      "shenBadgeKept",
+      "shenStillWaiting"
+    ],
+    hint: "把沈伯的第二罐咖啡留在柜台，或陪他等完一班车。",
+    done: "你已经替沈伯留住了第二罐咖啡的位置。"
+  },
+  clerk: {
+    flags: [
+      "wageCoin",
+      "shelfTidy",
+      "clerkLunchbox",
+      "clerkNote",
+      "clerkRested",
+      "candleRoad",
+      "saltRoad",
+      "clerkRoadRest",
+      "clerkPayslip",
+      "clerkTunnel",
+      "clerkSlept",
+      "clerkBadge",
+      "clerkOffDuty",
+      "clerkLeaves",
+      "clerkClosure",
+      "clerkNamed",
+      "clerkStillWorking"
+    ],
+    hint: "别只完成一笔交易。收下 0217 的工资币、字条或工牌，或让她真正休息一次。",
+    done: "你看见过编号 0217 背后的那个人。"
+  },
+  xiaoman: {
+    flags: [
+      "sunnyPromise",
+      "honestRain",
+      "xiaomanWarmStart",
+      "warmMeal",
+      "tomorrowAccepted",
+      "xiaomanSawSun",
+      "xiaomanRadio",
+      "sunnyChannel",
+      "quietRadio",
+      "xiaomanWarmFinal",
+      "lastWeather",
+      "summerBottle",
+      "xiaomanSummerSix",
+      "summerAccepted",
+      "xiaomanClosure",
+      "xiaomanAte",
+      "xiaomanToday",
+      "xiaomanStillWaiting"
+    ],
+    hint: "认真回答小满一次天气，或先问她今天有没有吃饭。",
+    done: "你已经陪小满把今天过完了一次。"
+  },
+  traveler: {
+    flags: [
+      "travelerPostcard",
+      "travelerOwesAddress",
+      "travelerVoice",
+      "travelerBottleGift",
+      "travelerFinal",
+      "travelerClosure",
+      "parcelNamed",
+      "parcelAddress"
+    ],
+    hint: "买下或收下无名旅人的明信片，或让他听见瓶子里那句“我到了”。",
+    done: "你已经替无名旅人留下过一个收件人位置。"
+  }
+};
 const dialogIds = [
   "intro-dialog",
   "finale-dialog",
@@ -42,6 +143,7 @@ let finaleSteps = [];
 let finaleIndex = 0;
 let finaleChoice = null;
 let finaleMode = "finale";
+let currentPastArc = null;
 let finaleTimer;
 let finaleTypeComplete = false;
 let finaleCurrentText = "";
@@ -159,6 +261,7 @@ function createInitialState() {
     interludeReturnStage: null,
     interludesSeen: [],
     openedNights: [],
+    pastSeen: [],
     skippedGuest: null,
     skippedGuests: [],
     closingChoice: null,
@@ -205,6 +308,7 @@ function loadState() {
       saved.interludeReturnStage ??= null;
       saved.interludesSeen ||= [];
       saved.openedNights ||= [];
+      saved.pastSeen ||= [];
       if (saved.stage === "interlude") {
         saved.stage = saved.interludeReturnStage || "end";
         saved.interludeReturnStage = null;
@@ -647,6 +751,50 @@ function ticketAwardedForNight(number) {
   return (state.awardedTicketNights || []).includes(number);
 }
 
+function storyObjective(night = currentNight()) {
+  const routeId = currentRoute()?.id;
+  if (night.number === 1) {
+    if (!state.served["acheng-1"]) {
+      return "先接待阿澄，让她的伞留在门边";
+    }
+    if (!state.served["shen-1"]) {
+      return "再接待沈伯，看看他为什么总买两罐咖啡";
+    }
+    return "把伞或第二罐咖啡留到打烊，去下一站";
+  }
+  if (night.number === 2) {
+    const pair = currentNight().cast.filter((guest) => guest.mode !== "quick").slice(0, 2);
+    const servedCount = pair.filter((guest) => state.served[guest.id]).length;
+    if (servedCount === 0) {
+      return "两个人同时在场，先接谁，另一个会记住";
+    }
+    if (servedCount === 1) {
+      const waitingGuest = pair.find((guest) => !state.served[guest.id]);
+      return `再听${waitingGuest?.name || "另一个人"}说完，TA会记得你刚才先接了谁`;
+    }
+    return "两个人的话已经在柜台碰上，完成今晚上车条件";
+  }
+  if (night.number === 3) {
+    return "让包裹或一个人的话留在柜台上";
+  }
+  if (night.number === 4) {
+    return "在无名公路上留下一个方向";
+  }
+  if (night.number === 5) {
+    return "让售货机吐出一样能带走的东西";
+  }
+  if (night.number === 6) {
+    return routeId === "summer" ? "让夏天停在最后一个下午" : "让停摆的钟再走一分钟";
+  }
+  if (night.number === 7) {
+    return "让柜台的灯照到门外";
+  }
+  if (!state.flags.parcelOnCounter) {
+    return "先把包裹放上柜台，再逐一听完五个人的最后选择";
+  }
+  return "听完五个人的最后选择，再决定包裹的去处";
+}
+
 function awardPassTicket() {
   const night = currentNight();
   if (night.number === 8) {
@@ -702,6 +850,9 @@ function counterGuests() {
 }
 
 function guestLine(guest) {
+  if (guest.name === "沈伯" && state.flags.doorUmbrella) {
+    return "他把两罐咖啡放好，又看了一眼门边那把透明雨伞。“也有人在等啊。”";
+  }
   const pair = counterPair();
   const partnerServed = pair.some((partner) => partner.id !== guest.id && state.served[partner.id]);
   return partnerServed && guest.waitedLine ? guest.waitedLine : guest.line;
@@ -823,15 +974,13 @@ function renderShell() {
   elements.shopWeather.textContent = night.weather;
   elements.closingTitle.textContent = night.closingTitle;
   elements.closingIntro.textContent = night.closingIntro;
-  const resolvedCount = resolvedCharacterArcs().length;
+  const pastCount = (state.pastSeen || []).length;
   elements.goalProgress.textContent = night.number === 8
-    ? `第一班车今夜到站 · 已经记住 ${resolvedCount}/5 个人`
-    : `离第一班车还有 ${8 - night.number} 夜 · 已经记住 ${resolvedCount}/5 个人`;
+    ? `第一班车今夜到站 · 过去 ${pastCount}/5`
+    : `离第一班车还有 ${8 - night.number} 夜 · 过去 ${pastCount}/5`;
   elements.goalRoute.textContent = state.finished
     ? "包裹已经找到去处"
-    : route
-      ? `当前路线：${route.name}`
-      : "包裹还没有地址";
+    : `这一夜：${storyObjective(night)}`;
 
   if (state.finished) {
     elements.routeNavLabel.textContent = "首章终点";
@@ -1525,20 +1674,18 @@ function renderPurchaseResult(guest, amount, option) {
   const quote = guest.quote[quoteKey] || guest.quote[option === "gift" ? "gift" : "paid"];
   const nextGuest = currentNight().cast.find((item) => item.id === state.stage);
   const continueLabel = nextGuest ? "继续营业 · 下一位" : "回店里收尾";
+  const pastButton = guestPastAction(guest);
   result.innerHTML = `
     <div class="trade-result">
       <p>${resultText}</p>
       <blockquote>${quote}</blockquote>
       <div class="trade-result-actions">
-        ${characterArcIdForName(guest.name) ? `<button class="secondary-button" type="button" id="trade-character">人物前史</button>` : ""}
+        ${pastButton}
         <button class="primary-button" type="button" id="trade-continue">${continueLabel}</button>
       </div>
     </div>
   `;
-  const characterButton = document.querySelector("#trade-character");
-  if (characterButton) {
-    characterButton.addEventListener("click", () => openCharacterDialog(characterArcIdForName(guest.name)));
-  }
+  bindGuestPastAction(result.querySelector("[data-guest-past]"));
   document.querySelector("#trade-continue").addEventListener("click", () => {
     closeDialog(document.querySelector("#trade-dialog"));
     if (state.flags.pendingInterlude) {
@@ -1721,20 +1868,18 @@ function renderSpecialResult(guest, choice) {
   const memory = choice.effect?.memory || `${guest.name}离开了柜台。`;
   const nextGuest = currentNight().cast.find((item) => item.id === state.stage);
   const continueLabel = nextGuest ? "继续营业 · 下一位" : "回店里收尾";
+  const pastButton = guestPastAction(guest);
   result.innerHTML = `
     <div class="trade-result">
       <p>${memory}</p>
       ${choice.quote ? `<blockquote>${choice.quote}</blockquote>` : ""}
       <div class="trade-result-actions">
-        ${characterArcIdForName(guest.name) ? `<button class="secondary-button" type="button" id="trade-character">人物前史</button>` : ""}
+        ${pastButton}
         <button class="primary-button" type="button" id="trade-continue">${continueLabel}</button>
       </div>
     </div>
   `;
-  const characterButton = document.querySelector("#trade-character");
-  if (characterButton) {
-    characterButton.addEventListener("click", () => openCharacterDialog(characterArcIdForName(guest.name)));
-  }
+  bindGuestPastAction(result.querySelector("[data-guest-past]"));
   document.querySelector("#trade-continue").addEventListener("click", () => {
     closeDialog(document.querySelector("#trade-dialog"));
     if (state.flags.pendingInterlude) {
@@ -2308,7 +2453,153 @@ function startNightOpening() {
     return;
   }
   finaleMode = "night-open";
+  currentPastArc = null;
   finaleSteps = buildNightOpeningSteps();
+  finaleIndex = 0;
+  document.body.classList.add("finale-active");
+  if (!elements.finaleDialog.open) {
+    elements.finaleDialog.showModal();
+  }
+  showFinaleStep();
+}
+
+function pastUnlocked(arcId) {
+  if (!arcId) {
+    return false;
+  }
+  if ((state.pastSeen || []).includes(arcId)) {
+    return true;
+  }
+  const rule = PAST_UNLOCK_RULES[arcId];
+  return Boolean(rule && hasAnyFlag(rule.flags));
+}
+
+function pastHint(arcId) {
+  return PAST_UNLOCK_RULES[arcId]?.hint || "先在柜台前为这个人做一件会被记住的事。";
+}
+
+function pastUnlockNote(arcId) {
+  return PAST_UNLOCK_RULES[arcId]?.done || "这段过去已经可以进入。";
+}
+
+function playerConnectionForArc(arcId, arc) {
+  if (pastUnlocked(arcId) || (state.pastSeen || []).includes(arcId)) {
+    return arc.toPlayer || "你在这间店里替 TA 做过一件会被记住的事。";
+  }
+  return "你还没有在柜台前做出能让 TA 记住你的那件事。";
+}
+
+function guestPastAction(guest) {
+  const arcId = characterArcIdForName(guest.name);
+  if (!arcId) {
+    return "";
+  }
+  const unlocked = pastUnlocked(arcId);
+  const seen = (state.pastSeen || []).includes(arcId);
+  const label = unlocked
+    ? seen
+      ? `重看${guest.name}的过去`
+      : `进入${guest.name}的过去`
+    : "查看过去解锁条件";
+  return `<button class="secondary-button trade-past-button" type="button" data-guest-past="${arcId}" data-past-direct="${unlocked ? "true" : "false"}">${label}</button>`;
+}
+
+function bindGuestPastAction(button) {
+  if (!button) {
+    return;
+  }
+  button.addEventListener("click", () => {
+    const arcId = button.dataset.guestPast;
+    if (button.dataset.pastDirect === "true") {
+      startPastScene(arcId);
+      return;
+    }
+    openCharacterDialog(arcId);
+  });
+}
+
+function buildPastSteps(arcId) {
+  const arc = CONTENT.characterArcs[arcId];
+  const sceneByArc = {
+    acheng: "counter",
+    shen: "shen",
+    clerk: "clerk",
+    xiaoman: "xiaoman",
+    traveler: "traveler"
+  };
+  const scene = sceneByArc[arcId] || "counter";
+  const steps = [
+    {
+      speaker: "旁白",
+      text: `这是${arc.name}没有说出口的过去。`,
+      scene: "rain",
+      sceneLabel: `过去 · ${arc.name}`
+    },
+    {
+      speaker: arc.name,
+      text: arc.summary,
+      character: arc.initial,
+      portrait: arcId,
+      role: arc.role,
+      scene,
+      sceneLabel: `过去 · ${arc.name}`
+    }
+  ];
+
+  (arc.past || []).forEach((paragraph) => {
+    splitVnLines(paragraph).forEach((line) => {
+      steps.push({
+        speaker: "过去",
+        text: line,
+        character: arc.initial,
+        portrait: arcId,
+        role: arc.name,
+        scene,
+        sceneLabel: `过去 · ${arc.name}`
+      });
+    });
+  });
+
+  (arc.pastQuotes || []).forEach((quote) => {
+    steps.push({
+      speaker: arc.name,
+      text: quote,
+      character: arc.initial,
+      portrait: arcId,
+      role: arc.role,
+      scene,
+      sceneLabel: `过去 · ${arc.name}`
+    });
+  });
+
+  if (arc.toPlayer) {
+    steps.push({
+      speaker: arc.name,
+      text: arc.toPlayer,
+      character: arc.initial,
+      portrait: arcId,
+      role: arc.role,
+      scene,
+      sceneLabel: `过去 · ${arc.name}`
+    });
+  }
+
+  steps.push({
+    speaker: "旁白",
+    text: "你回到柜台。门外还有人在等。",
+    scene: "counter",
+    sceneLabel: "回到现在"
+  });
+  return steps;
+}
+
+function startPastScene(arcId) {
+  if (!pastUnlocked(arcId)) {
+    return;
+  }
+  currentPastArc = arcId;
+  finaleMode = "past";
+  finaleSteps = buildPastSteps(arcId);
   finaleIndex = 0;
   document.body.classList.add("finale-active");
   if (!elements.finaleDialog.open) {
@@ -2387,6 +2678,7 @@ function buildFinaleSteps(choice) {
 
 function startFinale(choice) {
   finaleMode = "finale";
+  currentPastArc = null;
   finaleChoice = choice;
   finaleSteps = buildFinaleSteps(choice);
   finaleIndex = 0;
@@ -2419,7 +2711,7 @@ function showFinaleStep() {
   elements.finaleNext.hidden = true;
   elements.finaleHint.textContent = "点击或按空格继续";
   elements.finaleContinue.textContent = finaleIndex >= finaleSteps.length - 1
-    ? (finaleMode === "night-open" ? "开门营业" : "查看收据与结局")
+    ? (finaleMode === "night-open" ? "开门营业" : finaleMode === "past" ? "回到柜台" : "查看收据与结局")
     : "继续";
   logVnLine(step.speaker, finaleCurrentText, step.sceneLabel || "终章");
   typeFinaleText(finaleCurrentText);
@@ -2467,7 +2759,7 @@ function completeFinaleText() {
   finaleTypeComplete = true;
   elements.finaleNext.hidden = false;
   elements.finaleHint.textContent = finaleIndex >= finaleSteps.length - 1
-    ? (finaleMode === "night-open" ? "准备好后开门" : "准备好后结束终章")
+    ? (finaleMode === "night-open" ? "准备好后开门" : finaleMode === "past" ? "准备好后回到柜台" : "准备好后结束终章")
     : "点击或按空格继续";
 }
 
@@ -2502,6 +2794,36 @@ function finishFinale() {
     render();
     playSfx("door");
     elements.customerActions.querySelector("button")?.focus({ preventScroll: true });
+    return;
+  }
+  if (finaleMode === "past") {
+    const pastArc = currentPastArc;
+    const arc = pastArc ? CONTENT.characterArcs[pastArc] : null;
+    state.pastSeen ||= [];
+    if (pastArc && !state.pastSeen.includes(pastArc)) {
+      state.pastSeen.push(pastArc);
+    }
+    const pastAchievement = state.pastSeen.length === 5
+      ? unlockAchievement("all-pasts")
+      : false;
+    saveState();
+    render();
+    if (elements.characterDialog.open) {
+      renderCharacters(pastArc);
+    }
+    const openTrade = document.querySelector("#trade-dialog");
+    const tradePastButton = openTrade?.open
+      ? openTrade.querySelector("[data-guest-past]")
+      : null;
+    if (tradePastButton && arc) {
+      tradePastButton.textContent = `重看${arc.name}的过去`;
+      tradePastButton.dataset.pastDirect = "true";
+    }
+    currentPastArc = null;
+    playSfx("page");
+    if (arc && !pastAchievement) {
+      showToast(`${arc.name}的过去已经记进人物档案。`);
+    }
     return;
   }
   showSummary();
@@ -3087,6 +3409,8 @@ function renderCharacters(expandId) {
     }
 
     const letterUnlocked = finalReveal;
+    const canEnterPast = pastUnlocked(id);
+    const seenPast = (state.pastSeen || []).includes(id);
     card.innerHTML = `
       <details>
         <summary class="character-card-head">
@@ -3100,7 +3424,13 @@ function renderCharacters(expandId) {
         <div class="character-body">
           <p class="character-summary-line">${arc.summary || ""}</p>
           ${arc.innerVoice ? `<blockquote class="character-self-voice">${arc.innerVoice}</blockquote>` : ""}
-          ${(arc.past || []).map((paragraph) => `<p>${paragraph}</p>`).join("")}
+          <div class="character-past-entry">
+            ${canEnterPast
+              ? `<button class="secondary-button character-past-button" type="button" data-character-past="${id}">${seenPast ? "再看一次过去" : "进入过去"}</button>
+                 <p>${seenPast ? "这段过去已经记进记忆册。" : pastUnlockNote(id)}</p>`
+              : `<strong class="character-past-condition">进入条件</strong>
+                 <p class="character-past-locked">${pastHint(id)}</p>`}
+          </div>
           <div class="character-note">
             <strong>在等什么</strong>
             <p>${arc.waiting || ""}</p>
@@ -3112,6 +3442,20 @@ function renderCharacters(expandId) {
           <div class="character-note">
             <strong>说话方式</strong>
             <p>${arc.voice || ""}</p>
+          </div>
+          <div class="character-relationship-grid">
+            <div class="character-note character-connection">
+              <strong>TA 和谁有关</strong>
+              <p>${arc.connection || ""}</p>
+            </div>
+            <div class="character-note character-player-link">
+              <strong>你和 TA</strong>
+              <p>${playerConnectionForArc(id, arc)}</p>
+            </div>
+          </div>
+          <div class="character-note">
+            <strong>性格与动作</strong>
+            <p>${arc.personality || ""}</p>
           </div>
           ${letterUnlocked ? `
             <blockquote class="character-letter">
@@ -3130,6 +3474,9 @@ function renderCharacters(expandId) {
     if (id === expandId) {
       card.querySelector("details").open = true;
     }
+    card.querySelector("[data-character-past]")?.addEventListener("click", () => {
+      startPastScene(id);
+    });
     list.append(card);
   });
 }

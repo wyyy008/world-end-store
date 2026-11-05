@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0c0b09">
     <title>世界尽头的便利店 · 第一夜</title>
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="assets/logo-128.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/logo-256.png">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=20261105105334">
-    <script src="content.js?v=20261105105334" defer></script>
-    <script src="audio.js?v=20261105105334" defer></script>
-    <script src="game.js?v=20261105105334" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261105233249">
+    <script src="content.js?v=20261105233249" defer></script>
+    <script src="audio.js?v=20261105233249" defer></script>
+    <script src="game.js?v=20261105233249" defer></script>
   </head>
   <body>
     <svg class="portrait-sprite" aria-hidden="true" focusable="false">
@@ -58,7 +59,7 @@
             <h1 id="game-title"><span>世界尽头的</span><span>便利店</span></h1>
             <p class="title-subtitle">没有收件人的包裹</p>
             <p class="title-edition">免费试玩 · 八夜 · 约 25–40 分钟</p>
-            <p class="title-premise">包裹里有五封没有送出的信。五个等同一班车的人，会在八夜内先后走进店里。接待谁、留下什么，都会改变第一班车到站时的答案。</p>
+            <p class="title-premise">包裹里有五封没有送出的信。五个人被同一间店和同一班车连在一起。完成他们各自的关键选择，便能走进他们没说完的过去；接待谁、留下什么，都会改变第一班车到站时的答案。</p>
             <div class="title-ticket" aria-hidden="true">
               <span class="title-ticket-stub">雾港 · 末班车</span>
               <strong>第八夜 · 第一班车</strong>
@@ -77,7 +78,7 @@
             <button class="text-button title-help-button" id="open-help" type="button">玩法说明</button>
             <button class="text-button title-help-button" id="open-achievements" type="button">
               成就
-              <span id="achievement-count">0 / 9</span>
+              <span id="achievement-count">0 / 10</span>
             </button>
             <button class="text-button title-help-button" id="open-settings" type="button">设置</button>
           </div>
@@ -85,11 +86,7 @@
         <aside class="title-side" aria-label="夜里的店">
           <div class="title-street" aria-hidden="true">
             <div class="title-window">
-              <span class="title-window-sign">营业中</span>
-              <span class="title-window-lamp"></span>
-              <span class="title-window-counter"></span>
-              <span class="title-window-parcel">?</span>
-              <span class="title-window-rain"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <img class="title-logo" src="assets/logo.jpg" alt="雨夜中亮着灯的便利店，门外放着一只没有署名的包裹">
             </div>
             <div class="title-timetable" aria-hidden="true">
               <span>末班车 · 23:40</span>
@@ -109,7 +106,7 @@
       <aside class="sidebar" aria-label="主菜单">
         <a class="brand" id="brand-home" href="#" aria-label="返回游戏标题页">
           <span class="brand-mark" aria-hidden="true">
-            <i></i><i></i><i></i><i></i>
+            <img src="assets/logo-128.png" alt="">
           </span>
           <span>
             <strong>世界尽头</strong>
@@ -152,7 +149,7 @@
             <span></span><span></span><span></span>
           </button>
           <div class="mobile-brand">
-            <span class="mini-mark" aria-hidden="true"></span>
+            <span class="mini-mark" aria-hidden="true"><img src="assets/logo-128.png" alt=""></span>
             世界尽头的便利店
           </div>
           <p class="topbar-scope" id="topbar-scope">第 1 夜 · 雾港公交站</p>
@@ -172,7 +169,7 @@
           </div>
 
           <section class="chapter-goal" aria-label="首章目标">
-            <span class="goal-label">包裹的去处</span>
+            <span class="goal-label">首章主线</span>
             <div class="goal-copy">
               <strong>把五封没有送出的信送到五个人手里</strong>
               <span id="goal-progress">距离第一班车还有 8 夜</span>
@@ -442,13 +439,15 @@
         <button class="dialog-close" type="button" data-close="help-dialog" aria-label="关闭">×</button>
       </div>
       <div class="help-list">
-        <p><strong>目标</strong>在第八夜第一班车到站前，让没有收件人的包裹找到去处。</p>
+        <p><strong>主线</strong>在第八夜第一班车到站前，把五封没有送出的信送到五个人手里，再决定没有收件人的包裹去哪里。</p>
+        <p><strong>今晚</strong>首章目标下方会直接写出这一夜的可执行目标。完成上车条件，旧票机才会给你车票。</p>
+        <p><strong>过去</strong>满足角色各自的关键条件后，柜台结果或人物档案里会出现“进入过去”。每看一段，首章进度会增加 1/5。</p>
         <p><strong>时间</strong>每夜有六盏灯，也就是六件可以做的事。补货、整理和接待常客会消耗一格，查看商品与对话不耗时。</p>
         <p><strong>顾客</strong>读他们做了什么、留下了什么，而不是刷好感度。</p>
         <p><strong>打烊</strong>选择留下一件东西。它会跟着店进入下一夜。</p>
         <p><strong>通行</strong>每夜都有通行条件。达成后打烊时会从特殊渠道得到一张车票；没有车票也能走，但店会被动漂移并损失 ¥5。</p>
         <p><strong>小事</strong>每夜的小事是达成通行条件的一条路，也会在后面打开新的回应。</p>
-        <p><strong>结局</strong>最后一夜决定把包裹留在某个地方，或者带着它继续上路。</p>
+        <p><strong>结局</strong>最后一夜先听完五个人各自的去向，再决定把包裹拆开、封存，或带着它继续上路。</p>
       </div>
     </dialog>
 
@@ -528,7 +527,12 @@
         </div>
         <button class="dialog-close" type="button" data-close="character-dialog" aria-label="关闭">×</button>
       </div>
-      <p class="dialog-intro">接待过的人会留下完整前史。他们为什么在这里等、又为什么一直没有离开，都能在这里读到。</p>
+      <p class="dialog-intro">先接待一个人，再为 TA 做一件会被记住的事。条件满足后，才能进入 TA 的过去；每段过去都会补上 TA 与其他人、以及 TA 与你的关系。</p>
+      <div class="character-web">
+        <strong>他们不是五条独立的故事</strong>
+        <p>阿澄和沈伯都在替没有回来的人留位置；0217 和小满都在等自己被看见；无名旅人把五封信带到同一间店。</p>
+        <p><span>你</span>不记得自己的过去，却是他们最后的地址。</p>
+      </div>
       <div class="character-list" id="character-list"></div>
     </dialog>
 
