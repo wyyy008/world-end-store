@@ -2394,6 +2394,21 @@ dialog::backdrop {
   text-align: left;
 }
 
+.trade-past-locked {
+  display: grid;
+  gap: 3px;
+  border-left: 2px solid var(--control);
+  padding-left: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.trade-past-locked strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
 .character-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-control);
@@ -5806,6 +5821,30 @@ body.finale-active .app-shell {
 
   .title-window {
     height: auto;
+  }
+}
+
+.title-side,
+.title-street,
+.title-route-copy {
+  pointer-events: none;
+}
+
+@media (min-width: 641px) and (max-width: 940px) {
+  .title-screen {
+    place-items: start stretch;
+  }
+
+  .title-panel {
+    height: auto;
+    grid-template-rows: max-content max-content;
+    align-content: start;
+    overflow: visible;
+  }
+
+  .title-main {
+    min-height: 0;
+    align-self: start;
   }
 }
 

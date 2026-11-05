@@ -71,7 +71,7 @@ const PAST_UNLOCK_RULES = {
       "clerkNamed",
       "clerkStillWorking"
     ],
-    hint: "别只完成一笔交易。收下 0217 的工资币、字条或工牌，或让她真正休息一次。",
+    hint: "别只完成一笔交易。收下 0217 的工资币、替她整理货架、收下字条或工牌，或让她真正休息一次。",
     done: "你看见过编号 0217 背后的那个人。"
   },
   xiaoman: {
@@ -776,19 +776,21 @@ function storyObjective(night = currentNight()) {
     return "两个人的话已经在柜台碰上，完成今晚上车条件";
   }
   if (night.number === 3) {
-    return "让包裹或一个人的话留在柜台上";
+    return routeId === "summer"
+      ? "擦净玻璃，或听完小满、阿澄关于晴天的答案"
+      : "把包裹放上柜台，或让 0217、沈伯留下一件值班证明";
   }
   if (night.number === 4) {
-    return "在无名公路上留下一个方向";
+    return "把车灯照向无名处，或让一位客人在路上留下方向";
   }
   if (night.number === 5) {
-    return "让售货机吐出一样能带走的东西";
+    return "把明信片塞进投币口，等旧车票从售货机里出来";
   }
   if (night.number === 6) {
     return routeId === "summer" ? "让夏天停在最后一个下午" : "让停摆的钟再走一分钟";
   }
   if (night.number === 7) {
-    return "让柜台的灯照到门外";
+    return "把柜台的灯挪到门外，或让一位客人带走自己的答案";
   }
   if (!state.flags.parcelOnCounter) {
     return "先把包裹放上柜台，再逐一听完五个人的最后选择";
@@ -977,8 +979,8 @@ function renderShell() {
   elements.closingIntro.textContent = night.closingIntro;
   const pastCount = (state.pastSeen || []).length;
   elements.goalProgress.textContent = night.number === 8
-    ? `第一班车今夜到站 · 过去 ${pastCount}/5`
-    : `离第一班车还有 ${8 - night.number} 夜 · 过去 ${pastCount}/5`;
+    ? `第一班车今夜到站 · 已读过去 ${pastCount}/5`
+    : `离第一班车还有 ${8 - night.number} 夜 · 已读过去 ${pastCount}/5`;
   elements.goalRoute.textContent = state.finished
     ? "包裹已经找到去处"
     : `这一夜：${storyObjective(night)}`;
@@ -2497,12 +2499,11 @@ function guestPastAction(guest) {
   }
   const unlocked = pastUnlocked(arcId);
   const seen = (state.pastSeen || []).includes(arcId);
-  const label = unlocked
-    ? seen
-      ? `重看${guest.name}的过去`
-      : `进入${guest.name}的过去`
-    : "查看过去解锁条件";
-  return `<button class="secondary-button trade-past-button" type="button" data-guest-past="${arcId}" data-past-direct="${unlocked ? "true" : "false"}">${label}</button>`;
+  if (!unlocked) {
+    return `<div class="trade-past-locked"><strong>过去还没有打开</strong><span>${pastHint(arcId)}</span></div>`;
+  }
+  const label = seen ? `重看${guest.name}的过去` : `进入${guest.name}的过去`;
+  return `<button class="secondary-button trade-past-button" type="button" data-guest-past="${arcId}" data-past-direct="true">${label}</button>`;
 }
 
 function bindGuestPastAction(button) {
@@ -2511,11 +2512,7 @@ function bindGuestPastAction(button) {
   }
   button.addEventListener("click", () => {
     const arcId = button.dataset.guestPast;
-    if (button.dataset.pastDirect === "true") {
-      startPastScene(arcId);
-      return;
-    }
-    openCharacterDialog(arcId);
+    startPastScene(arcId);
   });
 }
 
@@ -3364,7 +3361,7 @@ function renderCharacterCount() {
   }
   const total = Object.keys(CONTENT.characterArcs).length;
   const met = (state.metCharacters || []).length;
-  elements.characterNavCount.textContent = `${met} / ${total}`;
+  elements.characterNavCount.textContent = `遇见 ${met}/${total}`;
 }
 
 function openCharacterDialog(expandId) {
