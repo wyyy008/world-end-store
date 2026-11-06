@@ -798,6 +798,22 @@ function storyObjective(night = currentNight()) {
   return "听完五个人的最后选择，再决定包裹的去处";
 }
 
+function firstNightSubtitle(night) {
+  if (night.number !== 1) {
+    return night.subtitle;
+  }
+  if (state.flags.prologueListenedAtDoor) {
+    return "你已经听见门外有人。今晚先听清他们为什么留下。";
+  }
+  if (state.flags.prologueObservedShelf) {
+    return "三件旧货会变成三个人的答案；先看他们怎样把东西带出原有用途。";
+  }
+  if (state.flags.prologueCheckedHands) {
+    return "身体记得怎样开店；第一夜要弄明白，这间店为什么把你留下。";
+  }
+  return night.subtitle;
+}
+
 function awardPassTicket() {
   const night = currentNight();
   if (night.number === 8) {
@@ -968,7 +984,7 @@ function renderShell() {
 
   document.title = `世界尽头的便利店 · 第 ${night.number} 夜`;
   elements.pageTitle.textContent = night.title;
-  elements.pageSubtitle.textContent = night.subtitle;
+  elements.pageSubtitle.textContent = firstNightSubtitle(night);
   elements.topbarScope.textContent = night.scope;
   elements.sideNight.textContent = nightLabel;
   elements.sideNightDetail.textContent = `${night.weather}，${clockLabel()}`;
@@ -2486,10 +2502,66 @@ function pastUnlockNote(arcId) {
 }
 
 function playerConnectionForArc(arcId, arc) {
-  if (pastUnlocked(arcId) || (state.pastSeen || []).includes(arcId)) {
-    return arc.toPlayer || "你在这间店里替 TA 做过一件会被记住的事。";
+  if (!pastUnlocked(arcId) && !(state.pastSeen || []).includes(arcId)) {
+    return "你还没有在柜台前做出能让 TA 记住你的那件事。";
   }
-  return "你还没有在柜台前做出能让 TA 记住你的那件事。";
+  const connections = {
+    acheng: [
+      [["doorUmbrella"], "你把她的伞留在门边。她知道，至少有人愿意替她守一会儿。"],
+      [["oldPhoto"], "你收好那张旧照片，没有替她删掉等待，只让那段过去有了一个能被看见的位置。"],
+      [["achengRoad"], "你没有替她结束等待，只把她没来得及对母亲说的话一件件听完。"],
+      [
+        ["achengLetGo", "achengForward", "achengLetter", "achengClosure", "achengStillWaiting"],
+        "你陪她走到能自己决定“继续等”还是“带走伞”的地方。"
+      ]
+    ],
+    shen: [
+      [["unopenedCoffee"], "你把第二罐咖啡留在柜台上，没有催他收起那个空座位。"],
+      [["shenReunion"], "你替他留住那罐咖啡，让一句迟到很久的话终于有机会被打开。"],
+      [
+        ["shenClosed", "shenHasTicket", "shenSits", "shenClosedLoop", "shenStillWaiting"],
+        "你陪他坐到末班车以后，没有用一句“别等了”替他做决定。"
+      ],
+      [
+        ["shenOffDuty", "shenTicketLit", "shenPostcard", "shenDrives", "shenBadgeKept", "shenSecondCoffee"],
+        "你让他在某一夜不必发车，也不必继续守着空站台。"
+      ]
+    ],
+    clerk: [
+      [["wageCoin"], "你收下那枚工资币，也把 0217 当成一个正在过日子的人。"],
+      [["shelfTidy"], "你没有用工牌上的编号判断她，而是记住了那双把货架整理整齐的手。"],
+      [["clerkRested", "clerkRoadRest", "clerkSlept"], "你没有让她继续值班，只给了她一个可以坐下来的地方。"],
+      [
+        ["clerkNote", "clerkBadge", "clerkOffDuty", "clerkLeaves", "clerkNamed", "clerkClosure"],
+        "你看过工牌背后的人，也记住了她叫林晚。"
+      ]
+    ],
+    xiaoman: [
+      [["sunnyPromise", "honestRain"], "你认真回答了那一次天气，没有把她的明天当成一句敷衍。"],
+      [
+        ["xiaomanWarmStart", "warmMeal", "xiaomanWarmFinal", "xiaomanAte"],
+        "你先问她今天有没有吃饭，而不是只问她还要不要继续等。"
+      ],
+      [
+        ["tomorrowAccepted", "xiaomanSawSun", "xiaomanToday", "xiaomanSummerSix"],
+        "你告诉她今天也可以结束，不必为了别人硬撑到明天。"
+      ],
+      [
+        ["xiaomanRadio", "sunnyChannel", "quietRadio", "lastWeather", "summerBottle", "xiaomanStillWaiting"],
+        "你陪她把杂音、晴天和没说完的明天一起听完。"
+      ]
+    ],
+    traveler: [
+      [["travelerPostcard"], "你给了他一个能写下名字的位置，没有只把他当成来路不明的人。"],
+      [["travelerVoice", "travelerBottleGift"], "你让他听见瓶子里的“我到了”，也听见自己不是没有抵达。"],
+      [
+        ["travelerFinal", "parcelNamed", "parcelAddress", "travelerClosure"],
+        "你替包裹找收件人，也替没有名字的人留下了一个能被叫住的地址。"
+      ]
+    ]
+  };
+  const match = (connections[arcId] || []).find(([flags]) => hasAnyFlag(flags));
+  return match?.[1] || arc.toPlayer || "你在这间店里替 TA 做过一件会被记住的事。";
 }
 
 function guestPastAction(guest) {
@@ -2573,7 +2645,7 @@ function buildPastSteps(arcId) {
   if (arc.toPlayer) {
     steps.push({
       speaker: arc.name,
-      text: arc.toPlayer,
+      text: playerConnectionForArc(arcId, arc),
       character: arc.initial,
       portrait: arcId,
       role: arc.role,
@@ -3008,6 +3080,10 @@ function showSummary() {
   });
   body.querySelector("#restart-night")?.addEventListener("click", resetGame);
   openDialog(dialog);
+  dialog.scrollTop = 0;
+  window.requestAnimationFrame(() => {
+    dialog.scrollTop = 0;
+  });
 }
 
 function startNextNight(routeId = null) {
@@ -3404,7 +3480,7 @@ function renderCharacters(expandId) {
   const finalReveal = Boolean(state.finished && state.closingChoice === "openParcel");
 
   Object.entries(CONTENT.characterArcs).forEach(([id, arc]) => {
-    const unlocked = met.includes(id) || finalReveal;
+    const unlocked = met.includes(id) || finalReveal || pastUnlocked(id);
     const card = document.createElement("article");
     card.className = `character-card${unlocked ? " is-unlocked" : " is-locked"}`;
     card.dataset.characterId = id;
@@ -3626,7 +3702,13 @@ document.addEventListener("keydown", (event) => {
   if (event.key !== " " && event.key !== "Enter") {
     return;
   }
-  if (event.target instanceof Element && event.target.closest("button")) {
+  if (
+    elements.historyDialog.open ||
+    elements.settingsDialog.open ||
+    document.querySelector("#nav-dialog")?.open ||
+    document.querySelector("#help-dialog")?.open ||
+    document.querySelector("#achievement-dialog")?.open
+  ) {
     return;
   }
   if (elements.finaleDialog.open) {
@@ -3635,6 +3717,20 @@ document.addEventListener("keydown", (event) => {
     return;
   }
   if (!document.querySelector("#intro-dialog").open) {
+    return;
+  }
+  if (
+    event.key === "Enter" &&
+    event.target instanceof Element &&
+    event.target.closest("button")
+  ) {
+    return;
+  }
+  if (
+    event.key === " " &&
+    event.target instanceof Element &&
+    event.target.closest("#vn-choices, #start-shift")
+  ) {
     return;
   }
   event.preventDefault();

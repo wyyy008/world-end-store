@@ -5822,6 +5822,16 @@ body.finale-active .app-shell {
   .title-window {
     height: auto;
   }
+
+  .receipt-list li {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .receipt-list li span:last-child {
+    text-align: left;
+    white-space: normal;
+  }
 }
 
 .title-side,
