@@ -1809,11 +1809,19 @@ function portraitSvg(name, className = "") {
   const id = portraitIdForName(name);
   return `
     <div class="portrait-frame portrait-${id} ${className}">
+      ${id !== "generic" ? `<img class="portrait-art" src="assets/characters/${id}.png" alt="" onerror="this.remove()">` : ""}
       <svg class="portrait-svg" viewBox="0 0 120 160" aria-hidden="true">
         <use href="#portrait-${id}"></use>
       </svg>
     </div>
   `;
+}
+
+function showPortraitIn(slot, name) {
+  const nextName = name || "";
+  if (slot.dataset.portraitName === nextName && (nextName === "" || slot.firstElementChild)) return;
+  slot.innerHTML = nextName ? portraitSvg(nextName) : "";
+  slot.dataset.portraitName = nextName;
 }
 
 function keptEchoForGuest(guest) {
@@ -3125,7 +3133,7 @@ function showFinaleStep() {
   const portraitName = step.portrait && CONTENT.characterArcs[step.portrait]
     ? CONTENT.characterArcs[step.portrait].name
     : step.speaker;
-  elements.finaleCharacterPortrait.innerHTML = step.character ? portraitSvg(portraitName) : "";
+  showPortraitIn(elements.finaleCharacterPortrait, step.character ? portraitName : "");
   elements.finaleNext.hidden = true;
   elements.finaleHint.textContent = "点击或按空格继续";
   elements.finaleContinue.textContent = finaleIndex >= finaleSteps.length - 1
@@ -3549,7 +3557,7 @@ function renderPrologueStep(resumeLine = 0) {
   elements.vnCharacter.hidden = !step.character;
   elements.vnCharacterInitial.textContent = step.character || "";
   elements.vnCharacterRole.textContent = step.speaker;
-  elements.vnCharacterPortrait.innerHTML = step.character ? portraitSvg(step.speaker) : "";
+  showPortraitIn(elements.vnCharacterPortrait, step.character ? step.speaker : "");
   elements.vnChoices.replaceChildren();
   elements.vnChoices.hidden = true;
   elements.vnTips.replaceChildren();
