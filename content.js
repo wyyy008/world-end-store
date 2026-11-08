@@ -306,8 +306,8 @@ window.GAME_CONTENT = {
         initial: "澄",
         avatarClass: "",
         arrival: "第一位客人",
-        line: "她拿起一把透明雨伞，却没有往门外走。",
-        note: "她一直在看末班车到来的方向。",
+        line: "她挑好一把透明雨伞，又把伞尖挪离门缝，先问你打烊时会不会把门边的东西收走。",
+        note: "她说只是借个位置，却连伞柄朝哪边都要重新摆过。",
         action: "接待阿澄",
         cost: "会花掉 1 个营业时间格",
         mode: "purchase",
@@ -315,8 +315,9 @@ window.GAME_CONTENT = {
         quantity: 1,
         prices: { low: 6, normal: 10, high: 14 },
         scene: [
-          "她把最便宜的透明雨伞拿在手里，看了很久门外的雨。",
-          "雨伞标价 ¥10。她口袋里的硬币碰在一起，响得很轻。"
+          "她把透明雨伞的扣带试了两次，挑出最便宜的那把。价签上写着 ¥10。",
+          "“买下来，就能在门边放一晚吗？别挪到里面。从站牌那边，会看不见。”",
+          "说完她又添了一句“我不占你地方”，同时用鞋尖把滴水的伞挪正，给进门的人让出路。"
         ],
         memory: {
           paid: "阿澄付了钱，却把透明雨伞靠在门边，没有带走。",
@@ -328,6 +329,12 @@ window.GAME_CONTENT = {
           high: "“我把硬币都数过了，够的。”",
           gift: "“那我先替它看着门。等雨停了，再还你。”"
         },
+        reaction: {
+          low: "她重新数了数手里的零钱，把多出来的几枚拢进掌心。放伞时，她让伞柄朝着门口。",
+          normal: "她把十块钱放齐，又把伞靠到门边，仔细挪开一小块不滴水的地方。",
+          high: "她把口袋里剩下的硬币一枚枚摆出来，付清后才低头把空口袋理平。伞仍靠在门边。",
+          gift: "她递钱的手停了一下。过了一会儿，她才把伞靠在门边，用鞋尖替它挡住往外流的雨水。"
+        },
         result: {
           paid: "她付了钱，却把伞靠在门边，没有拿走。货架上少了一把伞，门边多了一把。",
           gift: "她把伞靠在门边，没有拿走。她还是站在能看见末班车的地方。"
@@ -338,21 +345,28 @@ window.GAME_CONTENT = {
         }
       },
       {
-        id: "commuter-1",
-        name: "赶路的人",
-        initial: "路",
-        avatarClass: "commuter",
-        arrival: "普通客人",
-        line: "他抓起一罐咖啡，硬币已经放在柜台上。",
-        note: "普通交易不消耗营业时间。",
-        action: "卖一罐咖啡 · ¥6",
-        cost: "不耗时间",
-        mode: "quick",
-        product: "coffee",
-        quantity: 1,
-        amount: 6,
-        memory: "赶路的人只买了一罐咖啡。他说，剩下的路还来得及。",
-        toast: "赶路的人带着咖啡走了，没有耽误营业时间。"
+        "id": "commuter-1",
+        "name": "赶路的人",
+        "initial": "路",
+        "avatarClass": "commuter",
+        "arrival": "急着换乘的乘客",
+        "line": "他把硬币排到柜台上，手指一直扣着背包带：“一罐咖啡，谢谢。下一班快到了。”",
+        "note": "他盯着站牌，一看到有人靠近门口，又伸手把快关上的门撑住。普通交易不耗营业时间。",
+        "action": "卖一罐咖啡 · ¥6",
+        "cost": "不耗时间",
+        "mode": "quick",
+        "product": "coffee",
+        "quantity": 1,
+        "amount": 6,
+        "memory": "赶路的人只买了一罐咖啡。他说，剩下的路还来得及。",
+        "toast": "赶路的人扶着门，让后面的乘客先走了。",
+        "scene": [
+          "他已经把钱准备好了，没有问别的。",
+          "门外有人走得慢，他回头看了一眼，脚还抵着门。"
+        ],
+        "quote": "“谢谢。别替我担心，我腿快。您先走，门我扶着。”",
+        "reaction": "他把咖啡塞进侧袋，已经跨出门，又退回来扶住门。等拄拐的乘客过了门槛，他才小跑着追向站牌。",
+        "result": "赶路的人带走一罐咖啡。走之前，他先让另一位乘客过了门。"
       },
       {
         id: "shen-1",
@@ -360,8 +374,8 @@ window.GAME_CONTENT = {
         initial: "沈",
         avatarClass: "shen",
         arrival: "第二位常客",
-        line: "他把两罐咖啡排得整整齐齐，只问了一句多少钱。",
-        note: "夜班车到站前，他总会来。",
+        line: "他先让开门口的过道，才把两罐咖啡摆上柜台。摆完，又把空凳向里推了半寸。",
+        note: "他习惯替别人安排位置，自己的外套却一直没脱。",
         action: "接待沈伯",
         cost: "会花掉 1 个营业时间格",
         mode: "purchase",
@@ -369,8 +383,9 @@ window.GAME_CONTENT = {
         quantity: 2,
         prices: { low: 6, normal: 12, high: 18 },
         scene: [
-          "他把两罐咖啡摆好，又替第二罐擦了擦罐口。",
-          "两罐一共 ¥12。他的旧制服上还别着停运车队的徽章。"
+          "“这凳脚松不松？夜里有人绊一下，你还得扶。”他试了试旁边的凳子，才问两罐咖啡多少钱。",
+          "两罐一共 ¥12。他把第二罐的拉环转向外侧，自己那罐随便搁着。",
+          "“你这儿能留一罐吗？别替我打开。”他发现你在看第二罐，便低头去整已经很平的制服领子。"
         ],
         memory: {
           paid: "沈伯买了两罐咖啡，只打开一罐。另一罐留在柜台，像一封没有地址的信。",
@@ -381,6 +396,12 @@ window.GAME_CONTENT = {
           paid: "“这一罐先放着。还有人没到。”",
           high: "“该多少就多少。夜里做生意也不容易。”",
           gift: "“那这一罐算我欠店里的。”"
+        },
+        reaction: {
+          low: "他把省下来的硬币收回制服口袋，又把没打开的第二罐朝柜台里面推了一点。",
+          normal: "他拉开第一罐，喝了一小口。第二罐摆在手边，罐口朝向那张空着的凳子。",
+          high: "他从制服的另一边口袋找齐零钱，付清后，仍把两罐咖啡端端正正地并着放。",
+          gift: "他用手掌把两罐咖啡拢近，又想起什么，把没打开的那罐单独留在了灯下。"
         },
         result: {
           paid: "他付了钱，只打开一罐。另一罐留在柜台，罐身还是温的。",
@@ -394,12 +415,12 @@ window.GAME_CONTENT = {
     ],
     task: {
       id: "featureLunchbox",
-      name: "整理保温饭盒的位置",
-      detail: "把最贵的东西放到最亮的地方",
+      name: "把保温饭盒搬到柜台旁",
+      detail: "给没来得及吃饭的人留个位置",
       cost: "1 格",
       doneLabel: "饭盒已经在柜台旁",
-      doneDetail: "它现在离门口更近",
-      memory: "你把保温饭盒转到柜台最亮的位置，像在等一句话。",
+      doneDetail: "回来晚的人，进门就能看见这只饭盒",
+      memory: "你把保温饭盒搬到柜台旁。谁回来晚了，也有个能放下热饭的位置。",
       toast: "保温饭盒移到了柜台旁。",
       flagsOn: ["featuredLunchbox"]
     }
@@ -434,8 +455,8 @@ window.GAME_CONTENT = {
               initial: "零",
               avatarClass: "clerk",
               arrival: "临时店员",
-              line: "她把一枚旧工资硬币推过柜台，说想换一罐咖啡。",
-              note: "胸牌上只剩四个数字，比她本人更像一个名字。",
+              line: "她来换一罐咖啡，伸手掏工资币之前，先把你贴歪的价签扶正了。",
+              note: "你没有请她帮忙。她看见你在看，便把手揣回口袋：“顺手，不算工时。”",
               waitedLine: "她看见沈伯先去柜台，问那罐没打开的咖啡是不是还留着。",
               action: "接待 0217",
               cost: "会花掉 1 个营业时间格",
@@ -445,6 +466,8 @@ window.GAME_CONTENT = {
                   id: "coin",
                   label: "请她喝一罐，收下那枚硬币",
                   detail: "咖啡少一罐，柜台上多一枚没有年份的工资币",
+                  quote: "“这枚我留了很久。你收着，零头不用找。”",
+                  reaction: "她用拇指摸了摸硬币磨平的边，放下时，特意避开了那堆新零钱。",
                   requiresStock: { coffee: 1 },
                   unavailable: "货架上的咖啡不够",
                   effect: {
@@ -459,6 +482,8 @@ window.GAME_CONTENT = {
                   id: "paid",
                   label: "照价卖给她",
                   detail: "收 ¥6，她把硬币丢进收银盒就不再说话",
+                  quote: "“六块，正好。这样就不算欠你一班工了。”",
+                  reaction: "她把六块钱数齐，听见硬币落进收银盒，才把肩膀放松了一点。",
                   requiresStock: { coffee: 1 },
                   unavailable: "货架上的咖啡不够",
                   effect: {
@@ -474,6 +499,8 @@ window.GAME_CONTENT = {
                   id: "work",
                   label: "让她整理一次货架来换",
                   detail: "不收钱，但货架会被摆得比原来更整齐",
+                  quote: "“好了，都朝外了。咖啡我拿走一罐。”",
+                  reaction: "她把最后一罐咖啡的标签转向外面，退后看了一眼，才伸手拿自己的那罐。",
                   requiresStock: { coffee: 1 },
                   unavailable: "货架上的咖啡不够",
                   effect: {
@@ -487,21 +514,28 @@ window.GAME_CONTENT = {
               ]
             },
             {
-              id: "driver-1",
-              name: "夜班司机",
-              initial: "夜",
-              avatarClass: "commuter",
-              arrival: "普通客人",
-              line: "他买一罐咖啡，说这趟车不会有人睡着。",
-              note: "普通交易不消耗营业时间。",
-              action: "卖一罐咖啡 · ¥6",
-              cost: "不耗时间",
-              mode: "quick",
-              product: "coffee",
-              quantity: 1,
-              amount: 6,
-              memory: "夜班司机买了一罐咖啡。他说，这趟车上没有人需要睡着。",
-              toast: "夜班司机带着咖啡回到了驾驶座。"
+              "id": "driver-1",
+              "name": "夜班司机",
+              "initial": "夜",
+              "avatarClass": "commuter",
+              "arrival": "还没发车的夜班司机",
+              "line": "司机把手套夹在腋下：“一罐咖啡。外头要是有人问，你就说我还没发车。”说完，又看了一眼站牌。",
+              "note": "他不停看表，却没催过门外的人。咖啡拿在手里，拉环还没打开。普通交易不耗营业时间。",
+              "action": "卖一罐咖啡 · ¥6",
+              "cost": "不耗时间",
+              "mode": "quick",
+              "product": "coffee",
+              "quantity": 1,
+              "amount": 6,
+              "memory": "夜班司机买了一罐咖啡。他说，这趟车上没有人需要睡着。",
+              "toast": "夜班司机回到车上，仍没关上车门。",
+              "scene": [
+                "他带进来一股冷风，先把挡在过道的背包挪开，才来拿咖啡。",
+                "“最后一个人还在系鞋带。我等他一会儿。”"
+              ],
+              "quote": "“总有人鞋带这时候松。我等他系好，省得他一路追着跑。”",
+              "reaction": "他接过咖啡，先把手套戴好。到了门边，又转回来把落在柜台上的零钱收齐：“夜里数钱费眼，别少收。”",
+              "result": "司机回到驾驶座，把咖啡放在杯架里。门还开着，留给最后一位乘客上车。"
             },
             {
               id: "shen-2",
@@ -509,8 +543,8 @@ window.GAME_CONTENT = {
               initial: "沈",
               avatarClass: "shen",
               arrival: "回来的人",
-              line: "他没有买咖啡，只问昨晚那罐没打开的还在不在。",
-              note: "他的旧制服比上次更皱，第二罐咖啡的位置却没有忘。",
+              line: "他先说车站那只钟不准，过一会儿，又问你柜台上有没有留着一罐没开的咖啡。",
+              note: "你还没回答，他已经把两张凳子排齐。排好以后，他站着，没有坐。",
               waitedLine: "他先看了看 0217 刚才站过的地方，才把两罐咖啡放上柜台。",
               action: "接待沈伯",
               cost: "会花掉 1 个营业时间格",
@@ -520,6 +554,8 @@ window.GAME_CONTENT = {
                   id: "return-old",
                   label: "把留到今晚的咖啡递给他",
                   detail: "那罐咖啡从第一夜一直留在这里",
+                  quote: "“还是那一罐。……我先在这儿坐一会儿。”",
+                  reaction: "他没有先看价签，而是把那罐咖啡转了一圈，指腹停在罐底的旧痕上。拉环轻轻响了一声。",
                   requiresFlag: "unopenedCoffee",
                   unavailable: "第一夜没有留下那罐咖啡",
                   effect: {
@@ -534,6 +570,8 @@ window.GAME_CONTENT = {
                   id: "buy-new",
                   label: "从货架再拿两罐新的给他",
                   detail: "收 ¥12，新的咖啡会代替旧的等下去",
+                  quote: "“新的放左边。旧的先别动，我认得出来。”",
+                  reaction: "他把两罐新的并排摆好，和柜台上旧的那罐隔开一点。离开前，只开了其中一罐。",
                   requiresStock: { coffee: 2 },
                   unavailable: "货架上的咖啡不够两罐",
                   effect: {
@@ -550,6 +588,8 @@ window.GAME_CONTENT = {
                   id: "wait",
                   label: "告诉他，柜台会一直留着位置",
                   detail: "不卖东西，也不追问他在等谁",
+                  quote: "“那我坐外面。要是有人来问，就说我还没走。”",
+                  reaction: "他在站牌下坐稳，把旁边的位置让出半个人的宽度，抬头朝店里的灯看了一眼。",
                   effect: {
                     time: 1,
                     memory: "你告诉沈伯，柜台会一直留着位置。他点点头，在站牌下坐了一夜。",
@@ -592,8 +632,8 @@ window.GAME_CONTENT = {
               initial: "零",
               avatarClass: "clerk",
               arrival: "值最后一班的人",
-              line: "她带着一只空饭盒来，说想装一点可以带走的声音。",
-              note: "今晚以后，她会有一个真正的休息日。",
+              line: "她给弟弟写好一张“明天见”，塞在饭盒边上，又抽出来检查了一次：“没写几点，应该不算排班吧。”",
+              note: "她说想歇一歇，眼睛却已经把你没摆齐的货架看完一遍。",
               action: "接待 0217",
               cost: "会花掉 1 个营业时间格",
               mode: "special",
@@ -602,6 +642,8 @@ window.GAME_CONTENT = {
                   id: "lunchbox",
                   label: "把保温饭盒卖给她",
                   detail: "收 ¥18，让她把声音和饭一起带走",
+                  quote: "“那我带走。明天……不上班也得吃饭。”",
+                  reaction: "她接过饭盒，掌心在盒底多停了几秒，才慢慢把它收向自己这一边。",
                   requiresStock: { lunchbox: 1 },
                   unavailable: "货架上的保温饭盒不够",
                   effect: {
@@ -618,6 +660,8 @@ window.GAME_CONTENT = {
                   id: "note",
                   label: "用一罐咖啡换她留在盒里的字条",
                   detail: "咖啡少一罐，饭盒里会多一句没写完整的话",
+                  quote: "“字写得挤了点。‘明天见’这三个字，应该还认得出。”",
+                  reaction: "她把字条推到灯下，露出最后那个写得很小的‘见’字。拿咖啡的手没有再遮住它。",
                   requiresStock: { coffee: 1 },
                   unavailable: "货架上的咖啡不够",
                   effect: {
@@ -632,6 +676,8 @@ window.GAME_CONTENT = {
                   id: "rest",
                   label: "什么也不卖，让她在店里坐一会儿",
                   detail: "今晚的灯会替她看着时间",
+                  quote: "“那排其实还歪着……行，我不动。我坐着，手不算闲工。”",
+                  reaction: "她伸向价签的手停在半路，最后抓住自己的衣角。坐稳以后，她很轻地笑了一声。",
                   effect: {
                     time: 1,
                     flagsOn: ["clerkRested"],
@@ -657,6 +703,8 @@ window.GAME_CONTENT = {
                   id: "open-together",
                   label: "把第二罐咖啡打开，陪他等完末班车",
                   detail: "今晚没有新的乘客，也没有催人的钟",
+                  quote: "“坐吧。我刚才差点又数你上没上车。老毛病，这儿明明没有车门。”",
+                  reaction: "他挪开旁边那张空凳。第二声拉环响过以后，他没有再去看站牌。",
                   effect: {
                     time: 1,
                     flagsOn: ["shenClosed"],
@@ -668,6 +716,8 @@ window.GAME_CONTENT = {
                   id: "turn-sign",
                   label: "让他把站牌翻到空白的一面",
                   detail: "不再等某个没有写下来的终点",
+                  quote: "“白的这面……我以前没看过。站一会儿也行。”",
+                  reaction: "他把站牌翻过去，手掌在没有字的那面蹭了一下。指尖留下的灰比字迹浅。",
                   effect: {
                     time: 1,
                     flagsOn: ["blankSign"],
@@ -679,6 +729,7 @@ window.GAME_CONTENT = {
                   id: "clock-reflect",
                   label: "让他看看擦亮的钟面",
                   detail: "钟还是停着，但玻璃里已经映出店里的灯",
+                  reaction: "他凑近钟面，先看见自己的影子，接着看见身后那盏还亮着的灯。",
                   quote: "“这盏灯……是店里那盏吧。”",
                   requiresFlag: "clockClean",
                   unavailable: "车站的钟还没有被擦亮",
@@ -707,6 +758,7 @@ window.GAME_CONTENT = {
                   id: "cameo-sunny",
                   label: "告诉她，明天会有太阳",
                   detail: "不卖东西，只给她一个可以带走的明天",
+                  reaction: "她把空饭盒轻轻放在门边，脚尖还停在门槛外，先看了一眼柜台。",
                   quote: "“沈伯那罐咖啡……还留着吗？那我明天再来拿。”",
                   effect: {
                     time: 1,
@@ -719,6 +771,7 @@ window.GAME_CONTENT = {
                   id: "cameo-rain",
                   label: "照实说，雨还会下一阵",
                   detail: "不承诺晴天，只承认今晚还在下雨",
+                  reaction: "她低头按了一遍饭盒的扣子，确认两边都扣紧，才抬起头来。",
                   quote: "“那我先把今天过完。”",
                   effect: {
                     time: 1,
@@ -773,8 +826,8 @@ window.GAME_CONTENT = {
               initial: "满",
               avatarClass: "xiaoman",
               arrival: "隔着门问天气的人",
-              line: "她站在门外，只问明天有没有太阳。",
-              note: "她没有走进来，脚下的影子却先一步落在柜台边。",
+              line: "她抱着饭盒先问你吃没吃，才低头看看自己的盒子：“我不爱葱花。明天要是晴，葱花会不会少一点？”",
+              note: "玩笑说完，她却认真等着你的回答。饭盒抱得很稳，肚子响了一声。",
               waitedLine: "她看见阿澄的伞还留在门边，问那个人是不是也在等。",
               action: "回答小满",
               cost: "会花掉 1 个营业时间格",
@@ -784,6 +837,8 @@ window.GAME_CONTENT = {
                   id: "sunny",
                   label: "告诉她，明天会有太阳",
                   detail: "卖给她一只饭盒，收 ¥18",
+                  quote: "“那我把盒子盖好。明天有太阳，也得先吃上饭。”",
+                  reaction: "她把饭盒举到窗边，像想先看看晴天应该放在哪个角落，随后认真扣好盖子。",
                   requiresStock: { lunchbox: 1 },
                   unavailable: "货架上的保温饭盒不够",
                   effect: {
@@ -800,6 +855,8 @@ window.GAME_CONTENT = {
                   id: "rainy",
                   label: "照实说，雨还会下一阵",
                   detail: "卖给她一只饭盒，收 ¥18",
+                  quote: "“下就下吧。盖子扣紧，雨进不去。”",
+                  reaction: "她用掌心把盒盖压紧，又用指尖试了试扣子，门外的雨声仍然没有停。",
                   requiresStock: { lunchbox: 1 },
                   unavailable: "货架上的保温饭盒不够",
                   effect: {
@@ -816,6 +873,8 @@ window.GAME_CONTENT = {
                   id: "gift",
                   label: "把饭盒送给她，不收钱",
                   detail: "今晚不会多一笔收入，但门外会多一个晴天",
+                  quote: "“钱不用给？那我先抱着，暖一会儿再走。”",
+                  reaction: "她伸出去找钱的手停住了，过了一会儿，才改成两只手一起抱住饭盒。",
                   requiresStock: { lunchbox: 1 },
                   unavailable: "货架上的保温饭盒不够",
                   effect: {
@@ -830,6 +889,7 @@ window.GAME_CONTENT = {
                   id: "warm-keepsake",
                   label: "把柜台旁一直温着的饭盒递给她",
                   detail: "第一夜整理过的那只饭盒，终于等到了要用它的人",
+                  reaction: "她摸了摸一直温着的盒底，眼睛没有再往天上看，先朝你点了点头。",
                   quote: "“原来它一直在等我。”",
                   requiresFlag: "featuredLunchbox",
                   requiresStock: { lunchbox: 1 },
@@ -845,21 +905,28 @@ window.GAME_CONTENT = {
               ]
             },
             {
-              id: "shadowless-1",
-              name: "没有影子的人",
-              initial: "影",
-              avatarClass: "commuter",
-              arrival: "普通客人",
-              line: "他买一只饭盒，把一张空白明信片压在钱下面。",
-              note: "普通交易不消耗营业时间。",
-              action: "卖一只饭盒 · ¥18",
-              cost: "不耗时间",
-              mode: "quick",
-              product: "lunchbox",
-              quantity: 1,
-              amount: 18,
-              memory: "没有影子的人买走一只饭盒，留下了一张空白明信片。",
-              toast: "空白明信片留在了柜台上。"
+              "id": "shadowless-1",
+              "name": "没有影子的人",
+              "initial": "影",
+              "avatarClass": "commuter",
+              "arrival": "一直站在暗处的客人",
+              "line": "他把钱推到灯下，自己却站在暗处：“一只饭盒。盖子能扣紧吗？别和别人的弄混了。”",
+              "note": "他脚下没有影子。问了两遍饭盒能不能写名字，最后却只拿出一张空白明信片。普通交易不耗营业时间。",
+              "action": "卖一只饭盒 · ¥18",
+              "cost": "不耗时间",
+              "mode": "quick",
+              "product": "lunchbox",
+              "quantity": 1,
+              "amount": 18,
+              "memory": "没有影子的人买走一只饭盒，留下了一张空白明信片。",
+              "toast": "没有影子的人带走饭盒，留下了空白明信片。",
+              "scene": [
+                "他用指尖挨个试过饭盒的扣锁，才把选中的那只推到柜台前。",
+                "明信片上没有字。他将四个角都压平，压在钱下面。"
+              ],
+              "quote": "“你刚才说‘你的饭盒’，对吧？……好，我听见了。明信片压这儿，别拿去垫桌脚。”",
+              "reaction": "他把饭盒抱到灯下，低头又试了一遍扣锁。离开前，他将空白明信片摆到柜台中央，特意避开那块摇晃的桌角。",
+              "result": "他认领了自己的饭盒，留下那张被压得很平的空白明信片。"
             },
             {
               id: "acheng-2",
@@ -867,8 +934,8 @@ window.GAME_CONTENT = {
               initial: "澄",
               avatarClass: "",
               arrival: "提前回来的人",
-              line: "她拿来一张旧照片，说照片里的伞和门边那把一样。",
-              note: "今天的她先说了再见，然后才推门进来。",
+              line: "她把旧照片举到灯下，先指给你看卷起来的边角：“可以放这儿，但别压平。那道折痕我认得。”",
+              note: "她不让人随便碰照片，问起照片里的人，却只肯说哪一把伞是新的。",
               waitedLine: "她看了一眼门外的小满，问那只空饭盒是不是她的。",
               action: "接待阿澄",
               cost: "会花掉 1 个营业时间格",
@@ -878,6 +945,8 @@ window.GAME_CONTENT = {
                   id: "exchange",
                   label: "用一把透明雨伞换那张旧照片",
                   detail: "伞少一把，柜台下多一张有人等过的照片",
+                  quote: "“照片你收着。新伞的扣子……比旧的紧。”",
+                  reaction: "她把照片推给你，手指在边角停了一下，才松开，接过那把扣子还紧的新伞。",
                   requiresStock: { umbrella: 1 },
                   unavailable: "货架上的透明雨伞不够",
                   effect: {
@@ -892,6 +961,8 @@ window.GAME_CONTENT = {
                   id: "keep",
                   label: "把照片留在柜台，不收她的钱",
                   detail: "今晚不卖东西，只替她保管一段还没发生的过去",
+                  quote: "“别把边角压平。那道折痕，我认得。”",
+                  reaction: "她把照片的正面转向柜台的灯，压住卷起的一角，确认你看见了才抽回手。",
                   effect: {
                     time: 1,
                     flagsOn: ["oldPhoto"],
@@ -903,6 +974,8 @@ window.GAME_CONTENT = {
                   id: "umbrella",
                   label: "告诉她，伞仍替她留在门边",
                   detail: "阿澄会先去一个不需要伞的地方",
+                  quote: "“我看见了。今天先不拿，我想试试空着手走一段。”",
+                  reaction: "她看向门边，原本伸出去的手缩了回来。走出门时，两只手都是空的。",
                   effect: {
                     time: 1,
                     flagsOn: ["doorUmbrella"],
@@ -946,8 +1019,8 @@ window.GAME_CONTENT = {
               initial: "满",
               avatarClass: "xiaoman",
               arrival: "来还晴天的人",
-              line: "她抱着已经空了的饭盒，说晴天原来也要慢慢吃完。",
-              note: "她终于走进了店里，脚下的影子和她站在一边。",
+              line: "她掀开饭盒给你看剩下的一半：“给明天留的。你要是没吃，也能先拿。”说完又悄悄看了一眼那半盒饭。",
+              note: "她总先问别人要不要，轮到自己的那份，便说饿得不厉害。",
               action: "接待小满",
               cost: "会花掉 1 个营业时间格",
               mode: "special",
@@ -956,6 +1029,8 @@ window.GAME_CONTENT = {
                   id: "warm-meal",
                   label: "替她把饭盒再热一次",
                   detail: "再卖她一只饭盒，收 ¥18",
+                  quote: "“这回我留一半。明天的我，也该吃点热的。”",
+                  reaction: "她把新饭盒往自己这边挪近了一点，用手比了比里面大约一半的位置。",
                   requiresStock: { lunchbox: 1 },
                   unavailable: "货架上的保温饭盒不够",
                   effect: {
@@ -972,6 +1047,8 @@ window.GAME_CONTENT = {
                   id: "move-light",
                   label: "把柜台的灯往门外挪一点",
                   detail: "灯还是那盏灯，门外的人会更早看见它",
+                  quote: "“站在这儿就看得见了。刚才门槛那边还是暗的。”",
+                  reaction: "灯往外挪了一点，她也跟着往前挪了一小步。鞋尖终于踏进了门口的光里。",
                   effect: {
                     time: 1,
                     flagsOn: ["lightOutside"],
@@ -983,6 +1060,8 @@ window.GAME_CONTENT = {
                   id: "no-answer",
                   label: "告诉她，明天有没有太阳都没关系",
                   detail: "今天也可以好好过完",
+                  quote: "“那我不留了。最后这口，是我想吃的。”",
+                  reaction: "她低头把最后一点饭粒拨到一起，吃完以后，才把盒盖慢慢合上。",
                   effect: {
                     time: 1,
                     flagsOn: ["tomorrowAccepted"],
@@ -994,6 +1073,7 @@ window.GAME_CONTENT = {
                   id: "clean-glass-show",
                   label: "让她看已经擦干净的玻璃",
                   detail: "门外其实一直有阳光，只是之前没人愿意先看见",
+                  reaction: "她走到玻璃前，把脸凑近擦干净的那一小块，眯起眼睛看了好一会儿。",
                   quote: "“我看见了。好像不用等明天也可以。”",
                   requiresFlag: "clearGlass",
                   unavailable: "玻璃上的雨还没有擦掉",
@@ -1022,6 +1102,8 @@ window.GAME_CONTENT = {
                   id: "buy-sunny",
                   label: "照价卖给她一把伞",
                   detail: "收 ¥10。晴天也可以为自己准备一把伞",
+                  quote: "“买给我自己的。今天不下雨，也可以拿着。”",
+                  reaction: "她付清钱，先把伞攥在手里，没有往门边靠。走到门口，她换了一只手拿伞。",
                   requiresStock: { umbrella: 1 },
                   unavailable: "货架上的透明雨伞不够",
                   effect: {
@@ -1038,6 +1120,8 @@ window.GAME_CONTENT = {
                   id: "return-old",
                   label: "把门边那把旧伞还给她",
                   detail: "旧伞离开柜台，她会带着自己的等待回家",
+                  quote: "“原来柄还是这个手感。……这回我拿着。”",
+                  reaction: "她抹掉伞柄上的一滴水，慢慢撑开伞。透过伞面落下来的，是一层很浅的光。",
                   requiresFlag: "doorUmbrella",
                   unavailable: "门边已经没有留下那把伞",
                   effect: {
@@ -1052,6 +1136,8 @@ window.GAME_CONTENT = {
                   id: "gift-sunny",
                   label: "送她一把伞，让她不必再回来取",
                   detail: "今晚少一把伞，门外多一个可以向前走的人",
+                  quote: "“这回我不靠在门边了。你看，我拿稳了。”",
+                  reaction: "她拿稳伞柄，往门边看了一眼，最后还是把伞带在了身侧。",
                   requiresStock: { umbrella: 1 },
                   unavailable: "货架上的透明雨伞不够",
                   effect: {
@@ -1080,6 +1166,7 @@ window.GAME_CONTENT = {
                   id: "cameo-coffee",
                   label: "告诉他，柜台会一直留着一罐咖啡",
                   detail: "不卖新的，只给第二罐留一个位置",
+                  reaction: "他在门槛外停住，把旧徽章放在门边，朝刚才有人站过的地方偏了偏头。",
                   quote: "“那我就再等一班。小满刚才是不是也站在这里？”",
                   effect: {
                     time: 1,
@@ -1092,6 +1179,7 @@ window.GAME_CONTENT = {
                   id: "cameo-no-wait",
                   label: "告诉他，今晚不用再等",
                   detail: "不承诺车会来，只承认夏天已经够长",
+                  reaction: "他张了张嘴，像是还想问几点发车，最后只抬手整了整衣领。",
                   quote: "“不用等也好。夏天还长。”",
                   effect: {
                     time: 1,
@@ -1163,8 +1251,8 @@ window.GAME_CONTENT = {
             initial: "旅",
             avatarClass: "traveler",
             arrival: "没有影子的客人",
-            line: "他拿着一张空白明信片，说想买下来写给一个不存在的人。",
-            note: "他的钱币上都印着不同的年份，却没有一枚属于今天。",
+            line: "他先看纸张有没有受潮，再问能不能借柜台的灯写一张明信片。收件人那一栏，他用手掌挡着。",
+            note: "他说这条路的门牌跳过一个号，投递得拐两次弯。轮到自己的地址，便改口说还没想好。",
             action: "接待无名旅人",
             cost: "会花掉 1 个营业时间格",
             mode: "purchase",
@@ -1172,8 +1260,9 @@ window.GAME_CONTENT = {
             quantity: 1,
             prices: { low: 1, normal: 3, high: 5 },
             scene: [
-              "他把明信片对着车灯照了照，纸面上什么都没有。",
-              "“写给谁都行。”他说，“只要最后能留下一个名字。”"
+              "他把明信片的四角捋平：“这样的纸，雨里容易卷边。字得等干透再写。”",
+              "他顺口说出三条巷子的投递顺序，连谁家门口有台阶都记得。你指了指收件人那格，他却把纸翻了过去。",
+              "“那格先空着。我不是替谁买……也不能说完全是给我。”他笑了一下，手仍压着那一栏。"
             ],
             memory: {
               paid: "无名旅人买走一张空白明信片，在收件人一栏写下了“还在路上的人”。",
@@ -1182,7 +1271,7 @@ window.GAME_CONTENT = {
             quote: {
               low: "“这么便宜？那我再买一张……算了，我好像没有第二个名字。”",
               paid: "“字会消失。名字留下就够了。”",
-              high: "“钱我不太会算。你说够，那就够。”",
+              high: "“这些年邮资涨过几回，我都记得。自己的明信片多少钱，倒要问你。”",
               gift: "“那我欠你一个地址。”"
             },
             result: {
@@ -1200,8 +1289,8 @@ window.GAME_CONTENT = {
             initial: "澄",
             avatarClass: "",
             arrival: "在路边等过的人",
-            line: "她认出了货架上的红围巾，说那是母亲离开那天戴的颜色。",
-            note: "她还是没有问到母亲有没有回来。",
+            line: "她认出红围巾的颜色，伸手要摸，临到跟前又先问价：“我只是看看。别说买下来就会好一点。”",
+            note: "她记得母亲离开那天围巾怎样打结，却不肯让任何人替那一天编个好听的解释。",
             action: "听阿澄说起围巾",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -1210,6 +1299,7 @@ window.GAME_CONTENT = {
                 id: "borrow-scarf",
                 label: "把红围巾借给她挡风",
                 detail: "围巾会记住她今晚没有等到的答案",
+                quote: "“这个颜色……她那天围的也是这个颜色。风大，我借一会儿。”",
                 requiresStock: { scarf: 1 },
                 unavailable: "货架上的红围巾不够",
                 effect: {
@@ -1224,6 +1314,7 @@ window.GAME_CONTENT = {
                 id: "place-slippers",
                 label: "把蓝白拖鞋放在门边",
                 detail: "穿着它出门，会走向最想见的人附近",
+                quote: "“她在家的时候，也这么把鞋并着放。我先不穿。”",
                 requiresStock: { slippers: 1 },
                 unavailable: "货架上的蓝白拖鞋不够",
                 effect: {
@@ -1238,6 +1329,8 @@ window.GAME_CONTENT = {
                 id: "listen",
                 label: "不卖东西，只听她说完",
                 detail: "今晚不给答案，只把话留在这里",
+                quote: "“她最后问我带没带钥匙。就这一句，我没记错。你别替我改成别的话。”",
+                reaction: "她把两只手并在柜台上，拇指来回捻着，像指间还握着一把旧钥匙。",
                 effect: {
                   time: 1,
                   flagsOn: ["achengRoad"],
@@ -1253,8 +1346,8 @@ window.GAME_CONTENT = {
             initial: "零",
             avatarClass: "clerk",
             arrival: "沿着工资币找来的人",
-            line: "她带着一截烧短的蜡烛，说前面的路会突然变黑。",
-            note: "她还在替一个没有营业的新店值班。",
+            line: "她带着一截短蜡烛，先提醒你前面会黑，又报了个能顶班的时段。说完，她自己也愣了一下。",
+            note: "连提醒人小心，她都习惯顺便证明自己还有用。",
             action: "听 0217 说完",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -1263,6 +1356,7 @@ window.GAME_CONTENT = {
                 id: "candle-road",
                 label: "给她一支新的停电蜡烛",
                 detail: "收 ¥15，让她把黑掉的路照亮",
+                quote: "“这支是照我自己的路。要是前面黑，我就停下。”",
                 requiresStock: { candle: 1 },
                 unavailable: "货架上的停电蜡烛不够",
                 effect: {
@@ -1279,6 +1373,7 @@ window.GAME_CONTENT = {
                 id: "salt-road",
                 label: "把盐撒在公路边缘",
                 detail: "让看不见的脚步声暂时安静下来",
+                quote: "“脚步声停了。你听，这回能听见我们自己走路。”",
                 requiresStock: { salt: 1 },
                 unavailable: "货架上的盐包不够",
                 effect: {
@@ -1293,6 +1388,8 @@ window.GAME_CONTENT = {
                 id: "rest-road",
                 label: "让她在店里坐一会儿",
                 detail: "不买蜡烛，也不问前面的路还有多远",
+                quote: "“坐着不干活，也不算欠你一班吧？……好，那我把工牌翻过去。”",
+                reaction: "她把工牌翻到背面，没有摘。过了一会儿，紧贴膝盖的手指一根根松开。",
                 effect: {
                   time: 1,
                   flagsOn: ["clerkRoadRest"],
@@ -1303,55 +1400,71 @@ window.GAME_CONTENT = {
             ]
             },
             {
-              id: "umbrella-mender",
-              name: "修伞的老人",
-              initial: "伞",
-              avatarClass: "commuter",
-              arrival: "来借一盏灯的人",
-              line: "老人把三把断骨的伞放在柜台上，问门边那把是不是阿澄留下的。",
-              note: "他不是来买伞的。他说，有些伞被撑开过一次，就再也折不回去。",
-              action: "听修伞的老人说完",
-              cost: "会花掉 1 个营业时间格",
-              mode: "special",
-              choices: [
+              "id": "umbrella-mender",
+              "name": "修伞的老人",
+              "initial": "伞",
+              "avatarClass": "commuter",
+              "arrival": "借灯拆旧零件的修伞人",
+              "line": "老人放下两把断骨的伞，第三把一直夹在臂弯里。他点点门边阿澄那把：“这把别动，还能用。我借你的灯拆点旧零件。”",
+              "note": "他先把柜台上的水擦干，才肯放下工具。两把旧伞都能拿来配件，最破的那把，他却一直舍不得换。",
+              "action": "听修伞的老人说完",
+              "cost": "会花掉 1 个营业时间格",
+              "mode": "special",
+              "choices": [
                 {
-                  id: "give-rib",
-                  label: "拆一把透明雨伞，给他做伞骨",
-                  detail: "伞少一把，但老人的旧伞会重新撑开",
-                  quote: "“伞骨不是断了，是还没找到该撑住的地方。”",
-                  requiresStock: { umbrella: 1 },
-                  unavailable: "货架上的透明雨伞不够",
-                  effect: {
-                    time: 1,
-                    stock: { umbrella: -1 },
-                    flagsOn: ["umbrellaMended", "menderMet"],
-                    memory: "老人用透明雨伞的伞骨修好了自己的旧伞。他说，有些东西要拆开才能继续挡雨。",
-                    toast: "修伞的老人撑开了那把旧伞。"
-                  }
+                  "id": "give-rib",
+                  "label": "拆一把透明雨伞，给他做伞骨",
+                  "detail": "用掉一把透明雨伞的伞骨，修好他舍不得换的旧伞。",
+                  "quote": "“拿新伞拆零件，亏的是你。……这把手我用了三十年，真舍不得换。”",
+                  "requiresStock": {
+                    "umbrella": 1
+                  },
+                  "unavailable": "货架上的透明雨伞不够",
+                  "effect": {
+                    "time": 1,
+                    "stock": {
+                      "umbrella": -1
+                    },
+                    "flagsOn": [
+                      "umbrellaMended",
+                      "menderMet"
+                    ],
+                    "memory": "老人用透明雨伞的伞骨修好了自己的旧伞。他说，有些东西要拆开才能继续挡雨。",
+                    "toast": "修伞的老人撑开了那把旧伞。"
+                  },
+                  "reaction": "他拿新旧两根伞骨比了又比，才落下钳子。旧伞撑开时，他先用掌心顶了一下伞面，确定不会扎到人，才朝你点头。"
                 },
                 {
-                  id: "keep-broken",
-                  label: "让他把断骨的伞留在门边",
-                  detail: "它撑不开，却可以替一个还没回来的人占着位置",
-                  quote: "“撑不开的伞，也可以替人留个位置。”",
-                  effect: {
-                    time: 1,
-                    flagsOn: ["brokenUmbrellaKept", "menderMet"],
-                    memory: "老人把断骨的伞留在门边。它撑不开，却比货架上的伞更像一把伞。",
-                    toast: "门边多了一把撑不开的伞。"
-                  }
+                  "id": "keep-broken",
+                  "label": "让他把断骨的伞留在门边",
+                  "detail": "先替他保管这把断伞，等他找到合适的零件。",
+                  "quote": "“别当废品收走。我下次路过，带细铁丝来。那几个尖头，你别碰。”",
+                  "effect": {
+                    "time": 1,
+                    "flagsOn": [
+                      "brokenUmbrellaKept",
+                      "menderMet"
+                    ],
+                    "memory": "老人把断骨的伞留在门边。它撑不开，却比货架上的伞更像一把伞。",
+                    "toast": "门边多了一把撑不开的伞。"
+                  },
+                  "reaction": "他从工具袋找出一截旧布，把翘起的伞骨仔细包住，才将伞靠到门边。手已经松开了，又回来扶正一次。"
                 },
                 {
-                  id: "refuse-mender",
-                  label: "告诉他，店里今天不修伞",
-                  detail: "不拆新伞，也不留下旧伞",
-                  quote: "“不急。雨还会来。”",
-                  effect: {
-                    time: 1,
-                    flagsOn: ["menderRefused", "menderMet"],
-                    memory: "老人收起伞，没有生气。他说那就等下一场雨。",
-                    toast: "修伞的老人走进了雨里。"
-                  }
+                  "id": "refuse-mender",
+                  "label": "告诉他，店里今天不修伞",
+                  "detail": "不拆新伞，也不留下旧伞",
+                  "quote": "“成，借灯的事就算了。地上这点水，我擦完再走。”",
+                  "effect": {
+                    "time": 1,
+                    "flagsOn": [
+                      "menderRefused",
+                      "menderMet"
+                    ],
+                    "memory": "老人收起伞，没有生气。他说那就等下一场雨。",
+                    "toast": "修伞的老人走进了雨里。"
+                  },
+                  "reaction": "老人把工具收回去，没有再劝你。他蹲下擦掉伞尖滴的水，把三把伞一起抱好，出门时还替你带上了门。"
                 }
               ]
             }
@@ -1411,8 +1524,8 @@ window.GAME_CONTENT = {
             initial: "旅",
             avatarClass: "traveler",
             arrival: "来取回声音的人",
-            line: "他指着玻璃汽水瓶，说昨晚有一句话被留在了里面。",
-            note: "他今天有影子了，但影子没有跟着他动。",
+            line: "他听见瓶子里那句“我到了”，习惯性地伸手要代收。指尖碰到瓶盖，他才问：“这回，是对我说的吗？”",
+            note: "他能背出送到别人门前的每一句话，别人让他留下听完时，他却总想先起身。",
             action: "接待无名旅人",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -1421,6 +1534,7 @@ window.GAME_CONTENT = {
                 id: "sell-bottle",
                 label: "把玻璃汽水瓶卖给他",
                 detail: "收 ¥7，让他把没说完的话带走",
+                quote: "“‘我到了’……这句话我送过。可我没听过它这样叫我。”",
                 requiresStock: { glassBottle: 1 },
                 unavailable: "货架上的玻璃汽水瓶不够",
                 effect: {
@@ -1437,6 +1551,8 @@ window.GAME_CONTENT = {
                 id: "gift-bottle",
                 label: "把瓶子送给他，不收钱",
                 detail: "让他第一次拥有一段不需要归还的声音",
+                quote: "“这段不用再转交了？那我想自己听完。你要是不忙，先别走。”",
+                reaction: "他把瓶口朝向自己，第一次没有替它找下一个收件人。另一只手还在习惯性地摸衣袋。",
                 requiresStock: { glassBottle: 1 },
                 unavailable: "货架上的玻璃汽水瓶不够",
                 effect: {
@@ -1451,6 +1567,7 @@ window.GAME_CONTENT = {
                 id: "keep-bottle",
                 label: "告诉他，那句话还不是留给他的",
                 detail: "把瓶子留在店里，等对的人来",
+                quote: "“嗯，那我不拿。要是那个人来了，你让他把话听完。”",
                 effect: {
                   time: 1,
                   flagsOn: ["bottleWaiting"],
@@ -1466,8 +1583,8 @@ window.GAME_CONTENT = {
             initial: "满",
             avatarClass: "xiaoman",
             arrival: "来等天气预报的人",
-            line: "她抱着旧收音机，问它能不能播到明天的太阳。",
-            note: "收音机的旋钮停在一个已经不存在的频道。",
+            line: "她把收音机转得沙沙响：“它总说‘明天见’，说完就没声。我问吃饭了没有，它也不答。”",
+            note: "她把笑收了回去。这次没急着替谁把话圆好。",
             action: "接待小满",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -1476,6 +1593,7 @@ window.GAME_CONTENT = {
                 id: "sell-radio",
                 label: "把旧收音机卖给她",
                 detail: "收 ¥30，让她自己决定相信哪一个天气",
+                quote: "“它说‘明天见’。我再转回来听一遍，就一遍。”",
                 requiresStock: { radio: 1 },
                 unavailable: "货架上的旧收音机不够",
                 effect: {
@@ -1492,6 +1610,7 @@ window.GAME_CONTENT = {
                 id: "play-weather",
                 label: "替她调到一个有太阳的频道",
                 detail: "收音机会留在店里，但她能听完这一晚",
+                quote: "“先别换台。它还没说完那个下午有多长。”",
                 requiresStock: { radio: 1 },
                 unavailable: "货架上的旧收音机不够",
                 effect: {
@@ -1505,6 +1624,8 @@ window.GAME_CONTENT = {
                 id: "radio-quiet",
                 label: "陪她听一会儿杂音",
                 detail: "不承诺明天，也不关掉收音机",
+                quote: "“你不用也说‘明天一定’。我听腻了。就陪我听这阵沙沙声吧。”",
+                reaction: "她没再转旋钮，把饭盒放到自己身边，给你在柜台上空出一小块位置。",
                 effect: {
                   time: 1,
                   flagsOn: ["quietRadio"],
@@ -1530,6 +1651,7 @@ window.GAME_CONTENT = {
                 id: "candle-tunnel",
                 label: "用工资单换她一支蜡烛",
                 detail: "蜡烛少一支，收银台多一张皱掉的工资单",
+                quote: "“这张单子你收着。日期还新，总能证明我来过班。”",
                 requiresStock: { candle: 1 },
                 unavailable: "货架上的停电蜡烛不够",
                 effect: {
@@ -1544,6 +1666,7 @@ window.GAME_CONTENT = {
                 id: "sell-candle",
                 label: "照价卖给她一支蜡烛",
                 detail: "收 ¥15，让她先把前面的灯点起来",
+                quote: "“钱在这儿。蜡烛我自己拿，这班快交完了。”",
                 requiresStock: { candle: 1 },
                 unavailable: "货架上的停电蜡烛不够",
                 effect: {
@@ -1560,6 +1683,7 @@ window.GAME_CONTENT = {
                 id: "rest-tunnel",
                 label: "让她靠着售货机睡一会儿",
                 detail: "今晚不卖东西，灯也不会熄",
+                quote: "“这台不收睡觉的钱吧？那我靠一会儿……”",
                 effect: {
                   time: 1,
                   flagsOn: ["clerkSlept"],
@@ -1603,8 +1727,8 @@ window.GAME_CONTENT = {
             initial: "沈",
             avatarClass: "shen",
             arrival: "第三位等车的人",
-            line: "他把一张过期车票放在柜台上，说这次真的有人没到。",
-            note: "他不再问咖啡多少钱，只问车票还能不能算数。",
+            line: "他核对那张过期车票的站名，嘴里仍念着发车时刻。念到一半，他问你：“上回我是不是又没往后看？”",
+            note: "他会数座位、查车门、问到站的人。只有那句该说给阿琴的话，始终没按时交出去。",
             action: "接待沈伯",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -1613,6 +1737,8 @@ window.GAME_CONTENT = {
                 id: "ticket-and-coffee",
                 label: "把过期车票和两罐咖啡交给他",
                 detail: "让他替没到的人保管最后一次上车凭证",
+                quote: "“票和咖啡都齐了。这回先看人，再看表。你慢点，我回个头。”",
+                reaction: "他拿稳两罐咖啡，走到车门前又停下，转过身，把站牌和门口都看了一遍。",
                 requiresStock: { expiredTicket: 1, coffee: 2 },
                 unavailable: "还缺过期车票或两罐咖啡",
                 effect: {
@@ -1627,6 +1753,7 @@ window.GAME_CONTENT = {
                 id: "ticket-only",
                 label: "只把过期车票交给他",
                 detail: "不提供新的咖啡，让旧的那一罐继续等",
+                quote: "“这个站名我认得。咖啡就不找了，票先放好。”",
                 requiresStock: { expiredTicket: 1 },
                 unavailable: "还没有找到过期车票",
                 effect: {
@@ -1641,6 +1768,7 @@ window.GAME_CONTENT = {
                 id: "sit-with-shen",
                 label: "陪他在站牌下坐到最后",
                 detail: "不卖东西，只让这一班车晚一点到",
+                quote: "“站久了腿酸。坐这儿吧，天亮以前谁也不用催谁。”",
                 effect: {
                   time: 1,
                   flagsOn: ["shenSits"],
@@ -1670,8 +1798,8 @@ window.GAME_CONTENT = {
             initial: "零",
             avatarClass: "clerk",
             arrival: "来交还工牌的人",
-            line: "她把工牌放在柜台上，说过期车票应该由店里收好。",
-            note: "她第一次没有站在价签机旁边。",
+            line: "她把旧工牌放下，已经走到门口，又折回来问你有没有人接班。你还没答，她先说：“我不是来报到的。”",
+            note: "这句更像在提醒她自己。她忍着没有去碰收银盒旁那张歪着的收据。",
             action: "接待 0217",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -1680,6 +1808,7 @@ window.GAME_CONTENT = {
                 id: "take-badge",
                 label: "收下她的旧工牌",
                 detail: "不卖东西，让这间店替她保管值班的证明",
+                quote: "“背面也帮我留着。正面的数字……我看够了。”",
                 effect: {
                   time: 1,
                   flagsOn: ["clerkBadge"],
@@ -1691,6 +1820,7 @@ window.GAME_CONTENT = {
                 id: "coffee-break",
                 label: "请她喝一罐咖啡",
                 detail: "咖啡少一罐，今晚不用值班",
+                quote: "“先不打开。明天不用赶班的时候，我再喝。”",
                 requiresStock: { coffee: 1 },
                 unavailable: "货架上的咖啡不够",
                 effect: {
@@ -1705,6 +1835,8 @@ window.GAME_CONTENT = {
                 id: "walk-away",
                 label: "让她直接下班",
                 detail: "不检查货架，也不整理最后一张收据",
+                quote: "“有件事先说好：我走了，价签歪了也别算我的。……走了。”",
+                reaction: "她朝货架看了最后一眼，把伸出来的手收回口袋，真的跨过了门槛。",
                 effect: {
                   time: 1,
                   flagsOn: ["clerkLeaves"],
@@ -1715,130 +1847,173 @@ window.GAME_CONTENT = {
             ]
           },
           {
-            id: "flower-girl",
-            name: "卖花的女孩",
-            initial: "花",
-            avatarClass: "xiaoman",
-            arrival: "来换一只瓶子的客人",
-            line: "她抱着一束快要谢掉的白色小花，说想换一只能装水的瓶子。",
-            note: "她说小满昨天也在这里买过一只空饭盒，花却一直朝着店里的灯开。",
-            action: "接待卖花的女孩",
-            cost: "会花掉 1 个营业时间格",
-            mode: "special",
-            choices: [
+            "id": "flower-girl",
+            "name": "卖花的女孩",
+            "initial": "花",
+            "avatarClass": "xiaoman",
+            "arrival": "来换一只瓶子的客人",
+            "line": "“这枝本来卖五块。”女孩把价签翻过去，捏掉一片坏叶子，“先不卖了。能给它找个装水的瓶子吗？”",
+            "note": "她讲起价钱很利落，花头一垂下来，又会先伸手托住。她想救下这束没卖出去的花，还坚持说这是交换。",
+            "action": "接待卖花的女孩",
+            "cost": "会花掉 1 个营业时间格",
+            "mode": "special",
+            "choices": [
               {
-                id: "flower-bottle",
-                label: "用玻璃汽水瓶换她一朵花",
-                detail: "瓶子少一只，花会在没有太阳的车站里多开一晚",
-                quote: "“小满说，只要有人看见，花就不算白开。”",
-                requiresStock: { glassBottle: 1 },
-                unavailable: "货架上的玻璃汽水瓶不够",
-                effect: {
-                  time: 1,
-                  stock: { glassBottle: -1 },
-                  flagsOn: ["flowerInBottle", "flowerGirlMet"],
-                  memory: "女孩把花插进玻璃瓶。瓶口的风停了，花在没有太阳的车站里多开了一晚。",
-                  toast: "柜台上多了一瓶白花。"
-                }
+                "id": "flower-bottle",
+                "label": "用玻璃汽水瓶换她一朵花",
+                "detail": "给花找一只装水的玻璃瓶，她留一枝在柜台作为交换。",
+                "quote": "“这枝算换你的。水别装满，叶子泡着会烂。还有，别搁在风口。”",
+                "requiresStock": {
+                  "glassBottle": 1
+                },
+                "unavailable": "货架上的玻璃汽水瓶不够",
+                "effect": {
+                  "time": 1,
+                  "stock": {
+                    "glassBottle": -1
+                  },
+                  "flagsOn": [
+                    "flowerInBottle",
+                    "flowerGirlMet"
+                  ],
+                  "memory": "女孩把花插进玻璃瓶。瓶口的风停了，花在没有太阳的车站里多开了一晚。",
+                  "toast": "柜台上多了一瓶白花。"
+                },
+                "reaction": "她把最完整的一枝花插进瓶里，转了半圈，让花面朝向你。剩下的花被她重新包好，皱掉的价签塞进自己口袋。"
               },
               {
-                id: "flower-counter",
-                label: "把花留在柜台上，不收她的钱",
-                detail: "花不需要地址，只需要有一个人看见",
-                quote: "“那就让它替我在这里待一会儿。”",
-                effect: {
-                  time: 1,
-                  flagsOn: ["flowerOnCounter", "flowerGirlMet"],
-                  memory: "女孩把花留在柜台上。她说花不需要地址，只要有一个人看见。",
-                  toast: "柜台上留下了一小束白花。"
-                }
+                "id": "flower-counter",
+                "label": "把花留在柜台上，不收她的钱",
+                "detail": "不用瓶子，先让她把裹着湿纸的花留在柜台。",
+                "quote": "“那我先寄放一晚。要是有人喜欢，你就送一枝。别说是卖剩下的。”",
+                "effect": {
+                  "time": 1,
+                  "flagsOn": [
+                    "flowerOnCounter",
+                    "flowerGirlMet"
+                  ],
+                  "memory": "女孩把花留在柜台上。她说花不需要地址，只要有一个人看见。",
+                  "toast": "柜台上留下了一小束白花。"
+                },
+                "reaction": "她把包装纸上干掉的角撕去，露出还湿的那层。把花放下后，她又回过头，将垂下的一枝扶直。"
               },
               {
-                id: "flower-refuse",
-                label: "告诉她，店里没有能装花的瓶子",
-                detail: "不换瓶子，也不留下花",
-                quote: "“没关系，花还会再开一次。”",
-                effect: {
-                  time: 1,
-                  flagsOn: ["flowerGirlRefused", "flowerGirlMet"],
-                  memory: "女孩抱着花走出门。夏天把她的影子拉得很长。",
-                toast: "卖花的女孩走进了车站的灯里。"
-                }
+                "id": "flower-refuse",
+                "label": "告诉她，店里没有能装花的瓶子",
+                "detail": "她带走这束花，继续找能装水的地方。",
+                "quote": "“好，我再问一家。先不降价了，至少得让它们喝口水。”",
+                "effect": {
+                  "time": 1,
+                  "flagsOn": [
+                    "flowerGirlRefused",
+                    "flowerGirlMet"
+                  ],
+                  "memory": "女孩抱着花走出门。夏天把她的影子拉得很长。",
+                  "toast": "卖花的女孩走进了车站的灯里。"
+                },
+                "reaction": "她点点头，把花根重新裹紧，没再向你推销。出门前，她把一张飘落的价签也捡了回去。"
               }
             ]
           },
           {
-            id: "cat-finder",
-            name: "找猫的人",
-            initial: "猫",
-            avatarClass: "traveler",
-            arrival: "沿着盐粒走来的人",
-            line: "她沿着柜台边的盐粒一路找来，问有没有看见一只没有影子的黑猫。",
-            note: "她说 0217 提过，猫只在停摆的钟附近出现，钟一走，猫就会回来。",
-            action: "帮她找猫",
-            cost: "会花掉 1 个营业时间格",
-            mode: "special",
-            choices: [
+            "id": "cat-finder",
+            "name": "找猫的人",
+            "initial": "猫",
+            "avatarClass": "traveler",
+            "arrival": "沿着盐粒走来的人",
+            "line": "她把空猫笼朝门口摆好：“一只没有影子的黑猫，左耳缺个角。别喊名字，它装听不见。晃袋子才有用。”",
+            "note": "她说自己只是顺路问问，找猫单却已经折得发白。笼子里铺着旧外套，留出来的位置比她自己的座位还宽。",
+            "action": "帮她找猫",
+            "cost": "会花掉 1 个营业时间格",
+            "mode": "special",
+            "choices": [
               {
-                id: "cat-candle",
-                label: "把停电蜡烛借给她",
-                detail: "蜡烛少一支，钟后面会多一声很轻的猫叫",
-                quote: "“0217说它怕黑，也怕我不去找它。”",
-                requiresStock: { candle: 1 },
-                unavailable: "货架上的停电蜡烛不够",
-                effect: {
-                  time: 1,
-                  stock: { candle: -1 },
-                  flagsOn: ["catFound", "catFinderMet"],
-                  memory: "她举着蜡烛走进钟后面。黑暗里传来一声很轻的猫叫，像有人终于应了她的名字。",
-                  toast: "钟后面传来了一声猫叫。"
-                }
+                "id": "cat-candle",
+                "label": "把停电蜡烛借给她",
+                "detail": "蜡烛少一支，钟后面会多一声很轻的猫叫",
+                "quote": "“你听见没？就这臭脾气。……别追，我过去。”",
+                "requiresStock": {
+                  "candle": 1
+                },
+                "unavailable": "货架上的停电蜡烛不够",
+                "effect": {
+                  "time": 1,
+                  "stock": {
+                    "candle": -1
+                  },
+                  "flagsOn": [
+                    "catFound",
+                    "catFinderMet"
+                  ],
+                  "memory": "她举着蜡烛走进钟后面。黑暗里传来一声很轻的猫叫，像有人终于应了她的名字。",
+                  "toast": "钟后面传来了一声猫叫。"
+                },
+                "reaction": "她把蜡烛举到膝盖那么高，一手护住火。钟后传来猫叫时，她嘴上还在埋怨，脚步却立刻放轻了。"
               },
               {
-                id: "cat-salt",
-                label: "把盐撒到钟座下面",
-                detail: "盐少一包，钟座下会多一条猫能认出的路",
-                quote: "“它记得自己走过的路。”",
-                requiresStock: { salt: 1 },
-                unavailable: "货架上的盐包不够",
-                effect: {
-                  time: 1,
-                  stock: { salt: -1 },
-                  flagsOn: ["catTrail", "catFinderMet"],
-                  memory: "盐粒在钟座下排成一条细线。她说猫会沿着这条线回来，因为猫记得自己走过的路。",
-                  toast: "钟座下多了一条盐粒小路。"
-                }
+                "id": "cat-salt",
+                "label": "把盐撒到钟座下面",
+                "detail": "盐少一包，钟座下会多一条猫能认出的路",
+                "quote": "“先别扫。它认路，肯定先来闻。我在这儿等一会儿。”",
+                "requiresStock": {
+                  "salt": 1
+                },
+                "unavailable": "货架上的盐包不够",
+                "effect": {
+                  "time": 1,
+                  "stock": {
+                    "salt": -1
+                  },
+                  "flagsOn": [
+                    "catTrail",
+                    "catFinderMet"
+                  ],
+                  "memory": "盐粒在钟座下排成一条细线。她说猫会沿着这条线回来，因为猫记得自己走过的路。",
+                  "toast": "钟座下多了一条盐粒小路。"
+                },
+                "reaction": "她蹲在盐粒细线旁，把空猫笼的门固定住。这一次没再晃袋子，只把旧外套往笼口拉近一点。"
               },
               {
-                id: "cat-gone",
-                label: "告诉她，猫可能已经先走了",
-                detail: "不借蜡烛，也不撒盐",
-                quote: "“那我再找一站。它总得在某一站等我。”",
-                effect: {
-                  time: 1,
-                  flagsOn: ["catGone", "catFinderMet"],
-                  memory: "她把空猫笼抱在怀里，说那就再找一站。",
-                  toast: "找猫的人走向了下一盏灯。"
-                }
+                "id": "cat-gone",
+                "label": "告诉她，猫可能已经先走了",
+                "detail": "不借蜡烛，也不撒盐",
+                "quote": "“我知道它不一定在等我。我再去前面看看，笼子还是先开着。”",
+                "effect": {
+                  "time": 1,
+                  "flagsOn": [
+                    "catGone",
+                    "catFinderMet"
+                  ],
+                  "memory": "她把空猫笼抱在怀里，说那就再找一站。",
+                  "toast": "找猫的人走向了下一盏灯。"
+                },
+                "reaction": "她把画满叉的找猫单折好，没有撕掉。提起猫笼时，又确认了一遍里面的旧外套，才继续往前走。"
               }
             ]
           },
           {
-            id: "driver-return",
-            name: "夜班司机",
-            initial: "夜",
-            avatarClass: "commuter",
-            arrival: "普通客人",
-            line: "他买走一罐咖啡，说末班车终于可以改名叫首班车。",
-            note: "普通交易不消耗营业时间。",
-            action: "卖一罐咖啡 · ¥6",
-            cost: "不耗时间",
-            mode: "quick",
-            product: "coffee",
-            quantity: 1,
-            amount: 6,
-            memory: "夜班司机买走一罐咖啡。他说末班车停在站外，却没有人急着上去了。",
-            toast: "夜班司机把咖啡带回了驾驶座。"
+            "id": "driver-return",
+            "name": "夜班司机",
+            "initial": "夜",
+            "avatarClass": "commuter",
+            "arrival": "准备交班的夜班司机",
+            "line": "司机把旧咖啡罐放进垃圾桶：“再来一罐。这趟开完，我坐最后一排回去。”这次他没急着戴手套。",
+            "note": "他给自己买了一张回程票，票角还很平。说到不用开车，他倒有些不习惯。普通交易不耗营业时间。",
+            "action": "卖一罐咖啡 · ¥6",
+            "cost": "不耗时间",
+            "mode": "quick",
+            "product": "coffee",
+            "quantity": 1,
+            "amount": 6,
+            "memory": "夜班司机买走一罐咖啡。他说末班车停在站外，却没有人急着上去了。",
+            "toast": "司机收好手套，这次准备坐车回去。",
+            "scene": [
+              "“上次我等的那位，总算把鞋带系好了。”他拿咖啡时笑了一声。",
+              "他翻开回程票看了看，像在确认那也是一张能用的票。"
+            ],
+            "quote": "“以前到了站，我还坐在驾驶座上。这回换个人开，我也看看窗外。”",
+            "reaction": "他没打开咖啡，把它和回程票一起放进制服口袋。走到门口时，他往站牌看了一眼，随后把手套也收了起来。",
+            "result": "司机拿走咖啡，准备交班。回去的这一趟，他给自己留了一个乘客的位置。"
           }
         ],
         task: {
@@ -1896,8 +2071,8 @@ window.GAME_CONTENT = {
             initial: "澄",
             avatarClass: "",
             arrival: "不再等车的人",
-            line: "她拿着一张写了收件人的明信片，说这一次不打算把伞留下。",
-            note: "她还是会看站牌，只是不再把整个下午都交给它。",
+            line: "她说今天要拿伞走，又先交代你：“我没带走的那些，也别随手替我送人。问过我再说。”",
+            note: "她还在保护旧东西，却开始分得清哪些是自己的决定，哪些只是怕人失望。",
             action: "接待阿澄",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -1906,6 +2081,7 @@ window.GAME_CONTENT = {
                 id: "umbrella-forward",
                 label: "卖给她一把能带走的伞",
                 detail: "收 ¥10。这次她要把伞带出店门",
+                quote: "“这一把我拿走。门边空一点，也没关系。”",
                 requiresStock: { umbrella: 1 },
                 unavailable: "货架上的透明雨伞不够",
                 effect: {
@@ -1922,6 +2098,8 @@ window.GAME_CONTENT = {
                 id: "postcard-name",
                 label: "把写有名字的明信片交给她",
                 detail: "让她知道，母亲有没有回来并不是她一个人要回答的问题",
+                quote: "“收件人写阿澄。不用加‘谁家的女儿’，我收得到。”",
+                reaction: "她把名字写在那一格中央，没有再往旁边补别人的称呼。",
                 requiresStock: { postcard: 1 },
                 unavailable: "货架上的空白明信片不够",
                 effect: {
@@ -1936,6 +2114,7 @@ window.GAME_CONTENT = {
                 id: "let-go-umbrella",
                 label: "把门边的旧伞还给她",
                 detail: "旧伞离开柜台，她就可以不再回来取",
+                quote: "“伞里面怎么有光……算了，先带着走一段。”",
                 requiresFlag: "doorUmbrella",
                 unavailable: "门边已经没有留下那把旧伞",
                 effect: {
@@ -1954,8 +2133,8 @@ window.GAME_CONTENT = {
             initial: "沈",
             avatarClass: "shen",
             arrival: "来找旧车票的人",
-            line: "他问店里是否还有一张能回到停运以前的票。",
-            note: "旧车队徽章被他擦得很亮，像今天还要发车。",
+            line: "他问回程票，又替你报起第一班车该坐几个人。报到自己时，声音停住了：“司机也能买张乘客票吧？”",
+            note: "他把别人安排得妥帖，唯独不肯承认自己也想有人替他留个座。",
             action: "接待沈伯",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -1964,6 +2143,7 @@ window.GAME_CONTENT = {
                 id: "light-ticket",
                 label: "用打火机替他照亮旧车票",
                 detail: "不烧掉车票，只让背面的字显出来",
+                quote: "“字出来了。原来不是停运，是我没再看背面。”",
                 requiresStock: { lighter: 1 },
                 unavailable: "货架上的打火机不够",
                 effect: {
@@ -1978,6 +2158,7 @@ window.GAME_CONTENT = {
                 id: "give-postcard",
                 label: "给他一张写给下一班车的明信片",
                 detail: "让地址空着，但让收件人有一个位置",
+                quote: "“名字还没写好。先写‘还没到的人’，这格别空着。”",
                 requiresStock: { postcard: 1 },
                 unavailable: "货架上的空白明信片不够",
                 effect: {
@@ -1992,6 +2173,8 @@ window.GAME_CONTENT = {
                 id: "let-shen-go",
                 label: "告诉他，今天不用再发车",
                 detail: "没有车票，也可以回家",
+                quote: "“那今天别再叫我去发车。我也想看看，坐在后面的人一路都看见些什么。”",
+                reaction: "他把徽章摘下来，手没有再伸向那些按次序排好的车票。",
                 effect: {
                   time: 1,
                   flagsOn: ["shenOffDuty"],
@@ -2021,8 +2204,8 @@ window.GAME_CONTENT = {
             initial: "满",
             avatarClass: "xiaoman",
             arrival: "来还晴天的人",
-            line: "她抱着空饭盒，说夏天已经吃完了，想把最后一点热留给店里。",
-            note: "她的影子终于和脚步一起移动。",
+            line: "她掀开空饭盒，说这一份不替别人留了：“你吃过没有？……等一下，我先问我自己。”",
+            note: "说完她自己笑了。笑过才认真承认，她还饿着。",
             action: "接待小满",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -2031,6 +2214,8 @@ window.GAME_CONTENT = {
                 id: "warm-final",
                 label: "替她把空饭盒热一遍",
                 detail: "卖给她一只饭盒，收 ¥18",
+                quote: "“今天这份我先拿着。明天要分给谁，等我吃饱再想。”",
+                reaction: "她把热饭盒稳稳收在自己身前，没有再往柜台另一边推。",
                 requiresStock: { lunchbox: 1 },
                 unavailable: "货架上的保温饭盒不够",
                 effect: {
@@ -2047,6 +2232,7 @@ window.GAME_CONTENT = {
                 id: "radio-last",
                 label: "把收音机调到最后一个频道",
                 detail: "让她听完一段没有坏消息的天气",
+                quote: "“晴也好，雨也好。它说完就行，我听着呢。”",
                 requiresStock: { radio: 1 },
                 unavailable: "货架上的旧收音机不够",
                 effect: {
@@ -2060,6 +2246,7 @@ window.GAME_CONTENT = {
                 id: "bottle-light",
                 label: "把玻璃瓶举向夕阳",
                 detail: "把晴天装进去，留给她下次经过",
+                quote: "“真的装进去了。下次经过，我还想看一眼。”",
                 requiresStock: { glassBottle: 1 },
                 unavailable: "货架上的玻璃汽水瓶不够",
                 effect: {
@@ -2106,8 +2293,8 @@ window.GAME_CONTENT = {
             initial: "旅",
             avatarClass: "traveler",
             arrival: "来取收件人名字的人",
-            line: "他把阿澄的纸角、沈伯的车票、0217的工牌和小满的饭盒排在一起。",
-            note: "他终于有了影子，却不知道包裹上应该写谁的名字。",
+            line: "他在包裹旁腾出五个位置，逐一核对信封上的收件人。到第五封，他不再把纸翻过去：“这封也是我留下的。”",
+            note: "“那五封没送到。我把它们留在这里，还装作是别人的包裹。”这次他说完了，没有拿地址岔开。",
             action: "听无名旅人说完",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -2116,7 +2303,8 @@ window.GAME_CONTENT = {
                 id: "name-on-postcard",
                 label: "把空白明信片递给他",
                 detail: "让包裹第一次拥有一个可以写的收件人",
-                quote: "“写我自己的名字……可以吗？我怕写上去，明天又忘了。”",
+                quote: "“这一格别替我写。我想自己试一次。写慢一点……也别催我。”",
+                reaction: "他把明信片平放在灯下，手仍在抖，却没有再用掌心盖住收件人那一格。",
                 requiresStock: { postcard: 1 },
                 unavailable: "货架上的空白明信片不够",
                 effect: {
@@ -2146,7 +2334,8 @@ window.GAME_CONTENT = {
                 id: "let-him-hold",
                 label: "让他先抱着包裹坐一会儿",
                 detail: "不写名字，也不急着决定去路",
-                quote: "“我就坐一会儿。要是天亮前又想不起来，你别叫醒我。”",
+                quote: "“我先坐着。这回不是替谁保管，是我自己想歇了。名字晚点再写。”",
+                reaction: "他坐下，把包裹放在能看得见的膝上，没有再托你替他交给下一个人。",
                 effect: {
                   time: 1,
                   flagsOn: ["travelerFinal", "travelerClosure", "travelerRested"],
@@ -2186,7 +2375,8 @@ window.GAME_CONTENT = {
                 id: "achengg-final-page",
                 label: "把写着阿澄名字的那一页交给她",
                 detail: "让她知道母亲没有回来，并不是因为她等得不够久",
-                quote: "“原来不是我等得不够久。……伞先放着吧。”",
+                quote: "“她有她没回来的理由。……伞留给下一场雨吧，谁淋着了，你就借给谁。”",
+                reaction: "她把信折好收进口袋，亲手转了转门边的伞柄，让进门的人更容易拿到。",
                 effect: {
                   time: 1,
                   flagsOn: ["achengClosure", "parcelOpenedForAcheng"],
@@ -2213,7 +2403,7 @@ window.GAME_CONTENT = {
                 id: "acheng-final-wait",
                 label: "告诉她，还可以再等一会儿",
                 detail: "不替她结束等待，也不拿走最后一把伞",
-                quote: "“再一会儿。就一会儿。”",
+                quote: "“别动门边那个位置。我还没想好要不要走，这回让我自己想。”",
                 effect: {
                   time: 1,
                   flagsOn: ["achengStillWaiting"],
@@ -2254,14 +2444,15 @@ window.GAME_CONTENT = {
                 id: "shen-final-coffee",
                 label: "打开留给他的那罐咖啡",
                 detail: "让第二罐终于不再替一个没到的人等下去",
-                quote: "“他早就到了。是我一直没敢回头。”",
+                quote: "“阿琴那天叫过我。我听见了。这罐咖啡……今天我自己喝完。”",
+                reaction: "他用两只手握住咖啡罐，没有再朝空座位推。",
                 requiresFlag: "unopenedCoffee",
                 unavailable: "第一夜留下的那罐咖啡已经不在了",
                 effect: {
                   time: 1,
                   flagsOff: ["unopenedCoffee"],
                   flagsOn: ["shenClosure", "shenSecondCoffee"],
-                  memory: "沈伯打开第二罐咖啡。热气升起来的时候，他说那个人其实早就到了，只是自己没敢回头。",
+                  memory: "沈伯打开第二罐咖啡，承认阿琴那晚叫他时，自己其实听见了。他握住罐身，没有再拿发车的规矩替那一晚作解释。",
                   toast: "沈伯喝完了第二罐咖啡。"
                 }
               },
@@ -2307,11 +2498,12 @@ window.GAME_CONTENT = {
                 id: "clerk-final-name",
                 label: "念出工牌背后的名字",
                 detail: "不把她只当作一个替店值班的编号",
-                quote: "“原来我叫这个。怪不得每次听见，都想回头。”",
+                quote: "“林晚。我知道。就是好久没人这样叫了。再叫一次，别顺便给我派活。”",
+                reaction: "她应得比平时慢半拍，又抬起头看你。这一回应，她没有先去看货架。",
                 effect: {
                   time: 1,
                   flagsOn: ["clerkClosure", "clerkNamed"],
-                  memory: "你念出工牌背后的名字。0217愣了很久，最后说：“原来我还记得自己被这样叫过。”",
+                  memory: "你念出林晚的名字。她应得很慢，随后说自己没有忘，只是太久没有听别人这样叫。她没有再去接下一张排班表。",
                   toast: "0217把工牌收进了自己的口袋。"
                 }
               },
@@ -2357,7 +2549,8 @@ window.GAME_CONTENT = {
                 id: "xiaoman-final-meal",
                 label: "把早饭留给她",
                 detail: "卖给她一只保温饭盒，收 ¥18",
-                quote: "“那我先吃。明天有没有太阳，等吃完再说。”",
+                quote: "“这份我先吃，不给谁留一半了。你要是饿，等我吃完再陪你买。”",
+                reaction: "她先把热饭拉到自己面前，真的吃了一口，才有空去问门外的天气。",
                 requiresStock: { lunchbox: 1 },
                 unavailable: "货架上的保温饭盒不够",
                 effect: {
@@ -2447,8 +2640,8 @@ window.GAME_CONTENT = {
             initial: "满",
             avatarClass: "xiaoman",
             arrival: "来还最后一束花的人",
-            line: "她抱着一束已经没有香味的花，说夏天快要把下午用完了。",
-            note: "她没有问明天有没有太阳，只问今天的灯还能亮多久。",
+            line: "她抱着花进来，张口便说送给店里，又改口：“我其实想留一朵。剩下的……先让我挑。”",
+            note: "她挑了好一会儿，不再因为怕人失望，就把自己的那份也一并送出去。",
             action: "接待小满",
             cost: "会花掉 1 个营业时间格",
             mode: "special",
@@ -2484,7 +2677,8 @@ window.GAME_CONTENT = {
                 id: "summer-accepted",
                 label: "告诉她，夏天已经够长了",
                 detail: "不承诺明天，只承认这个下午已经足够",
-                quote: "“那我就先把今天过完。”",
+                quote: "“那就不加一下午了。我有点累，今天不装没事。”",
+                reaction: "她松开抱花的手，让花靠在柜台边，自己也跟着靠了一会儿。",
                 effect: {
                   time: 1,
                   flagsOn: ["summerAccepted", "xiaomanSummerSix"],
@@ -2548,111 +2742,147 @@ window.GAME_CONTENT = {
             ]
           },
           {
-            id: "flower-girl",
-            name: "卖花的女孩",
-            initial: "花",
-            avatarClass: "xiaoman",
-            arrival: "来换一只瓶子的客人",
-            line: "她抱着一束快要谢掉的白色小花，问夏天还能不能把花留在店里。",
-            note: "她说小满刚才也在这里，花却一直朝着店里的灯开。",
-            action: "接待卖花的女孩",
-            cost: "会花掉 1 个营业时间格",
-            mode: "special",
-            choices: [
+            "id": "flower-girl",
+            "name": "卖花的女孩",
+            "initial": "花",
+            "avatarClass": "xiaoman",
+            "arrival": "来换一只瓶子的客人",
+            "line": "女孩跟着柜台挪动的光，把花放到阴凉处：“最后这几枝我不想扔。能借个瓶子？我留一枝在这儿换。”",
+            "note": "她讲起价钱很利落，花头一垂下来，又会先伸手托住。她想救下这束没卖出去的花，还坚持说这是交换。",
+            "action": "接待卖花的女孩",
+            "cost": "会花掉 1 个营业时间格",
+            "mode": "special",
+            "choices": [
               {
-                id: "flower-bottle",
-                label: "用玻璃汽水瓶换她一朵花",
-                detail: "瓶子少一只，花会在夏天里多开一晚",
-                quote: "“小满说，只要有人看见，花就不算白开。”",
-                requiresStock: { glassBottle: 1 },
-                unavailable: "货架上的玻璃汽水瓶不够",
-                effect: {
-                  time: 1,
-                  stock: { glassBottle: -1 },
-                  flagsOn: ["flowerInBottle", "flowerGirlMet"],
-                  memory: "女孩把花插进玻璃瓶。瓶口的风停了，花在倒退的夏天里多开了一晚。",
-                  toast: "柜台上多了一瓶白花。"
-                }
+                "id": "flower-bottle",
+                "label": "用玻璃汽水瓶换她一朵花",
+                "detail": "给花找一只装水的玻璃瓶，她留一枝在柜台作为交换。",
+                "quote": "“这枝算换你的。水别装满，叶子泡着会烂。还有，别搁在风口。”",
+                "requiresStock": {
+                  "glassBottle": 1
+                },
+                "unavailable": "货架上的玻璃汽水瓶不够",
+                "effect": {
+                  "time": 1,
+                  "stock": {
+                    "glassBottle": -1
+                  },
+                  "flagsOn": [
+                    "flowerInBottle",
+                    "flowerGirlMet"
+                  ],
+                  "memory": "女孩把花插进玻璃瓶。瓶口的风停了，花在倒退的夏天里多开了一晚。",
+                  "toast": "柜台上多了一瓶白花。"
+                },
+                "reaction": "她把最完整的一枝花插进瓶里，转了半圈，让花面朝向你。剩下的花被她重新包好，皱掉的价签塞进自己口袋。"
               },
               {
-                id: "flower-counter",
-                label: "把花留在柜台上，不收她的钱",
-                detail: "花不需要地址，只需要有一个人看见",
-                quote: "“那就让它替我在这里待一会儿。”",
-                effect: {
-                  time: 1,
-                  flagsOn: ["flowerOnCounter", "flowerGirlMet"],
-                  memory: "女孩把花留在柜台上。她说花不需要地址，只要有一个人看见。",
-                  toast: "柜台上留下了一小束白花。"
-                }
+                "id": "flower-counter",
+                "label": "把花留在柜台上，不收她的钱",
+                "detail": "不用瓶子，先让她把裹着湿纸的花留在柜台。",
+                "quote": "“那我先寄放一晚。要是有人喜欢，你就送一枝。别说是卖剩下的。”",
+                "effect": {
+                  "time": 1,
+                  "flagsOn": [
+                    "flowerOnCounter",
+                    "flowerGirlMet"
+                  ],
+                  "memory": "女孩把花留在柜台上。她说花不需要地址，只要有一个人看见。",
+                  "toast": "柜台上留下了一小束白花。"
+                },
+                "reaction": "她把包装纸上干掉的角撕去，露出还湿的那层。把花放下后，她又回过头，将垂下的一枝扶直。"
               },
               {
-                id: "flower-refuse",
-                label: "告诉她，店里没有能装花的瓶子",
-                detail: "不换瓶子，也不留下花",
-                quote: "“没关系，花还会再开一次。”",
-                effect: {
-                  time: 1,
-                  flagsOn: ["flowerGirlRefused", "flowerGirlMet"],
-                  memory: "女孩抱着花走出门。夏天把她的影子拉得很长。",
-                  toast: "卖花的女孩走进了倒退的夏天。"
-                }
+                "id": "flower-refuse",
+                "label": "告诉她，店里没有能装花的瓶子",
+                "detail": "她带走这束花，继续找能装水的地方。",
+                "quote": "“好，我再问一家。先不降价了，至少得让它们喝口水。”",
+                "effect": {
+                  "time": 1,
+                  "flagsOn": [
+                    "flowerGirlRefused",
+                    "flowerGirlMet"
+                  ],
+                  "memory": "女孩抱着花走出门。夏天把她的影子拉得很长。",
+                  "toast": "卖花的女孩走进了倒退的夏天。"
+                },
+                "reaction": "她点点头，把花根重新裹紧，没再向你推销。出门前，她把一张飘落的价签也捡了回去。"
               }
             ]
           },
           {
-            id: "cat-finder",
-            name: "找猫的人",
-            initial: "猫",
-            avatarClass: "traveler",
-            arrival: "沿着盐粒走来的人",
-            line: "她沿着盐粒一路找来，说猫跑进了夏天最慢的那个下午。",
-            note: "她说 0217 提过，只要钟还停着，猫就会回来。",
-            action: "帮她找猫",
-            cost: "会花掉 1 个营业时间格",
-            mode: "special",
-            choices: [
+            "id": "cat-finder",
+            "name": "找猫的人",
+            "initial": "猫",
+            "avatarClass": "traveler",
+            "arrival": "沿着盐粒走来的人",
+            "line": "她在门边蹲下来，朝货架底下晃了晃空袋子：“黑猫，左耳缺个角，没有影子。这边有人见过吗？它最会找凉快地方躲。”",
+            "note": "她说自己只是顺路问问，找猫单却已经折得发白。笼子里铺着旧外套，留出来的位置比她自己的座位还宽。",
+            "action": "帮她找猫",
+            "cost": "会花掉 1 个营业时间格",
+            "mode": "special",
+            "choices": [
               {
-                id: "cat-candle",
-                label: "把停电蜡烛借给她",
-                detail: "蜡烛少一支，夏天里会多一声很轻的猫叫",
-                quote: "“0217说它怕黑，也怕我不去找它。”",
-                requiresStock: { candle: 1 },
-                unavailable: "货架上的停电蜡烛不够",
-                effect: {
-                  time: 1,
-                  stock: { candle: -1 },
-                  flagsOn: ["catFound", "catFinderMet"],
-                  memory: "她举着蜡烛走进夏天最慢的下午。黑暗里传来一声很轻的猫叫，像有人终于应了她的名字。",
-                  toast: "夏天深处传来了一声猫叫。"
-                }
+                "id": "cat-candle",
+                "label": "把停电蜡烛借给她",
+                "detail": "蜡烛少一支，夏天里会多一声很轻的猫叫",
+                "quote": "“你听见没？就这臭脾气。……别追，我过去。”",
+                "requiresStock": {
+                  "candle": 1
+                },
+                "unavailable": "货架上的停电蜡烛不够",
+                "effect": {
+                  "time": 1,
+                  "stock": {
+                    "candle": -1
+                  },
+                  "flagsOn": [
+                    "catFound",
+                    "catFinderMet"
+                  ],
+                  "memory": "她举着蜡烛走进夏天最慢的下午。黑暗里传来一声很轻的猫叫，像有人终于应了她的名字。",
+                  "toast": "夏天深处传来了一声猫叫。"
+                },
+                "reaction": "她挡住门口的风，把火护在掌心外侧。深处传来猫叫，她刚要喊，又把名字吞了回去，轻轻晃了晃袋子。"
               },
               {
-                id: "cat-salt",
-                label: "把盐撒到钟座下面",
-                detail: "盐少一包，猫会沿着这条线回来",
-                quote: "“它记得自己走过的路。”",
-                requiresStock: { salt: 1 },
-                unavailable: "货架上的盐包不够",
-                effect: {
-                  time: 1,
-                  stock: { salt: -1 },
-                  flagsOn: ["catTrail", "catFinderMet"],
-                  memory: "盐粒在钟座下排成一条细线。她说猫会沿着这条线回来，因为猫记得自己走过的路。",
-                  toast: "钟座下多了一条盐粒小路。"
-                }
+                "id": "cat-salt",
+                "label": "把盐撒到钟座下面",
+                "detail": "盐少一包，猫会沿着这条线回来",
+                "quote": "“先别扫。它认路，肯定先来闻。我在这儿等一会儿。”",
+                "requiresStock": {
+                  "salt": 1
+                },
+                "unavailable": "货架上的盐包不够",
+                "effect": {
+                  "time": 1,
+                  "stock": {
+                    "salt": -1
+                  },
+                  "flagsOn": [
+                    "catTrail",
+                    "catFinderMet"
+                  ],
+                  "memory": "盐粒在钟座下排成一条细线。她说猫会沿着这条线回来，因为猫记得自己走过的路。",
+                  "toast": "钟座下多了一条盐粒小路。"
+                },
+                "reaction": "她蹲在盐粒细线旁，把空猫笼的门固定住。这一次没再晃袋子，只把旧外套往笼口拉近一点。"
               },
               {
-                id: "cat-gone",
-                label: "告诉她，猫可能已经先走了",
-                detail: "不借蜡烛，也不撒盐",
-                quote: "“那我再找一站。它总得在某一站等我。”",
-                effect: {
-                  time: 1,
-                  flagsOn: ["catGone", "catFinderMet"],
-                  memory: "她把空猫笼抱在怀里，说那就再找一站。",
-                  toast: "找猫的人走向了下一盏灯。"
-                }
+                "id": "cat-gone",
+                "label": "告诉她，猫可能已经先走了",
+                "detail": "不借蜡烛，也不撒盐",
+                "quote": "“我知道它不一定在等我。我再去前面看看，笼子还是先开着。”",
+                "effect": {
+                  "time": 1,
+                  "flagsOn": [
+                    "catGone",
+                    "catFinderMet"
+                  ],
+                  "memory": "她把空猫笼抱在怀里，说那就再找一站。",
+                  "toast": "找猫的人走向了下一盏灯。"
+                },
+                "reaction": "她把画满叉的找猫单折好，没有撕掉。提起猫笼时，又确认了一遍里面的旧外套，才继续往前走。"
               }
             ]
           }
@@ -2679,24 +2909,24 @@ window.GAME_CONTENT = {
       question: "母亲还会不会回来",
       closureFlag: "achengClosure",
       incomplete: "她仍然把伞留在门边，像把一整个下午留在原地。",
-      summary: "她把每一把伞都留在门边，像在替母亲保留一个“我还在等”的信号。",
-      innerVoice: "“我不是在等车。我只是怕，如果有一天我不在这里，她回来的时候会以为我没有等过。”",
+      summary: "她会替门口每把伞摆好位置，却说不清自己想去哪里。",
+      innerVoice: "“伞柄要朝外，她一下车就看得见。……别问我今天想去哪儿，我还没想好。”",
       past: [
-        "阿澄十一岁以前住在雾港公交站后面的旧楼里。母亲阿岚在临市的制衣厂上夜班，每周日坐最后一班车回来，手里总拎着一把透明雨伞。阿澄会在站牌下等她，远远看见伞面反光，就知道母亲到了。",
-        "十二岁那年，母亲答应她“下一个下雨天就回来”，却从那以后没有再出现。有人说阿岚在临市重新成了家，有人说她出了事，也有人说她只是不想回来。没有一个说法能交给阿澄。",
-        "从那以后，阿澄每个下雨的傍晚都来车站。她不再带母亲那把旧伞，而是从店里买最便宜的透明伞，一把一把靠在门边。她告诉自己，只要门边还有伞，母亲回来时就会知道她还在等。",
-        "红围巾是母亲离开那天戴的颜色。旧照片里，阿澄还没有学会等末班车。她真正害怕的不是母亲不回来，而是自己等得不够久，才让母亲没有回来。"
+        "阿澄十一岁以前住在雾港公交站后的旧楼。母亲阿岚在临市制衣厂上夜班，每周日坐末班车回来。她认伞面反的光，比认车牌还快；母亲替她抹掉嘴角的饭粒，她会嫌那只手太凉。",
+        "十二岁那年，母亲答应下一个下雨天回来，此后再没出现。有人说她另有了家，有人说她出了事，没有谁能给准话。阿澄开始反复回想那天，连自己有没有好好说再见，都要检查一遍。",
+        "她买最便宜的透明伞留在门边，怕母亲看不见信号。旧照片的折痕、红围巾的颜色，她不肯别人改动。她需要知道的，是母亲的失约不由她负责；至于留下还是带走，应当由她自己决定。"
       ],
-      waiting: "她等的不是末班车，是一个能证明“不是我等得不够久”的答案。",
+      waiting: "她怕一旦挪开那把伞，就等于承认母亲没回来是自己的错。",
       keepsake: "透明雨伞是母亲最后一次离开时留下的信号；旧照片里，她还没有学会等末班车；红围巾是母亲离开那天的颜色。",
-      voice: "说话短，常把情绪藏在“等”和“伞”里；很少直接说自己害怕。",
-      personality: "嘴硬，怕成为别人的负担。她总挑最便宜的伞，却会把伞留给下一个人；被问到母亲时先说“只是顺路”，随后又把伞柄擦了又擦。",
+      voice: "先问物件放哪儿、能不能挪，再绕到自己的事。话短，会纠正别人；害怕时不是哭，而是把一句交代重复一遍。",
+      personality: "护短，也护旧东西；别人压平照片的折痕，她会马上伸手拦。口口声声不想麻烦人，却想让店替她一直留住原来的位置。记性很好，只谈自己想要什么时会含糊。",
       pastQuotes: [
-        "“我不是在等车。我怕她回来时，以为我没有等过。”",
-        "“伞放在门边，她远远就能看见。”"
+        "“她的伞一亮，我就知道车到了。那时候还不用看表。”",
+        "“别替我猜她去哪儿了。那些说法，我都听过。”",
+        "“折痕别压平。伞怎么放，也让我自己想想。”"
       ],
-      connection: "阿澄的伞和沈伯的第二罐咖啡，都在替一个没有回来的人留着位置。",
-      toPlayer: "你是第一个没有催她“别再等”的人。",
+      connection: "沈伯总替人安排座位，阿澄却不愿别人碰自己的那把伞。两人都留东西给旧人，一个想补做当年的决定，一个先要相信自己有权做新决定。",
+      toPlayer: "你见过她把伞摆正，也见过她护住照片。能不能把东西带走或借给谁，她希望你先问过她。",
       letter: "“阿澄，不是因为你等得不够久。是妈妈没有勇气回来。把伞带走，去过会下雨、也会放晴的日子。”",
       lockedHint: "在雾港公交站接待阿澄，才能读到她的前史。"
     },
@@ -2707,24 +2937,24 @@ window.GAME_CONTENT = {
       question: "没到的人还值不值得等",
       closureFlag: "shenClosure",
       incomplete: "他仍旧替第二罐咖啡留着一个空座位。",
-      summary: "他每天买两罐咖啡，一罐给自己，一罐给最后一夜没有回头去接的人。",
-      innerVoice: "“我知道她不会来了。可那罐咖啡还没凉，我就还想再坐一会儿。”",
+      summary: "他总先检查门口有没有挡路，再买两罐咖啡，只打开其中一罐。",
+      innerVoice: "“门口别堵，凳子往里。人到齐就能走。……至于我坐哪儿，先不急。”",
       past: [
-        "沈伯开了二十七年雾港的 11 路夜班车。妻子阿琴在终点站的小食堂上夜班，每晚给他留两罐咖啡。一罐让他在路上喝，一罐放在副驾驶，说是“给还没上车的人”。",
-        "线路停运前的最后一夜，阿琴站在站台上叫他，说今天想坐他的车一起回家。沈伯那天因为线路取消、乘客抱怨，心里烦，没有回头，只想着把最后一班开完。车开出去以后，他再也没有见过她。",
-        "后来阿琴病重，托人把那罐没有打开的咖啡和旧车队徽章送回车队，说“别让他一直等”。沈伯没有听。他每天还是买两罐咖啡，坐在站牌下，等一个他知道不会再来的人。",
-        "旧车票、旧徽章、第二罐咖啡，都是他替那一夜保留的证物。他真正等的不是阿琴，是那个没有回头的自己。"
+        "沈伯开了二十七年雾港11路夜班车。妻子阿琴在终点站食堂上夜班，每晚留两罐咖啡，一罐给他，一罐说给还没上车的人。他会查门、数人、替人挪行李，也会嫌别人磨蹭，把关心说得像命令。",
+        "线路停运的最后一夜，阿琴在站台叫他，想一起坐车回家。沈伯烦着撤线和乘客的抱怨，没有回头。后来阿琴病重，托人送回咖啡和徽章，叫他别一直等。他却把那罐咖啡和没说出口的歉意一起留住。",
+        "车票、徽章和第二罐咖啡，成了那一夜的证物。他知道重开一班车补不了当年的事，却总想再核对一遍时刻。他能做的或许是先回头看清眼前的人，也承认自己有一天可以不负责发车。"
       ],
-      waiting: "他想把那晚没有回的头，补回来。",
+      waiting: "他想把那晚没回的头补回来，却习惯用下一班的规矩躲开上一班的歉意。",
       keepsake: "第二罐咖啡是没有送出的道歉；旧车队徽章是他开了半辈子的路线；过期车票是线路停运的那一夜。",
-      voice: "用时刻、班次和车队行话说话；礼貌，句子完整，偶尔停顿。",
-      personality: "把关心说成排班和规矩。他会纠正别人“不是等，是还没到点”，却永远多买一罐咖啡；被人道谢时先移开视线，再低头整理旧制服。",
+      voice: "句子完整，爱核对时间、人数和位置。紧张时便搬出规矩；偶尔直认一句错，随即低头整衣领。不会把歉意说成漂亮话。",
+      personality: "细心、有急脾气，关心人时也像在调度。怕人摔倒便先挪凳子，怕人误车便替人报时；别人还没开口，他已经安排妥当。他擅长保证人人上车，不擅长承认自己也需要一个座位。",
       pastQuotes: [
-        "“第一班车总得有人开。可我那晚没有回头。”",
-        "“第二罐咖啡不是给乘客的。”"
+        "“门边别堵着，人上车才好转身。”",
+        "“那晚我听见她叫了。……我没回头。”",
+        "“我总替别人排座位。轮到自己，该坐哪儿反倒说不清。”"
       ],
-      connection: "他和阿澄都在等一个没有回来的人；一个留伞，一个留咖啡。",
-      toPlayer: "你是第一个替他把第二罐咖啡留着的人。",
+      connection: "他会问阿澄的伞、小满有没有吃饭，也会催她们别误车。对旁人热心与对阿琴的亏欠缠在一起，直到他能先回头看人，而不只看表。",
+      toPlayer: "你看过他怎样替别人留座，也听到他怎样回避自己的位置。让他当司机或乘客，都得听他亲口选。",
       letter: "“老沈，我那天就在站台上。你没有回头，我不怪你。咖啡凉了就不要喝了，回家吧。”",
       lockedHint: "在夜班车到站前接待沈伯，才能读到他的前史。"
     },
@@ -2736,24 +2966,24 @@ window.GAME_CONTENT = {
       question: "除了值班，她还能不能有自己的名字",
       closureFlag: "clerkClosure",
       incomplete: "她重新戴上了工牌，继续替看不见的人值班。",
-      summary: "她的编号替她活了太久，久到她差点忘了自己叫林晚。",
-      innerVoice: "“工牌上写着 0217。看久了，连我自己都差点以为那就是我的名字。”",
+      summary: "她嫌货架没摆齐，收钱从不含糊；让她坐下，比叫她加班还难。",
+      innerVoice: "“价签我给你扶正。不是想加班，手顺便……你真不需要我做点什么？”",
       past: [
-        "林晚十九岁来到这座城市，第一份工是便利店夜班。后来是加油站、自动售货机仓库、车站临时店员。每一份工都只写编号，0217 就是她在排班表上的全部名字。",
-        "她有一个弟弟在老家读书，学费和生活费都由她寄回去。弟弟每次打电话都叫她“姐”，可她总在上班，说不了几句就挂。她攒过很多次“明天休息”，又一次次把休息日换成了加班。",
-        "她开始害怕停下来。因为一停下来，她就会发现自己没有一个可以回去的房间，也没有一个会在门口等她的人。工牌、工资单、旧工资币，是她证明自己确实活过、确实工作过的唯一东西。",
-        "但她其实一直记得自己叫林晚。只是没有人这样叫过她，她也不敢先替自己叫。"
+        "林晚十九岁进城，做过便利店、加油站和售货机仓库的夜班，排班表都只写0217。她记得每种货怎样摆才不压坏，手一伸便会先卖旧的。弟弟在老家读书，学费和生活费由她寄回去，电话里一直叫她姐。",
+        "弟弟打来时她总在忙，说两句便挂。她攒过很多次明天休息，又换成加班；闲下来反而不安，怕找不到房间，也怕没人再需要她。别人肯白白对她好，她的第一反应是找一件活，把这份人情补回去。",
+        "她从没忘记自己叫林晚，只是不习惯有人郑重这样叫。工资币和工牌证明她做过活，却说不清她喜欢怎样过一天。她想看完一集不被打断的电视，也想接弟弟的电话，不必先说自己又要上班。"
       ],
-      waiting: "她等的不是下班，是一个能叫出她名字的人。",
+      waiting: "她想有人叫她林晚，却又怕自己不再能帮忙以后，就没有留下来的理由。",
       keepsake: "工牌是她替别人值班的证明；旧工资币是被磨掉年份的时间；停电蜡烛是她第一次替自己照路。",
-      voice: "用排班、编号、零头和下班说话；疲惫，偶尔带一点冷幽默。",
-      personality: "对规章制度熟，也对人的疲惫熟。累极了会拿编号说冷笑话；别人叫她“0217”时答应得很快，叫她“林晚”时反而会停半拍。",
+      voice: "习惯报清数量、零头和交接，偶尔用规章开冷笑话。被照顾时先问要不要帮忙，真正放松以后，才肯说一句带脾气的‘别叫我干了’。",
+      personality: "手快、眼尖，有专业自尊，讨厌别人把她当可怜人。欠一句好话就想补一件活，答应休息仍会盯价签；冷笑话说得很平，自己的需要却常被她当成不合规的申请。",
       pastQuotes: [
-        "“0217叫久了，连我都快忘了自己叫什么。”",
-        "“零头不用找了，我想留一点给自己。”"
+        "“标签朝外，旧的先卖。别看我，手自己就会。”",
+        "“我说过明天休息。明天又有人问我能不能顶班。”",
+        "“名字我没忘。叫它的时候，不用顺便给我派件活。”"
       ],
-      connection: "她和小满都在确认自己会不会被看见；一个等名字，一个等有人陪她等晴天。",
-      toPlayer: "你是第一个没有把她只当成 0217 的人。",
+      connection: "她和小满都习惯先照顾别人，再绕开自己饿不饿、累不累的问题。饭盒边那张‘明天见’的字条，给她们留了一个不用派工也能见面的理由。",
+      toPlayer: "你能看见她的手艺，也能看见她坐下时停不住的手。她想被认真叫名字，而不是每次被叫住都要领下一件活。",
       letter: "“姐，我把你的名字写在门牌上了。你不用再寄钱，回家吃饭吧。”",
       lockedHint: "在无眠车站接待 0217，才能读到她的前史。"
     },
@@ -2764,24 +2994,24 @@ window.GAME_CONTENT = {
       question: "明天到底会不会放晴",
       closureFlag: "xiaomanClosure",
       incomplete: "她还在门外等一个不会立刻到来的晴天。",
-      summary: "她问明天有没有太阳，是因为母亲答应过她“晴天就回来”。",
-      innerVoice: "“我只是想问一句明天有没有太阳。有人回答我，就好像明天真的会来。”",
+      summary: "她总带着饭盒问别人吃没吃，问到自己，便笑着改问天气。",
+      innerVoice: "“我给你留一半，你晚点还来吗？……其实我还饿。葱花也多了。”",
       past: [
-        "小满小时候父母分开，她跟着母亲搬过很多次家。每次离开前，母亲都说“等晴天，我们就回来”。她记住了晴天，却总是等不到。",
-        "母亲后来去了很远的地方工作，答应她“等夏天的小满一到，就回来陪你吃饭”。可是小满等过了一个又一个小满，只等到一只空饭盒和一句“下次一定”。",
-        "她开始一个人带着饭盒来车站。饭盒里有时是给母亲留的饭，有时是给自己的早饭。她总问“明天有没有太阳”，因为她不知道还能问什么。她真正害怕的不是下雨，是没有人愿意陪她把雨等到停。",
-        "旧收音机、玻璃瓶、保温饭盒，都是她用来“保存明天”的东西。她需要的不是天气预报，是有人告诉她：今天也可以结束，今天也值得吃饭。"
+        "小满小时候父母分开，跟母亲搬过很多次家。她记得不同灶台煮出的饭有多软，不爱葱花，却会在替别人盛饭时挑干净。母亲每次离开都说等晴天再回来，她便习惯一面准备饭，一面打听天气。",
+        "母亲后来远行，答应小满节气到了就陪她吃饭。一个个小满过去，留下空饭盒和下次一定。她学会先问别人吃没吃，用轻快语气把失望盖过去；只要对方还接话，她就不敢先说自己生气或饿着。",
+        "她抱饭盒来车站，有时替母亲留饭，有时把自己的早饭也分出一半。收音机和瓶子能保存天气，保存不了谁的承诺。她想学的是先承认这一口自己想吃，不必靠把每个人照顾好，才换来有人陪她。"
       ],
-      waiting: "她等的不是晴天，是一个不会因为下雨就先走的人。",
+      waiting: "她想确认别人愿不愿意陪她，也想有一次不必先把自己那份让出去。",
       keepsake: "保温饭盒是给还没回来的人留的位置；旧收音机是会说“明天还存在”的声音；玻璃瓶里可以留一个晴天。",
-      voice: "用天气、饭和明天说话；轻快，但会突然露出不安。",
-      personality: "用天气试探对方会不会留下。饿的时候先问别人吃没吃；失望时会笑着说“没关系”，手却把空饭盒抱得更紧。",
+      voice: "爱拿饭菜和天气开玩笑，话里常先问别人。受了委屈会加快语速，说两遍没关系；认真提要求时句子反而很短，能直接说饿、累、听腻了。",
+      personality: "会开玩笑，会挑口味，也会因为一句敷衍生闷气。怕扫兴便抢先说没关系，怕人走便替人留饭；她并不总想当那个懂事的人，只是还不熟练怎样把‘我不愿意’说出口。",
       pastQuotes: [
-        "“明天有没有太阳？”",
-        "“我不是怕下雨，我是怕没有人陪我等到停。”"
+        "“葱花别搁太多。给别人装饭，我才不说。”",
+        "“我都说没关系了，你就真的不问啦？”",
+        "“今天这口，我想自己先吃。”"
       ],
-      connection: "她的饭盒后来装下了 0217 留下的字条；两个等待的人第一次坐到同一张柜台边。",
-      toPlayer: "你是第一个先问她今天有没有吃饭的人。",
+      connection: "她会问沈伯有没有吃饭，也会替林晚留位置。和阿澄紧守一件旧物不同，她总忙着把手里的东西分出去，好让别人有理由再来。",
+      toPlayer: "她既会把饭分给你，也会悄悄看那剩下的一半。你若只听见她笑，就可能漏掉她没敢提的那一份。",
       letter: "“小满，妈妈没有等到晴天回来。不是你不够乖。以后下雨也要吃饭，晴天也要吃饭。先把今天过完。”",
       lockedHint: "在倒着走的夏天接待小满，才能读到她的前史。"
     },
@@ -2792,24 +3022,24 @@ window.GAME_CONTENT = {
       question: "没有名字的人能不能收到一封信",
       closureFlag: "travelerClosure",
       incomplete: "他站回门外，脚下仍旧没有完整的影子。",
-      summary: "他替所有人送过信，却把自己的名字弄丢了。",
-      innerVoice: "“我送过很多人的信。轮到自己写的时候，才发现收件人那一栏是空的。”",
+      summary: "他认得每条投递路线，买一张明信片，却迟迟填不上自己的名字。",
+      innerVoice: "“门牌跳了一号，要绕后巷。收件人我都记着。……我这一栏，先空着吧。”",
       past: [
-        "无名旅人曾经是雾港邮局的步班邮差。他走了三十年的路，替别人送信、送汇款单、送最后一句话。他熟悉每一条巷子，却从来没有一个需要他回去的地址。",
-        "线路撤销前，他把五封没有送到的信收进一只纸箱：阿澄母亲的信、阿琴写给沈伯的信、弟弟写给林晚的信、小满母亲的信，还有一封没有署名的信，收件人写的是“还在路上的人”。",
-        "那封没有署名的信，其实是他写给自己的。他想在退休那天写上自己的名字，却发现自己已经想不起来。他把纸箱留在世界尽头的便利店，假装它是别人的包裹。",
-        "他一直在路上，是因为他怕停下来以后，没有人会记得他。可他也知道，只有停下来，别人才有机会叫出他的名字。"
+        "他曾是雾港邮局的步班邮差，走了三十年，熟知巷子、台阶和缺号的门牌。信封淋湿便先护封口，别人的信绝不拆。每个收件人他都能找到，投递完却总还有一段路，因为没人给他留一个需要回去的地址。",
+        "撤线前，五封信留在他手里：阿岚给阿澄、阿琴给沈伯、弟弟给林晚、母亲给小满，还有给还在路上的人。他把纸箱留在这间店，假装是别人的包裹。每次绕开那句没送到，也是在绕开自己的责任。",
+        "第五封是他写给自己的。他想在退休那天补上名字，却发现怎么也想不起来。忙着替别人转交，便不必承认自己也想收信。留下或继续走以前，他得先认下这是自己的那一封；名字暂时空着，也不能再说只是代收。"
       ],
-      waiting: "他等的不是地址，是一个愿意写下他名字的人。",
+      waiting: "他想收到属于自己的回音，却习惯说东西都是代收的，自己马上就走。",
       keepsake: "空白明信片是他留给自己的最后一个收件人位置；玻璃瓶里的“我到了”是他一直没有说出口的抵达；过期车票是他走过却回不去的路线。",
-      voice: "用地址、收件人和名字说话；像在找词，句子常带着不确定。",
-      personality: "礼貌得像在念地址，记得每条路，却记不得自己的名字。被认真对待时先说“不用记我”，走出去以后又会悄悄回头确认你还在看。",
+      voice: "会讲具体门牌、纸张和投递规矩，不是每句话都打谜语。遇到自己的名字才犹豫，用‘代收’或‘下一站’岔开；肯负责时会直接把没送到的事说全。",
+      personality: "谨慎、爱纠正地址，遇到淋雨的信会先替它遮住，绝不擅拆别人的封口。谈投递很利落，谈自己便绕弯；明明盼被留住，又先替旁人找好不必记他的理由。",
       pastQuotes: [
-        "“我送过所有人的信。轮到自己，收件人那一栏是空的。”",
-        "“我到了。只是没有人听见。”"
+        "“这条路门牌跳一号，别按顺序找。信会退回来。”",
+        "“五封，都在我手上。再说是送错门，就太省事了。”",
+        "“这一封先别转交了。我想看看，是不是给我的。”"
       ],
-      connection: "五封信都是他送出的；他把五个互不相识的人带到同一间店，也把自己弄丢了。",
-      toPlayer: "你是第一个愿意替包裹找收件人的人。",
+      connection: "五封未送达的信由他留下，四封属于店里的客人，第五封属于他自己。他熟悉四个人的地址，却得承认自己也在这五个收件人之内。",
+      toPlayer: "你能看见他怎样护着别人的信，也能看见他盖住自己的收件栏。他需要一次亲手填写，或坦白今天还填不出的机会。",
       letter: "“如果你看见这封信，请替我写一个名字。随便什么名字都行，只要是你记得的。”",
       lockedHint: "在无名公路接待无名旅人，才能读到他的前史。"
     }
@@ -2822,7 +3052,7 @@ window.GAME_CONTENT = {
     { id: "station-route", name: "无眠车站", description: "第一夜后选择前往无眠车站。" },
     { id: "summer-route", name: "倒着走的夏天", description: "第一夜后选择前往倒着走的夏天。" },
     { id: "all-arcs", name: "五个答案", description: "完成五条人物支线。" },
-    { id: "all-pasts", name: "同一班车", description: "进入五个人的过去。" },
+    { id: "all-pasts", name: "同一班车", description: "在故事里听完五个人的过去。" },
     { id: "opened-parcel", name: "拆信的人", description: "在最后一夜拆开没有收件人的包裹。" },
     { id: "sealed-parcel", name: "封存的人", description: "在最后一夜重新封好包裹，让它继续上路。" }
   ],
@@ -3033,7 +3263,7 @@ window.GAME_CONTENT = {
       },
       sealParcel: {
         title: "封存包裹之后",
-        text: "你把包裹重新封好。五个人仍旧留在各自的位置上：阿澄在门边，沈伯在站牌下，0217在柜台后，小满在门外，无名旅人没有完整的影子。第一班车开过去，店带着包裹继续上路。下一段夜路里，他们还会再遇见——也许下一次，有人会先拆开它。"
+        text: "你把包裹重新封好。五个人仍旧留在各自的位置上：阿澄在门边，沈伯在站牌下，0217在柜台后，小满在门外，无名旅人没有完整的影子。第一班车开过去，店带着包裹继续上路。下一段夜路里，他们还会再遇见。也许下一次，有人会先拆开它。"
       },
       sealParcelPartial: {
         title: "封存包裹之后 · 先收好这一夜",

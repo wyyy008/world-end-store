@@ -9,11 +9,11 @@
     <link rel="apple-touch-icon" href="assets/logo-256.png">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=20261108222144">
-    <script src="content.js?v=20261108222144" defer></script>
-    <script src="audio.js?v=20261108222144" defer></script>
-    <script src="game.js?v=20261108222144" defer></script>
-    <script src="save-tools.js?v=20261108222144" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261108224723">
+    <script src="content.js?v=20261108224723" defer></script>
+    <script src="audio.js?v=20261108224723" defer></script>
+    <script src="game.js?v=20261108224723" defer></script>
+    <script src="save-tools.js?v=20261108224723" defer></script>
   </head>
   <body>
     <svg class="portrait-sprite" aria-hidden="true" focusable="false">
@@ -60,7 +60,7 @@
             <h1 id="game-title"><span>世界尽头的</span><span>便利店</span></h1>
             <p class="title-subtitle">没有收件人的包裹</p>
             <p class="title-edition">免费试玩 · 八夜 · 约 25–40 分钟</p>
-            <p class="title-premise">包裹里有五封没有送出的信。五个人被同一间店和同一班车连在一起。完成他们各自的关键选择，便能走进他们没说完的过去；接待谁、留下什么，都会改变第一班车到站时的答案。</p>
+            <p class="title-premise">接待走进店里的人，听他们把话说完，再决定打烊时留下什么。五个人的往事，会在交谈中慢慢浮现。第八夜第一班车来以前，替柜台下的包裹找到去处。</p>
             <div class="title-ticket" aria-hidden="true">
               <span class="title-ticket-stub">雾港 · 末班车</span>
               <strong>第八夜 · 第一班车</strong>
@@ -169,6 +169,14 @@
             </div>
             <button class="secondary-button" id="open-closing" type="button">准备打烊</button>
           </div>
+
+          <section class="next-step" aria-label="接下来做什么">
+            <div>
+              <h2 id="next-step-title">先接待门边的人</h2>
+              <p id="next-step-detail">阅读和思考不耗时间。先听他说完，再决定留下什么。</p>
+            </div>
+            <button class="primary-button" id="next-step-button" type="button" aria-describedby="next-step-detail">去柜台</button>
+          </section>
 
           <section class="chapter-goal" aria-label="首章目标">
             <span class="goal-label">首章主线</span>
@@ -443,7 +451,7 @@
       <div class="help-list">
         <p><strong>主线</strong>在第八夜第一班车到站前，把五封没有送出的信送到五个人手里，再决定没有收件人的包裹去哪里。</p>
         <p><strong>今晚</strong>首章目标下方会直接写出这一夜的可执行目标。完成上车条件，旧票机才会给你车票。</p>
-        <p><strong>过去</strong>满足角色各自的关键条件后，柜台结果或人物档案里会出现“进入过去”。每看一段，首章进度会增加 1/5。</p>
+        <p><strong>人物回忆</strong>会随着柜台前的交谈自然穿插，读完就回到当前这一夜。人物档案只用来回看你已经历的片段。</p>
         <p><strong>时间</strong>每夜有六盏灯，也就是六件可以做的事。补货、整理和接待常客会消耗一格，查看商品与对话不耗时。</p>
         <p><strong>顾客</strong>读他们做了什么、留下了什么，而不是刷好感度。</p>
         <p><strong>打烊</strong>选择留下一件东西。它会跟着店进入下一夜。</p>
@@ -550,7 +558,7 @@
         </div>
         <button class="dialog-close" type="button" data-close="character-dialog" aria-label="关闭">×</button>
       </div>
-      <p class="dialog-intro">先接待一个人，再为 TA 做一件会被记住的事。条件满足后，才能进入 TA 的过去；每段过去都会补上 TA 与其他人、以及 TA 与你的关系。</p>
+      <p class="dialog-intro">他们的过去会在柜台前的故事里自然出现。这里收好你已经认识的人，也可以回看已经历的片段。</p>
       <div class="character-web">
         <strong>他们不是五条独立的故事</strong>
         <p>阿澄和沈伯都在替没有回来的人留位置；0217 和小满都在等自己被看见；无名旅人把五封信带到同一间店。</p>
