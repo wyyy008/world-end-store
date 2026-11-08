@@ -4060,7 +4060,7 @@ body.finale-active .app-shell {
 .mini-mark {
   overflow: hidden;
   border: 0;
-  border-radius: 50%;
+  border-radius: 6px;
   background: transparent;
   padding: 0;
 }
@@ -4076,6 +4076,7 @@ body.finale-active .app-shell {
 .brand-mark img,
 .mini-mark img {
   object-fit: cover;
+  transform: scale(1.18);
 }
 
 .title-window {
@@ -4556,9 +4557,10 @@ body {
 }
 
 .brand-mark {
+  display: block;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: 6px;
   background: var(--surface);
 }
 
