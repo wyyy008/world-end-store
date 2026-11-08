@@ -130,6 +130,8 @@ const dialogIds = [
 
 let toastTimer;
 let audioUnlocked = false;
+let saveWriteBlocked = false;
+let saveStatus = { ok: true, message: "还没有开始新的旅程。" };
 let state = loadState();
 let settings = loadSettings();
 let prologueIndex = 0;
@@ -148,7 +150,7 @@ let pastReturnDialogId = null;
 let finaleTimer;
 let finaleTypeComplete = false;
 let finaleCurrentText = "";
-const vnHistory = [];
+const vnHistory = [...state.vnHistory];
 
 const elements = {
   titleScreen: document.querySelector("#title-screen"),
@@ -241,6 +243,9 @@ function createInitialState() {
   const firstNight = CONTENT.firstNight;
   return {
     version: 5,
+    reading: null,
+    vnHistory: [],
+    savedAt: null,
     nightIndex: 0,
     route: null,
     time: SHIFT_LENGTH,
@@ -271,62 +276,184 @@ function createInitialState() {
   };
 }
 
+// One validator is shared by local saves and imported backups. Older v5 saves
+// receive defaults for newly added fields; malformed values never reach rendering.
+function normalizeSavedState(saved) {
+  const record = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+  const integer = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
+  const text = (value, max = 4000) => typeof value === "string" && value.length <= max && !/[<>]/.test(value);
+  const safeKey = (value) => typeof value === "string" && /^[a-zA-Z0-9_-]{1,100}$/.test(value);
+  if (!record(saved) || saved.version !== 5 || !integer(saved.nightIndex, 0, 7) ||
+      !integer(saved.time, 0, SHIFT_LENGTH) || !record(saved.stock) || !record(saved.flags)) {
+    return null;
+  }
+  if (saved.nightIndex > 0 && !Object.hasOwn(CONTENT.routes, saved.route)) return null;
+  if (saved.route !== undefined && saved.route !== null && !Object.hasOwn(CONTENT.routes, saved.route)) return null;
+  const normalized = createInitialState();
+  normalized.nightIndex = saved.nightIndex;
+  normalized.route = saved.route || null;
+  normalized.time = saved.time;
+  for (const field of ["cash", "tickets", "suppliesCost"]) {
+    if (saved[field] !== undefined && !integer(saved[field], field === "cash" ? -1000000 : 0, 1000000)) return null;
+    normalized[field] = saved[field] ?? normalized[field];
+  }
+  normalized.stock = { ...emptyStock };
+  for (const [key, value] of Object.entries(saved.stock)) {
+    if (!Object.hasOwn(products, key) || !integer(value, 0, 1000000)) return null;
+    normalized.stock[key] = value;
+  }
+  normalized.flags = {};
+  for (const [key, value] of Object.entries(saved.flags)) {
+    if (!safeKey(key) || ["__proto__", "constructor", "prototype"].includes(key) || typeof value !== "boolean") return null;
+    normalized.flags[key] = value;
+  }
+  const night = nightAtIndex(saved.nightIndex, normalized.route);
+  const stages = new Set(["end", ...night.cast.map((guest) => guest.id)]);
+  if (night.interlude) stages.add("interlude");
+  const stage = saved.stage ?? night.cast[0].id;
+  if (!stages.has(stage)) return null;
+  normalized.stage = stage;
+  if (saved.interludeReturnStage != null && !stages.has(saved.interludeReturnStage)) return null;
+  normalized.interludeReturnStage = saved.interludeReturnStage ?? null;
+  if (saved.served !== undefined && !record(saved.served)) return null;
+  normalized.served = {};
+  for (const [key, value] of Object.entries(saved.served || {})) {
+    if (!night.cast.some((guest) => guest.id === key) || typeof value !== "boolean") return null;
+    normalized.served[key] = value;
+  }
+  for (const field of ["introSeen", "nightClosed", "finished"]) {
+    if (saved[field] !== undefined && typeof saved[field] !== "boolean") return null;
+    normalized[field] = saved[field] ?? false;
+  }
+  const stringArrays = ["introducedProducts", "keptItems", "achievements", "metCharacters", "pastSeen", "skippedGuests"];
+  for (const field of stringArrays) {
+    if (saved[field] !== undefined && (!Array.isArray(saved[field]) || saved[field].length > 200 || !saved[field].every((value) => text(value, 120)))) return null;
+    normalized[field] = [...new Set(saved[field] || [])];
+  }
+  if (saved.introducedProducts === undefined) normalized.introducedProducts = Object.keys(products).filter((key) => normalized.stock[key] > 0);
+  if (normalized.introducedProducts.some((key) => !Object.hasOwn(products, key))) return null;
+  if ([...normalized.metCharacters, ...normalized.pastSeen].some((key) => !Object.hasOwn(CONTENT.characterArcs, key))) return null;
+  normalized.achievements = normalized.achievements.filter((id) => CONTENT.achievements.some((item) => item.id === id));
+  for (const field of ["awardedTicketNights", "interludesSeen", "openedNights"]) {
+    if (saved[field] !== undefined && (!Array.isArray(saved[field]) || saved[field].length > 8 || !saved[field].every((number) => integer(number, 1, 8)))) return null;
+    normalized[field] = [...new Set(saved[field] || [])];
+  }
+  for (const field of ["skippedGuest", "closingChoice"]) {
+    if (saved[field] != null && !text(saved[field], 120)) return null;
+    normalized[field] = saved[field] ?? null;
+  }
+  if (normalized.finished && (normalized.nightIndex !== 7 || !normalized.nightClosed || !["openParcel", "sealParcel"].includes(normalized.closingChoice))) return null;
+  if (saved.memories !== undefined && (!Array.isArray(saved.memories) || saved.memories.length > 2000)) return null;
+  normalized.memories = [];
+  for (const item of saved.memories || []) {
+    if (!record(item) || !text(item.text) || (item.time !== undefined && !text(item.time, 20)) ||
+        (item.place !== undefined && !text(item.place, 120)) || (item.night !== undefined && !integer(item.night, 1, 8))) return null;
+    normalized.memories.push({ text: item.text, time: item.time || "", place: item.place || "雾港公交站", night: item.night || 1 });
+  }
+  if (saved.transactions !== undefined && (!Array.isArray(saved.transactions) || saved.transactions.length > 2000)) return null;
+  normalized.transactions = [];
+  for (const item of saved.transactions || []) {
+    if (!record(item) || !text(item.label, 1000) || !Number.isFinite(item.amount) ||
+        Math.abs(item.amount) > 1000000 || !text(item.customer, 120) || !integer(item.night, 1, 8)) return null;
+    normalized.transactions.push({ label: item.label, amount: item.amount, customer: item.customer, night: item.night });
+  }
+  if (saved.vnHistory !== undefined && (!Array.isArray(saved.vnHistory) || saved.vnHistory.length > 300)) return null;
+  normalized.vnHistory = [];
+  for (const entry of saved.vnHistory || []) {
+    if (!record(entry) || !["line", "choice"].includes(entry.type) || !text(entry.speaker, 120) || !text(entry.text) ||
+        (entry.sceneLabel !== undefined && !text(entry.sceneLabel, 200))) return null;
+    normalized.vnHistory.push({ type: entry.type, speaker: entry.speaker, text: entry.text, sceneLabel: entry.sceneLabel || "" });
+  }
+  if (saved.reading != null) {
+    const reading = saved.reading;
+    if (!record(reading) || !["prologue", "night-open", "past", "finale"].includes(reading.kind) || !integer(reading.step, 0, 500)) return null;
+    normalized.reading = { kind: reading.kind, step: reading.step };
+    if (reading.kind === "prologue") {
+      if (normalized.introSeen || reading.step >= CONTENT.prologue.steps.length || !integer(reading.line ?? 0, 0, 100)) return null;
+      if (reading.branch != null && !["shelf", "door", "hands"].includes(reading.branch)) return null;
+      normalized.reading.line = reading.line ?? 0;
+      normalized.reading.branch = reading.branch ?? null;
+      const step = CONTENT.prologue.steps[reading.step];
+      if (step.branch && !normalized.reading.branch) return null;
+      const lines = splitVnLines((step.branch ? step.branch[normalized.reading.branch] : step.text) || "");
+      if (normalized.reading.line >= Math.max(1, lines.length)) return null;
+    } else if (reading.kind === "past") {
+      if (!Object.hasOwn(CONTENT.characterArcs, reading.arc) || !normalized.introSeen) return null;
+      normalized.reading.arc = reading.arc;
+      normalized.reading.returnDialog = ["character-dialog", "trade-dialog"].includes(reading.returnDialog) ? reading.returnDialog : null;
+    } else if (reading.kind === "finale") {
+      if (!normalized.finished || !["openParcel", "sealParcel"].includes(reading.choice)) return null;
+      normalized.reading.choice = reading.choice;
+    } else if (!normalized.introSeen || normalized.nightClosed || normalized.finished) {
+      return null;
+    }
+  }
+  // Pre-checkpoint v5 saves did not record introSeen reliably. A live prologue
+  // checkpoint always wins, so its history can never accidentally skip the intro.
+  if (!normalized.introSeen && normalized.reading?.kind !== "prologue" &&
+      (normalized.nightIndex > 0 || normalized.time < SHIFT_LENGTH || normalized.transactions.length > 0 || normalized.memories.length > 0)) {
+    normalized.introSeen = true;
+  }
+  normalized.savedAt = typeof saved.savedAt === "string" && Number.isFinite(Date.parse(saved.savedAt)) ? saved.savedAt : null;
+  return normalized;
+}
+
+function getSaveStatus() {
+  return { ...saveStatus };
+}
+
+function updateSaveStatus() {
+  const warning = document.querySelector("#save-warning");
+  if (warning) {
+    warning.hidden = saveStatus.ok;
+    warning.textContent = saveStatus.ok ? "" : saveStatus.message;
+  }
+  const output = document.querySelector("#save-status");
+  if (output) {
+    output.textContent = saveStatus.message;
+    output.dataset.state = saveStatus.ok ? "saved" : "error";
+  }
+}
+
 function loadState() {
   try {
-    const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
-    if (
-      saved &&
-      saved.version === 5 &&
-      Number.isInteger(saved.nightIndex) &&
-      saved.nightIndex >= 0 &&
-      saved.nightIndex <= 7 &&
-      Number.isInteger(saved.time) &&
-      saved.stock &&
-      saved.flags
-    ) {
-      Object.keys(products).forEach((key) => {
-        saved.stock[key] ??= 0;
-      });
-      saved.introducedProducts ||= Object.keys(saved.stock).filter((key) => saved.stock[key] > 0);
-      saved.introSeen ??= false;
-      if (
-        !saved.introSeen &&
-        (
-          saved.nightIndex > 0 ||
-          saved.time < SHIFT_LENGTH ||
-          (saved.memories?.length || 0) > 0 ||
-          (saved.transactions?.length || 0) > 0
-        )
-      ) {
-        saved.introSeen = true;
-      }
-      saved.skippedGuest ??= null;
-      saved.skippedGuests ||= [];
-      saved.keptItems ||= [];
-      saved.achievements ||= [];
-      saved.metCharacters ||= [];
-      saved.awardedTicketNights ||= [];
-      saved.interludeReturnStage ??= null;
-      saved.interludesSeen ||= [];
-      saved.openedNights ||= [];
-      saved.pastSeen ||= [];
-      if (saved.stage === "interlude") {
-        saved.stage = saved.interludeReturnStage || "end";
-        saved.interludeReturnStage = null;
-      }
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw === null) {
+      saveWriteBlocked = false;
+      saveStatus = { ok: true, message: "还没有开始新的旅程。" };
+      return createInitialState();
+    }
+    const saved = normalizeSavedState(JSON.parse(raw));
+    if (saved) {
+      saveWriteBlocked = false;
+      saveStatus = { ok: true, message: "已找到本地进度，可以继续旅程。" };
       return saved;
     }
   } catch (error) {
-    console.warn("未能读取本地进度，将开始新的一夜。", error);
+    console.warn("未能读取本地进度。", error);
   }
+  saveWriteBlocked = true;
+  saveStatus = { ok: false, message: "本地存档无法读取，原数据仍保留。可导入有效存档，或选择重新开始。" };
   return createInitialState();
 }
 
 function saveState() {
+  if (saveWriteBlocked) {
+    updateSaveStatus();
+    return false;
+  }
+  state.vnHistory = [...vnHistory];
+  state.savedAt = new Date().toISOString();
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    saveStatus = { ok: true, message: "进度已自动保存，可以随时回来。" };
+    updateSaveStatus();
+    return true;
   } catch (error) {
     console.warn("未能保存本地进度。", error);
+    saveStatus = { ok: false, message: "自动保存失败。请导出备份，保留这一段旅程。" };
+    updateSaveStatus();
+    return false;
   }
 }
 
@@ -336,7 +463,7 @@ function loadSettings() {
     if (!saved || typeof saved !== "object") {
       return { ...DEFAULT_SETTINGS };
     }
-    const textSpeed = ["slow", "normal", "fast"].includes(saved.textSpeed)
+    const textSpeed = ["slow", "normal", "fast", "instant"].includes(saved.textSpeed)
       ? saved.textSpeed
       : DEFAULT_SETTINGS.textSpeed;
     return {
@@ -430,31 +557,22 @@ function renderAchievements() {
 
 function readSavedState() {
   try {
-    return JSON.parse(localStorage.getItem(SAVE_KEY));
+    return normalizeSavedState(JSON.parse(localStorage.getItem(SAVE_KEY)));
   } catch {
     return null;
   }
 }
 
 function hasPlayableSave(saved = readSavedState()) {
-  if (!saved || saved.version !== 5) {
-    return false;
-  }
-  if (saved.nightIndex > 0 && !CONTENT.routes[saved.route]) {
-    return false;
-  }
-  return Boolean(
-    saved.introSeen ||
-    saved.nightIndex > 0 ||
-    saved.nightClosed ||
-    saved.finished ||
-    saved.time < SHIFT_LENGTH ||
-    (saved.memories?.length || 0) > 0 ||
-    (saved.transactions?.length || 0) > 0
-  );
+  const valid = normalizeSavedState(saved);
+  return Boolean(valid && (
+    valid.reading || valid.introSeen || valid.nightIndex > 0 || valid.nightClosed ||
+    valid.finished || valid.time < SHIFT_LENGTH || valid.memories.length > 0 || valid.transactions.length > 0
+  ));
 }
 
 function renderTitleScreen() {
+  updateSaveStatus();
   const saved = readSavedState();
   const playable = hasPlayableSave(saved);
   elements.continueGameButton.disabled = !playable;
@@ -462,13 +580,17 @@ function renderTitleScreen() {
 
   if (!playable) {
     elements.continueGameLabel.textContent = "继续游戏";
-    elements.continueGameMeta.textContent = "暂无存档";
+    elements.continueGameMeta.textContent = saveStatus.ok ? "暂无存档" : "存档需要检查";
     return;
   }
 
   const night = nightAtIndex(saved.nightIndex, saved.route);
-  elements.continueGameLabel.textContent = saved.finished ? "查看结局" : "继续游戏";
-  elements.continueGameMeta.textContent = saved.finished
+  elements.continueGameLabel.textContent = saved.reading ? "继续阅读" : saved.finished ? "查看结局" : "继续游戏";
+  elements.continueGameMeta.textContent = saved.reading?.kind === "prologue"
+    ? "序章 · 从上次读到的地方继续"
+    : saved.reading?.kind === "past"
+      ? `人物过去 · ${CONTENT.characterArcs[saved.reading.arc].name}`
+      : saved.finished
     ? `第 8 夜 · ${night.place}`
     : `第 ${night.number} 夜 · ${night.place}`;
   renderAchievements();
@@ -480,6 +602,8 @@ function showTitleScreen() {
   closeDialog(elements.historyDialog);
   closeDialog(elements.settingsDialog);
   window.GameAudio?.restoreAmbience();
+  clearTimeout(typeTimer);
+  clearTimeout(finaleTimer);
   document.body.classList.remove("finale-active");
   document.body.classList.remove("intro-active");
   document.body.classList.add("title-active");
@@ -492,16 +616,22 @@ function continueGame() {
     return;
   }
   state = loadState();
+  vnHistory.splice(0, vnHistory.length, ...state.vnHistory);
   closeDialog(document.querySelector("#intro-dialog"));
   elements.titleScreen.hidden = true;
   document.body.classList.remove("title-active", "intro-active");
   render();
+  if (resumeReading()) {
+    return;
+  }
   if (state.finished || state.nightClosed) {
     showSummary();
   } else if (!state.introSeen) {
     openIntroDialog();
   } else if (!state.openedNights.includes(currentNight().number)) {
     startNightOpening();
+  } else if (state.flags.pendingInterlude && currentNight().interlude && !state.interludesSeen.includes(currentNight().number)) {
+    openInterlude();
   } else {
     elements.customerActions.querySelector("button")?.focus({ preventScroll: true });
   }
@@ -511,6 +641,9 @@ function startNewGameFromTitle() {
   vnHistory.length = 0;
   window.GameAudio?.restoreAmbience();
   state = createInitialState();
+  saveWriteBlocked = false;
+  clearTimeout(typeTimer);
+  clearTimeout(finaleTimer);
   dialogIds.forEach((id) => closeDialog(document.querySelector(`#${id}`)));
   elements.titleScreen.hidden = true;
   document.body.classList.remove("finale-active");
@@ -520,8 +653,9 @@ function startNewGameFromTitle() {
 }
 
 function requestNewGame() {
-  if (hasPlayableSave()) {
-    openDialog(document.querySelector("#new-game-dialog"));
+  if (hasPlayableSave() || !getSaveStatus().ok) {
+    const dialog = document.querySelector("#new-game-dialog");
+    if (!dialog.open) dialog.showModal();
     return;
   }
   startNewGameFromTitle();
@@ -777,7 +911,7 @@ function storyObjective(night = currentNight()) {
   }
   if (night.number === 3) {
     return routeId === "summer"
-      ? "擦净玻璃，或听完小满、阿澄关于晴天的答案"
+      ? "翻过明信片，或听完小满、阿澄关于晴天的答案"
       : "把包裹放上柜台，或让 0217、沈伯留下一件值班证明";
   }
   if (night.number === 4) {
@@ -1530,13 +1664,13 @@ function portraitSvg(name, className = "") {
 
 function keptEchoForGuest(guest) {
   const kept = state.keptItems || [];
-  if (guest.name === "阿澄" && kept.includes("coffee")) {
+  if (guest.name === "阿澄" && kept.includes("coffee") && state.flags.unopenedCoffee) {
     return "<p class=\"kept-echo\">她看了一眼柜台上的那罐咖啡，没有问是谁留下的。</p>";
   }
-  if (guest.name === "沈伯" && kept.includes("umbrella")) {
+  if (guest.name === "沈伯" && kept.includes("umbrella") && state.flags.doorUmbrella) {
     return "<p class=\"kept-echo\">他看了一眼门边的伞，问阿澄今天有没有来。</p>";
   }
-  if (guest.name === "沈伯" && kept.includes("scarf")) {
+  if (guest.name === "沈伯" && kept.includes("scarf") && state.flags.roadScarf) {
     return "<p class=\"kept-echo\">他认出了那条红围巾，说阿澄母亲也戴过这个颜色。</p>";
   }
   if (guest.name === "小满" && kept.includes("lunchbox")) {
@@ -1597,6 +1731,7 @@ function openTradeDialog(guest) {
   `);
   dialog.classList.add("is-vn");
   guest.scene.forEach((line) => logVnLine(guest.name, line, currentNight().place));
+  saveState();
   body.querySelector("[data-vn-history]")?.addEventListener("click", openHistoryDialog);
 
   body.querySelectorAll("[data-trade-price]").forEach((button) => {
@@ -1806,6 +1941,7 @@ function openSpecialDialog(guest) {
   dialog.classList.add("is-vn");
   logVnLine(guest.name, guestLine(guest), currentNight().place);
   logVnLine(guest.name, guest.note, currentNight().place);
+  saveState();
   body.querySelector("[data-vn-history]")?.addEventListener("click", openHistoryDialog);
 
   body.querySelectorAll("[data-special-choice]").forEach((button) => {
@@ -2689,6 +2825,15 @@ function startPastScene(arcId) {
   showFinaleStep();
 }
 
+function characterEndingData(id) {
+  const arc = CONTENT.characterArcs[id];
+  const variant = (CONTENT.characterEndingVariants?.[id] || []).find((item) =>
+    (item.requiresFlags || []).every((flag) => Boolean(state.flags[flag])) &&
+    (item.excludesFlags || []).every((flag) => !state.flags[flag])
+  );
+  return variant || CONTENT.finale.characters[id][state.flags[arc.closureFlag] ? "resolved" : "unresolved"];
+}
+
 function buildFinaleSteps(choice) {
   const data = CONTENT.finale;
   const sceneByArc = {
@@ -2716,7 +2861,7 @@ function buildFinaleSteps(choice) {
   ["acheng", "shen", "clerk", "xiaoman", "traveler"].forEach((id) => {
     const arc = CONTENT.characterArcs[id];
     const resolved = Boolean(state.flags[arc.closureFlag]);
-    const ending = data.characters[id][resolved ? "resolved" : "unresolved"];
+    const ending = characterEndingData(id);
     steps.push({
       speaker: arc.name,
       text: ending.text,
@@ -2794,7 +2939,14 @@ function showFinaleStep() {
   elements.finaleContinue.textContent = finaleIndex >= finaleSteps.length - 1
     ? (finaleMode === "night-open" ? "开门营业" : finaleMode === "past" ? "回到柜台" : "查看收据与结局")
     : "继续";
+  state.reading = {
+    kind: finaleMode,
+    step: finaleIndex,
+    ...(finaleMode === "past" ? { arc: currentPastArc, returnDialog: pastReturnDialogId } : {}),
+    ...(finaleMode === "finale" ? { choice: finaleChoice } : {})
+  };
   logVnLine(step.speaker, finaleCurrentText, step.sceneLabel || "终章");
+  saveState();
   typeFinaleText(finaleCurrentText);
 }
 
@@ -2806,7 +2958,7 @@ function typeFinaleText(text) {
     completeFinaleText();
     return;
   }
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (settings.textSpeed === "instant" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     elements.finaleText.textContent = text;
     completeFinaleText();
     return;
@@ -2863,6 +3015,7 @@ function advanceFinale() {
 }
 
 function finishFinale() {
+  state.reading = null;
   clearTimeout(finaleTimer);
   closeDialog(elements.finaleDialog);
   document.body.classList.remove("finale-active");
@@ -2914,6 +3067,7 @@ function finishFinale() {
     }
     return;
   }
+  saveState();
   showSummary();
   playSfx("page");
 }
@@ -2996,7 +3150,7 @@ function showSummary() {
     const recapRows = ["acheng", "shen", "clerk", "xiaoman", "traveler"].map((id) => {
       const arc = CONTENT.characterArcs[id];
       const resolved = Boolean(state.flags[arc.closureFlag]);
-      const item = CONTENT.finale.characters[id][resolved ? "resolved" : "unresolved"];
+      const item = characterEndingData(id);
       return `
         <div class="finale-recap-row">
           <div>
@@ -3078,7 +3232,7 @@ function showSummary() {
     closeDialog(dialog);
     startFinale(state.closingChoice);
   });
-  body.querySelector("#restart-night")?.addEventListener("click", resetGame);
+  body.querySelector("#restart-night")?.addEventListener("click", requestNewGame);
   openDialog(dialog);
   dialog.scrollTop = 0;
   window.requestAnimationFrame(() => {
@@ -3122,7 +3276,7 @@ function startNextNight(routeId = null) {
   addMemory(
     hasTicket
       ? `店在${currentNight().place}重新亮起了六盏灯。`
-      : "没有车票。店没有按你选的方向走，被雾推进下一处，收银台少了 ¥5。"
+      : `没有车票。店沿着雾里的线索漂到${currentNight().place}，路上花去了最多 ¥5。`
   );
   closeDialog(document.querySelector("#summary-dialog"));
   commit();
@@ -3137,9 +3291,33 @@ function startNextNight(routeId = null) {
 }
 
 function startPrologue() {
-  prologueIndex = 0;
-  prologueBranch = null;
-  renderPrologueStep();
+  const reading = state.reading?.kind === "prologue" ? state.reading : null;
+  prologueIndex = reading?.step || 0;
+  prologueBranch = reading?.branch || null;
+  renderPrologueStep(reading?.line || 0);
+}
+
+function resumeReading() {
+  const reading = state.reading;
+  if (!reading) return false;
+  if (reading.kind === "prologue") {
+    openIntroDialog();
+    return true;
+  }
+  finaleMode = reading.kind;
+  currentPastArc = reading.kind === "past" ? reading.arc : null;
+  // A trade result is ephemeral. After a reload, return through the character
+  // archive instead of reopening an empty, already committed transaction.
+  pastReturnDialogId = reading.kind === "past" ? "character-dialog" : null;
+  finaleChoice = reading.kind === "finale" ? reading.choice : null;
+  finaleSteps = reading.kind === "past" ? buildPastSteps(reading.arc)
+    : reading.kind === "night-open" ? buildNightOpeningSteps()
+      : buildFinaleSteps(reading.choice);
+  finaleIndex = Math.min(reading.step, finaleSteps.length - 1);
+  document.body.classList.add("finale-active");
+  elements.finaleDialog.showModal();
+  showFinaleStep();
+  return true;
 }
 
 function openIntroDialog() {
@@ -3148,7 +3326,7 @@ function openIntroDialog() {
   openDialog(document.querySelector("#intro-dialog"));
 }
 
-function renderPrologueStep() {
+function renderPrologueStep(resumeLine = 0) {
   const step = CONTENT.prologue.steps[prologueIndex];
   if (!step) {
     return;
@@ -3157,7 +3335,7 @@ function renderPrologueStep() {
   clearTimeout(typeTimer);
   const text = step.branch ? step.branch[prologueBranch] : step.text;
   prologueLines = splitVnLines(text || "");
-  prologueLineIndex = 0;
+  prologueLineIndex = Math.min(resumeLine, Math.max(0, prologueLines.length - 1));
   typeComplete = false;
 
   elements.vnStage.dataset.scene = step.scene || "counter";
@@ -3218,7 +3396,9 @@ function showPrologueLine() {
   const line = prologueLines[prologueLineIndex] || "";
   currentPrologueText = line;
   typeComplete = false;
+  state.reading = { kind: "prologue", step: prologueIndex, line: prologueLineIndex, branch: prologueBranch };
   logVnLine(step.speaker, line, step.sceneLabel);
+  saveState();
   typePrologueText(line);
 }
 
@@ -3230,7 +3410,7 @@ function typePrologueText(text) {
     completePrologueText();
     return;
   }
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (settings.textSpeed === "instant" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     elements.vnText.textContent = text;
     completePrologueText();
     return;
@@ -3336,6 +3516,7 @@ function choosePrologueOption(choice) {
 }
 
 function finishPrologue() {
+  state.reading = null;
   clearTimeout(typeTimer);
   playSfx("door");
   const prologueMemories = {
@@ -3360,9 +3541,12 @@ function finishPrologue() {
 }
 
 function logVnLine(speaker, text, sceneLabel) {
+  sceneLabel ||= "";
   if (!text) {
     return;
   }
+  const last = vnHistory.at(-1);
+  if (last?.type === "line" && last.speaker === speaker && last.text === text && last.sceneLabel === sceneLabel) return;
   vnHistory.push({ type: "line", speaker, text, sceneLabel });
   if (vnHistory.length > 300) {
     vnHistory.splice(0, vnHistory.length - 300);
@@ -3451,6 +3635,7 @@ function openSettingsDialog() {
   renderSettings();
   if (!elements.settingsDialog.open) {
     elements.settingsDialog.showModal();
+    elements.settingsDialog.scrollTop = 0;
   }
 }
 
@@ -3466,7 +3651,9 @@ function renderSettings() {
   elements.settingSfxValue.textContent = `${sfx}%`;
   elements.settingMuted.checked = settings.muted;
   document.querySelectorAll("[data-text-speed]").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.textSpeed === settings.textSpeed);
+    const selected = button.dataset.textSpeed === settings.textSpeed;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-pressed", String(selected));
   });
 }
 
@@ -3625,6 +3812,9 @@ function closeDialog(dialog) {
 }
 
 function resetGame() {
+  saveWriteBlocked = false;
+  clearTimeout(typeTimer);
+  clearTimeout(finaleTimer);
   vnHistory.length = 0;
   window.GameAudio?.restoreAmbience();
   state = createInitialState();
@@ -3699,6 +3889,7 @@ elements.settingsDialog.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
+  if (event.repeat) return;
   if (event.key !== " " && event.key !== "Enter") {
     return;
   }
@@ -3767,7 +3958,7 @@ document.querySelector("#mobile-settings").addEventListener("click", () => {
   closeDialog(document.querySelector("#nav-dialog"));
   openSettingsDialog();
 });
-document.querySelector("#reset-side").addEventListener("click", resetGame);
+document.querySelector("#reset-side").addEventListener("click", requestNewGame);
 
 const volumeBindings = [
   ["master", elements.settingMaster, elements.settingMasterValue],

@@ -10,7 +10,7 @@ if (-not (Test-Path -LiteralPath $source)) {
   throw "Source project not found: $source"
 }
 
-foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js")) {
+foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js")) {
   Copy-Item -LiteralPath (Join-Path $source $name) -Destination (Join-Path $dest $name) -Force
 }
 
@@ -25,14 +25,18 @@ $cacheStamp = Get-Date -Format "yyyyMMddHHmmss"
 $indexHtml = Get-Content -LiteralPath $indexPath -Raw -Encoding UTF8
 $indexHtml = [regex]::Replace(
   $indexHtml,
-  '(styles\.css|content\.js|audio\.js|game\.js)(\?v=[^"]*)?',
+  '(styles\.css|content\.js|audio\.js|game\.js|save-tools\.js)(\?v=[^"]*)?',
   '$1?v=' + $cacheStamp
 )
 Set-Content -LiteralPath $indexPath -Value $indexHtml -Encoding UTF8 -NoNewline
 
 node --check (Join-Path $dest "game.js")
+if ($LASTEXITCODE -ne 0) { throw "Game syntax check failed; publish stopped." }
 node --check (Join-Path $dest "content.js")
+if ($LASTEXITCODE -ne 0) { throw "Content syntax check failed; publish stopped." }
 node --check (Join-Path $dest "audio.js")
+if ($LASTEXITCODE -ne 0) { throw "Audio syntax check failed; publish stopped." }
+node --check (Join-Path $dest "save-tools.js")
 if ($LASTEXITCODE -ne 0) {
   throw "Syntax check failed; publish stopped."
 }
@@ -63,7 +67,7 @@ if (-not $env:GH_TOKEN) {
 $repo = "wyyy008/world-end-store"
 $branch = "main"
 $files = @()
-foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "README.md", "publish.ps1")) {
+foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js", "README.md", "publish.ps1")) {
   $files += @{ path = $name; source = Join-Path $dest $name }
 }
 Get-ChildItem -LiteralPath $destAssets -Recurse -File | ForEach-Object {

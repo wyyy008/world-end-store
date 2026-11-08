@@ -2098,7 +2098,7 @@ window.GAME_CONTENT = {
         localStock: { postcard: 1, expiredTicket: 1 },
         clockStart: "04:30",
         closingTitle: "最后一夜，包裹去哪里？",
-        closingIntro: "第一班车即将到站。五个人是否走到自己的答案，会决定包裹能不能被拆开。",
+        closingIntro: "第一班车即将到站。把包裹放上柜台后，就可以决定拆开或封存；每个人刚才给出的回答，都会留在这一夜的结局里。",
         cast: [
           {
             id: "traveler-final",
@@ -2149,7 +2149,7 @@ window.GAME_CONTENT = {
                 quote: "“我就坐一会儿。要是天亮前又想不起来，你别叫醒我。”",
                 effect: {
                   time: 1,
-                  flagsOn: ["travelerFinal", "travelerClosure"],
+                  flagsOn: ["travelerFinal", "travelerClosure", "travelerRested"],
                   memory: "无名旅人抱着包裹坐到天亮。他什么也没写，却第一次没有站在门外。",
                   toast: "无名旅人在柜台边坐下。"
                 }
@@ -2229,7 +2229,7 @@ window.GAME_CONTENT = {
             initial: "沈",
             avatarClass: "shen",
             arrival: "来开最后一班车的人",
-            line: "他把旧车队徽章放在柜台上，说阿澄的伞还在门边，第一班车总得有人开。",
+            line: "他把旧车队徽章放在柜台上，问阿澄今晚有没有来。第一班车快到了，他还没有决定自己要坐在哪个位置。",
             note: "两罐咖啡里，有一罐已经等了八夜。",
             action: "接待沈伯",
             cost: "会花掉 1 个营业时间格",
@@ -2377,7 +2377,7 @@ window.GAME_CONTENT = {
                 quote: "“今天结束也可以啊。那我就不硬撑到明天了。”",
                 effect: {
                   time: 1,
-                  flagsOn: ["xiaomanClosure", "xiaomanToday"],
+                  flagsOn: ["xiaomanClosure", "xiaomanToday", "xiaomanFinalToday"],
                   memory: "小满点点头，把空饭盒留在柜台。她说那明天就等明天再说。",
                   toast: "小满把空饭盒留在了店里。"
                 }
@@ -2403,7 +2403,7 @@ window.GAME_CONTENT = {
                 unavailable: "还没有把柜台的灯往门外挪",
                 effect: {
                   time: 1,
-                  flagsOn: ["xiaomanClosure", "xiaomanToday"],
+                  flagsOn: ["xiaomanClosure", "xiaomanToday", "xiaomanFinalLight"],
                   memory: "小满看着门外那盏灯，终于把空饭盒放下。她说，今天有人替她留了灯。",
                   toast: "小满把空饭盒留在了灯下。"
                 }
@@ -2845,7 +2845,7 @@ window.GAME_CONTENT = {
     summerScarf: "你把红围巾折好，留在柜台。夏天从围巾边上慢慢退了过去。",
     receipt: "今晚的收据被夹进记忆册，字迹已经开始变淡。",
     nothing: "你没有留下特别的东西。门上的灯一盏一盏暗了。",
-    openParcel: "你拆开没有收件人的包裹，把里面的五页交给五个终于走到自己答案的人。",
+    openParcel: "你拆开没有收件人的包裹，让五页信第一次一起被柜台上的灯照见。谁愿意接过自己的那一页，就由谁亲手收下。",
     sealParcel: "你把没有收件人的包裹重新封好，决定让它在下一段夜路里继续等一个名字。"
   },
   partialOpenParcel: {
@@ -2856,10 +2856,113 @@ window.GAME_CONTENT = {
     title: "拆开包裹之后 · 还没有人读信",
     text: "包裹里是五张没有寄出的旧信。第一班车到站前，没有一页被真正读出来。五个人仍旧留在店里，各自守着自己的等待。包裹被打开了，却还没有人准备好接过自己的那一页。"
   },
+  characterEndingVariants: {
+    acheng: [
+      {
+        requiresFlags: ["achengClosure", "parcelOpenedForAcheng"],
+        title: "阿澄 · 把伞留给下一场雨",
+        text: "阿澄把母亲留下的那一页折好，收进口袋。透明雨伞留在门边，她走到车门前，回头看了一眼，说下次下雨时，谁需要就让谁拿去。伞还在，她却不必再替它守着那个下午。"
+      },
+      {
+        requiresFlags: ["achengClosure", "achengOldUmbrella"],
+        title: "阿澄 · 把伞带走",
+        text: "阿澄把接回的旧伞撑开，又轻轻合上。这次她没有把它放回门边，而是握着伞柄走向第一班车。她说，伞可以带走，等过的那个下午也可以好好收起来。"
+      },
+      {
+        excludesFlags: ["achengClosure", "achengStillWaiting"],
+        title: "阿澄 · 还没听完的话",
+        text: "第一班车的灯照到门边，阿澄还在那里。你没来得及听完她这一夜的话，也没有替她说出告别。属于她的那句回答，留给下一次相遇。"
+      }
+    ],
+    shen: [
+      {
+        requiresFlags: ["shenClosure", "shenDrives"],
+        title: "沈伯 · 第一班车，我来开",
+        text: "沈伯收好你交给他的旧车票，走向第一班车的驾驶座。两罐咖啡都跟着他上了车。他把后视镜调了调，认真数过门边的人，才说这一次，不会让谁白等。"
+      },
+      {
+        requiresFlags: ["shenClosure", "shenSecondCoffee"],
+        title: "沈伯 · 第二罐终于打开了",
+        text: "沈伯把第二罐咖啡喝完，空罐在柜台上并排放着。他不再替一个没有到的人守着热气，也没有再问末班车几点来。第一班车亮灯时，他起身走了过去，脚步比往常慢，却没有停在站牌下。"
+      },
+      {
+        requiresFlags: ["shenClosure", "shenBadgeKept"],
+        title: "沈伯 · 今天当乘客",
+        text: "旧车队徽章留在你的手心里。沈伯上车以后，没有走向驾驶座，只在靠窗的位置坐下。他摸了摸空下来的衣襟，朝你点点头，说今天不用替谁发车，坐一趟就好。"
+      },
+      {
+        excludesFlags: ["shenClosure", "shenStillWaiting"],
+        title: "沈伯 · 还没问完的班次",
+        text: "沈伯站在站牌下，看着第一班车的灯。你还没有听到他这一夜最后的选择，也不知道他会坐进车里，还是再等一分钟。柜台给他留着位置。"
+      }
+    ],
+    clerk: [
+      {
+        requiresFlags: ["clerkClosure", "clerkNamed"],
+        title: "林晚 · 名字被叫住了",
+        text: "你叫出林晚的名字时，她回过了头。工牌被她收进口袋，没有再翻回写着编号的那一面。走出店门前，她说以后要是再来，就叫这个名字吧，她听得见。"
+      },
+      {
+        requiresFlags: ["clerkClosure", "clerkOffDuty"],
+        title: "0217 · 今天正式下班",
+        text: "0217把工牌摘下来，没有问下一班几点开始。她在门口站了一会儿，像在练习一个不需要交接的离开。最后她说，明天想睡到自然醒，然后慢慢走进天亮的地方。"
+      },
+      {
+        excludesFlags: ["clerkClosure", "clerkStillWorking"],
+        title: "0217 · 没有交接的这一夜",
+        text: "柜台后的灯还亮着。0217把工牌握在手里，等着一句还没有说完的交接。你没有听到她最后的决定，便先收起了这一夜。她的名字还在工牌背面，等下一次被看见。"
+      }
+    ],
+    xiaoman: [
+      {
+        requiresFlags: ["xiaomanClosure", "xiaomanAte"],
+        title: "小满 · 先把今天的饭吃完",
+        text: "小满吃完热饭，把空饭盒留在柜台上。她说，明天有没有太阳，等明天再问。走到门口时，她没有回头确认天气，只拍了拍已经暖起来的胃。"
+      },
+      {
+        requiresFlags: ["xiaomanClosure", "xiaomanFinalLight"],
+        title: "小满 · 明天再来看灯",
+        text: "小满看了一会儿门外的灯，把空饭盒放在灯下。她说，明天也许还会来，不过这次不是因为怕黑。说完她就走了，没有把这一晚拖成另一个等不到的晴天。"
+      },
+      {
+        requiresFlags: ["xiaomanClosure", "xiaomanToday"],
+        title: "小满 · 今天已经够了",
+        text: "小满把空饭盒轻轻放下，认真点了点头。今天可以结束，明天就等明天再说。她走进门外那片很慢的光里，影子终于和脚步一起移动。"
+      },
+      {
+        excludesFlags: ["xiaomanClosure", "xiaomanStillWaiting"],
+        title: "小满 · 还没回答的今天",
+        text: "小满抱着饭盒，站在灯照得到的地方。你还没有听完她这一夜想说的话，也没有回答她今天能不能先歇一歇。门外的天色慢慢亮起来，柜台还给她留着位置。"
+      }
+    ],
+    traveler: [
+      {
+        requiresFlags: ["travelerClosure", "parcelNamed"],
+        title: "无名旅人 · 名字终于留下",
+        text: "无名旅人又看了一眼明信片上的名字。字迹没有消失，他的影子也完整地落在柜台上。他没有急着把包裹抱走，只把写着名字的那面朝向灯，像确认自己终于也能收到一封信。"
+      },
+      {
+        requiresFlags: ["travelerClosure", "parcelAddress"],
+        title: "无名旅人 · 一个可以抵达的地址",
+        text: "无名旅人把那张过期车票压在包裹边，指了指上面早已停运的站名。名字还没想起来，他却终于承认自己到过这里。第一班车亮灯时，他没有再退回门外。"
+      },
+      {
+        requiresFlags: ["travelerClosure"],
+        excludesFlags: ["parcelNamed", "parcelAddress"],
+        title: "无名旅人 · 今夜先坐一会儿",
+        text: "无名旅人坐在柜台边，怀里的包裹慢慢放低了。他没有写下名字，也没有补上地址，只在灯下安静地歇到天亮。这一次，你没有催他出发，他也没有再说自己只是路过。"
+      },
+      {
+        excludesFlags: ["travelerClosure"],
+        title: "无名旅人 · 还没有写下的地址",
+        text: "无名旅人还在门边，包裹上仍有一栏空着。你没有听到他最后想写的那个名字，也没有替他填上。第一班车照进来的光越过门槛，他仍在能看见柜台的地方。"
+      }
+    ]
+  },
   finale: {
     opening: [
-      "第一班车的前灯从雾里照进来。柜台上的五件东西同时亮了一下，像五个人终于被同一盏灯看见。",
-      "你把没有收件人的包裹放在柜台中央。里面是五页没有寄出的信，也是五个人一直没有说出口的答案。"
+      "第一班车的前灯从雾里照进来。门边、站牌下和柜台上的影子同时亮了一下，五个人又到了该告别的时候。",
+      "没有收件人的包裹就在店里。里面的五页旧信，有人已经接过，有人还没有准备好。你把手放在封口上，记起刚才留在柜台前的那些话。"
     ],
     characters: {
       acheng: {
@@ -2916,12 +3019,12 @@ window.GAME_CONTENT = {
     overall: {
       openParcel: {
         full: {
-          title: "拆开包裹之后 · 五页都读完了",
-          text: "五页信都被读完了。阿澄、沈伯、0217、小满和无名旅人各自带着自己的那一页走向第一班车。店没有跟他们走，只把五盏灯留在柜台上。第一班车开走以后，店门没有关——它第一次不是在等谁，而是在给下一个人留灯。"
+          title: "拆开包裹之后 · 五个答案",
+          text: "五个人都在柜台前给出了自己的回答。有人接过信，有人收好了自己的东西，也有人终于愿意坐下来歇一会儿。你把包裹打开，让还在里面的页也见一见灯。第一班车开走以后，店门没有关，柜台还给下一个人留着位置。"
         },
         partial: {
-          title: "拆开包裹之后 · 只读完一部分",
-          text: "五页信里，只有几页被真正读了出来。读到的人走向第一班车，没读到的人留在店里，守着自己的等待。店没有替任何人补写结局，只把没读完的页重新夹回包裹。第一班车开走时，柜台上的灯亮着，门口也还留着位置。"
+          title: "拆开包裹之后 · 还没说完的话",
+          text: "有人已经给出自己的回答，也有人还想再等一会儿。你打开包裹，把还没交出的信摊在灯下。店没有替任何人补写告别，也没有把没说完的话收走。第一班车开走时，柜台上的灯亮着，门口还留着位置。"
         },
         none: {
           title: "拆开包裹之后 · 还没有人读信",
@@ -2933,12 +3036,12 @@ window.GAME_CONTENT = {
         text: "你把包裹重新封好。五个人仍旧留在各自的位置上：阿澄在门边，沈伯在站牌下，0217在柜台后，小满在门外，无名旅人没有完整的影子。第一班车开过去，店带着包裹继续上路。下一段夜路里，他们还会再遇见——也许下一次，有人会先拆开它。"
       },
       sealParcelPartial: {
-        title: "封存包裹之后 · 有人先走了",
-        text: "五页信里有几页已经被读过。走到答案的人先上了第一班车；还没读到的人留在各自的位置上。你把剩下的页重新封好，让店带着尚未结束的等待继续上路。"
+        title: "封存包裹之后 · 先收好这一夜",
+        text: "有人已经给出自己的回答，也有人仍留在等待里。你没有把已经说过的话收回，只把包裹重新封好。走的人可以走，想再坐一会儿的人也有位置，店带着没说完的部分继续上路。"
       },
       sealParcelFull: {
         title: "封存包裹之后 · 所有答案都已抵达",
-        text: "五个人都已经走到自己的答案。你把空包裹重新封好，让店带着一段已经结束的等待继续上路。第一班车开走以后，门上的灯第一次不是为了等谁而亮。"
+        text: "五个人都已经给出自己的回答，封口不再替他们决定去留。你把包裹重新收好，也记住了有人带走东西、有人留下东西、有人终于肯歇脚的这一夜。第一班车开走以后，店继续上路，门上的灯还亮着。"
       }
     },
     closing: "门上的灯一盏一盏暗下去。店又向前走了一夜。"

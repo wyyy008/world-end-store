@@ -2228,6 +2228,87 @@ dialog::backdrop {
   margin-top: 4px;
 }
 
+.save-section {
+  border-top: 1px solid var(--border);
+  margin-top: 14px;
+  padding-top: 20px;
+}
+
+.settings-dialog .setting-row {
+  border-radius: var(--radius-card);
+}
+
+.save-section h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.save-description,
+.save-status,
+.save-feedback,
+.save-preview p {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.save-status {
+  color: var(--text);
+}
+
+.save-status.is-error,
+.save-status[data-state="error"],
+.save-feedback.is-error {
+  color: var(--warning-ink);
+}
+
+.save-warning {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--control);
+  background: var(--warning-soft);
+  color: var(--warning-ink);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.save-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.save-actions button {
+  min-height: 44px;
+}
+
+.save-preview {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--control);
+  border-radius: 8px;
+  background: var(--raised);
+}
+
+@media (max-width: 520px) {
+  .setting-row-speed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .speed-options {
+    flex-wrap: wrap;
+  }
+
+  .speed-option {
+    min-height: 40px;
+    flex: 1;
+  }
+}
+
 .interlude-dialog {
   width: min(560px, calc(100vw - 32px));
 }
@@ -3632,7 +3713,8 @@ body.finale-active .app-shell {
     padding: 16px;
   }
 
-  .intro-dialog {
+  .intro-dialog,
+  .finale-dialog {
     width: 100vw;
     max-width: none;
     height: 100dvh;

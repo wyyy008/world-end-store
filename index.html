@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8">
@@ -9,10 +9,11 @@
     <link rel="apple-touch-icon" href="assets/logo-256.png">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=20261106101608">
-    <script src="content.js?v=20261106101608" defer></script>
-    <script src="audio.js?v=20261106101608" defer></script>
-    <script src="game.js?v=20261106101608" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261108222144">
+    <script src="content.js?v=20261108222144" defer></script>
+    <script src="audio.js?v=20261108222144" defer></script>
+    <script src="game.js?v=20261108222144" defer></script>
+    <script src="save-tools.js?v=20261108222144" defer></script>
   </head>
   <body>
     <svg class="portrait-sprite" aria-hidden="true" focusable="false">
@@ -140,7 +141,7 @@
           <span id="side-night-detail">小雨，22:40，末班车晚点</span>
         </div>
 
-        <button class="quiet-button side-reset" id="reset-side" type="button">重新营业</button>
+        <button class="quiet-button side-reset" id="reset-side" type="button">重开试玩</button>
       </aside>
 
       <div class="frame-main">
@@ -160,6 +161,7 @@
         </header>
 
         <main class="sheet">
+          <p class="save-warning" id="save-warning" role="status" hidden></p>
           <div class="page-head">
             <div>
               <h1 id="page-title">今晚的便利店</h1>
@@ -171,7 +173,7 @@
           <section class="chapter-goal" aria-label="首章目标">
             <span class="goal-label">首章主线</span>
             <div class="goal-copy">
-              <strong>把五封没有送出的信送到五个人手里</strong>
+              <strong>替没有收件人的包裹找到去处</strong>
               <span id="goal-progress">距离第一班车还有 8 夜</span>
             </div>
             <span class="goal-route" id="goal-route">包裹还没有地址</span>
@@ -494,14 +496,35 @@
         <div class="setting-row setting-row-speed">
           <span>
             <strong>文字速度</strong>
-            <small>影响序章逐字出现的速度</small>
+            <small>用于序章、人物过去与终章</small>
           </span>
           <div class="speed-options" role="group" aria-label="文字速度">
             <button class="speed-option" type="button" data-text-speed="slow">慢</button>
             <button class="speed-option is-active" type="button" data-text-speed="normal">标准</button>
             <button class="speed-option" type="button" data-text-speed="fast">快</button>
+            <button class="speed-option" type="button" data-text-speed="instant">即显</button>
           </div>
         </div>
+        <section class="save-section" aria-labelledby="save-heading">
+          <h3 id="save-heading">旅途存档</h3>
+          <p class="save-description">进度自动保存在这个浏览器。下载一份备份，就能带到另一台设备继续。</p>
+          <p class="save-status" id="save-status" role="status" aria-live="polite">正在读取存档状态…</p>
+          <div class="save-actions">
+            <button class="secondary-button" id="export-save" type="button">下载存档</button>
+            <button class="secondary-button" id="import-save" type="button">导入存档</button>
+            <input id="import-save-file" type="file" accept=".json,application/json" hidden>
+          </div>
+          <p class="save-feedback" id="save-feedback" role="status" aria-live="polite"></p>
+          <div class="save-preview" id="save-preview" hidden>
+            <strong>准备接续这段旅途</strong>
+            <p id="save-preview-detail"></p>
+            <p class="save-description">载入会替换当前进度。可以先下载现有存档，再接着走。</p>
+            <div class="save-actions">
+              <button class="secondary-button" id="cancel-import-save" type="button">取消</button>
+              <button class="primary-button" id="confirm-import-save" type="button">载入这份存档</button>
+            </div>
+          </div>
+        </section>
         <div class="settings-actions">
           <button class="secondary-button" id="setting-test-sound" type="button">试听音效</button>
           <button class="primary-button" type="button" data-close="settings-dialog">完成</button>
