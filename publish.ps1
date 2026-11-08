@@ -70,6 +70,8 @@ $files = @()
 foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js", "README.md", "publish.ps1")) {
   $files += @{ path = $name; source = Join-Path $dest $name }
 }
+$workflowPath = ".github/workflows/pages.yml"
+$files += @{ path = $workflowPath; source = Join-Path $dest $workflowPath }
 Get-ChildItem -LiteralPath $destAssets -Recurse -File | ForEach-Object {
   $relative = $_.FullName.Substring($dest.Length + 1).Replace("\", "/")
   $files += @{ path = $relative; source = $_.FullName }
