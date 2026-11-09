@@ -4,16 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0c0b09">
+    <meta name="description" content="《世界尽头的便利店》免费试玩版：八个雨夜，接待走进店里的人，在打烊前决定留下什么。">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="世界尽头的便利店 · 免费试玩版">
+    <meta property="og:description" content="八个雨夜，五封没有送出的信。">
+    <meta property="og:image" content="https://wyyy008.github.io/world-end-store/assets/logo.jpg">
     <title>世界尽头的便利店 · 第一夜</title>
     <link rel="icon" href="assets/logo-128.png" type="image/png">
     <link rel="apple-touch-icon" href="assets/logo-256.png">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=20261109072526">
-    <script src="content.js?v=20261109072526" defer></script>
-    <script src="audio.js?v=20261109072526" defer></script>
-    <script src="game.js?v=20261109072526" defer></script>
-    <script src="save-tools.js?v=20261109072526" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20261109224206">
+    <script src="content.js?v=20261109224206" defer></script>
+    <script src="audio.js?v=20261109224206" defer></script>
+    <script src="game.js?v=20261109224206" defer></script>
+    <script src="save-tools.js?v=20261109224206" defer></script>
   </head>
   <body>
     <svg class="portrait-sprite" aria-hidden="true" focusable="false">
@@ -57,9 +62,9 @@
       <div class="title-panel">
         <div class="title-main">
           <div>
-            <h1 id="game-title"><span>世界尽头的</span><span>便利店</span></h1>
+            <h1 id="game-title"><img class="title-wordmark" src="assets/logo.png" alt="世界尽头的便利店" width="1774" height="887"></h1>
             <p class="title-subtitle">没有收件人的包裹</p>
-            <p class="title-edition">免费试玩 · 八夜 · 约 25–40 分钟</p>
+            <p class="title-edition">免费试玩 · 八夜</p>
             <p class="title-premise">接待走进店里的人，听他们把话说完，再决定打烊时留下什么。五个人的往事，会在交谈中慢慢浮现。第八夜第一班车来以前，替柜台下的包裹找到去处。</p>
             <div class="title-ticket" aria-hidden="true">
               <span class="title-ticket-stub">雾港 · 末班车</span>
@@ -107,7 +112,7 @@
       <aside class="sidebar" aria-label="主菜单">
         <a class="brand" id="brand-home" href="#" aria-label="返回游戏标题页">
           <span class="brand-mark" aria-hidden="true">
-            <img src="assets/logo.svg" alt="">
+            <img src="assets/logo-128.png" alt="">
           </span>
           <span>
             <strong>世界尽头</strong>
@@ -150,7 +155,7 @@
             <span></span><span></span><span></span>
           </button>
           <div class="mobile-brand">
-            <span class="mini-mark" aria-hidden="true"><img src="assets/logo.svg" alt=""></span>
+            <span class="mini-mark" aria-hidden="true"><img src="assets/logo-128.png" alt=""></span>
             世界尽头的便利店
           </div>
           <p class="topbar-scope" id="topbar-scope">第 1 夜 · 雾港公交站</p>
@@ -225,7 +230,7 @@
                 <span class="status-badge" id="shop-status">营业中</span>
               </header>
 
-              <div class="shop-interior">
+              <div class="shop-interior" data-art="store">
                 <div class="window-strip">
                   <div>
                     <span class="window-label">店外</span>
@@ -248,6 +253,7 @@
                       <span>柜台</span>
                       <span id="counter-clock">22:40</span>
                     </div>
+                    <div class="counter-stage" id="counter-stage" aria-label="柜台场景中的可交互物品"></div>
                     <div class="customer-frame" id="customer-scene"></div>
                     <div id="customer-actions" class="customer-actions"></div>
                   </div>
@@ -279,7 +285,7 @@
 
     <dialog class="game-dialog intro-dialog prologue-dialog" id="intro-dialog" aria-labelledby="vn-speaker">
       <div class="vn-shell">
-        <div class="vn-stage" id="vn-stage" data-scene="rain">
+        <div class="vn-stage" id="vn-stage" data-scene="rain" data-art="road">
           <div class="vn-rain" aria-hidden="true">
             <i></i><i></i><i></i><i></i><i></i><i></i>
           </div>
@@ -321,7 +327,7 @@
 
     <dialog class="game-dialog finale-dialog" id="finale-dialog" aria-labelledby="finale-speaker">
       <div class="vn-shell">
-        <div class="vn-stage" id="finale-stage" data-scene="rain">
+        <div class="vn-stage" id="finale-stage" data-scene="rain" data-art="road">
           <div class="vn-rain" aria-hidden="true">
             <i></i><i></i><i></i><i></i><i></i><i></i>
           </div>
@@ -500,6 +506,13 @@
             <small>保留当前设置，暂时关闭所有声音</small>
           </span>
           <input id="setting-muted" type="checkbox">
+        </label>
+        <label class="setting-row setting-row-toggle" for="setting-reduced-motion">
+          <span>
+            <strong>减少动态效果</strong>
+            <small>关闭人物呼吸、登场和选择反馈的移动动画</small>
+          </span>
+          <input id="setting-reduced-motion" type="checkbox">
         </label>
         <div class="setting-row setting-row-speed">
           <span>

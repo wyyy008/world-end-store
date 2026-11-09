@@ -4,7 +4,7 @@ window.GAME_CONTENT = {
   startingTickets: 0,
   startingStock: {
     umbrella: 2,
-    coffee: 3,
+    coffee: 4,
     lunchbox: 1
   },
   prologue: {
@@ -138,11 +138,11 @@ window.GAME_CONTENT = {
         </svg>`
     },
     coffee: {
-      name: "速溶咖啡",
+      name: "罐装咖啡",
       cost: 3,
       price: 6,
       origin: "无眠车站，夜班供货箱",
-      commonUse: "热水冲开，能让人再撑一班车。",
+      commonUse: "拉开罐口，能让人再撑一班车。",
       specialUse: "沈伯每次买两罐，只喝一罐。剩下那罐总是留给别人。",
       icon: `
         <svg viewBox="0 0 40 40" aria-hidden="true">
@@ -305,7 +305,7 @@ window.GAME_CONTENT = {
         name: "阿澄",
         initial: "澄",
         avatarClass: "",
-        arrival: "第一位客人",
+        arrival: "第二位客人 · 等末班车的女孩",
         line: "她挑好一把透明雨伞，又把伞尖挪离门缝，先问你打烊时会不会把门边的东西收走。",
         note: "她说只是借个位置，却连伞柄朝哪边都要重新摆过。",
         action: "接待阿澄",
@@ -490,7 +490,7 @@ window.GAME_CONTENT = {
                     time: 1,
                     stock: { coffee: -1 },
                     cash: 6,
-                    transaction: { label: "速溶咖啡 ×1", amount: 6 },
+                    transaction: { label: "罐装咖啡 ×1", amount: 6 },
                     memory: "0217照价买了一罐咖啡。硬币落进收银盒时，她像是松了一口气。",
                     toast: "0217把咖啡带进了夜班休息室。"
                   }
@@ -579,7 +579,7 @@ window.GAME_CONTENT = {
                     stock: { coffee: -2 },
                     cash: 12,
                     flagsOn: ["shenReunion"],
-                    transaction: { label: "速溶咖啡 ×2", amount: 12 },
+                    transaction: { label: "罐装咖啡 ×2", amount: 12 },
                     memory: "沈伯买了两罐新咖啡，仍只打开一罐。他说旧的那罐可以再等一等。",
                     toast: "沈伯留下了新的一罐。"
                   }

@@ -97,6 +97,9 @@
       case "type":
         tone(1500, "square", 0.012, 0.008, 1200);
         break;
+      case "scan":
+        tone(1350, "sine", 0.075, 0.045, 1850);
+        break;
       case "coin":
         tone(880, "sine", 0.18, 0.05, 1320);
         tone(1174, "sine", 0.22, 0.04, 1760, 0.06);

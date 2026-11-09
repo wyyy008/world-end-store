@@ -10,7 +10,7 @@ if (-not (Test-Path -LiteralPath $source)) {
   throw "Source project not found: $source"
 }
 
-foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js")) {
+foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js", "README.md", "FIRST_NIGHT_V3.md")) {
   Copy-Item -LiteralPath (Join-Path $source $name) -Destination (Join-Path $dest $name) -Force
 }
 
@@ -67,7 +67,7 @@ if (-not $env:GH_TOKEN) {
 $repo = "wyyy008/world-end-store"
 $branch = "main"
 $files = @()
-foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js", "README.md", "publish.ps1")) {
+foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js", "README.md", "FIRST_NIGHT_V3.md", "publish.ps1")) {
   $files += @{ path = $name; source = Join-Path $dest $name }
 }
 $workflowPath = ".github/workflows/pages.yml"
