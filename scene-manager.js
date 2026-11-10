@@ -117,6 +117,54 @@
     continue: ["带着工牌线索，去听第三次门铃", "门上的铃铛轻轻摆了一下。", "门口有人等着。", "点线索下方的「去听第三次门铃」，或进店门近景，点门外的人。", "door"]
   };
   const targetActions = { arrange: "arrange", guest: "guest", bottles: "bottles", scanner: "scanner", recorder: "recorder", continue: "continue" };
+  function nextAction(m) {
+    if (ctx.revisit) return { action: "continue", label: "回到值班" };
+    const step = phase(m);
+    const destination = tasks[step][4];
+    if (step === "continue") return { action: "continue", label: "去听第三次门铃" };
+    if (m.scene !== destination) {
+      const action = hintTarget(m);
+      const labels = {
+        "go-shelf": "去货架", "go-till": "去收银台", "go-cctv": "去监控室",
+        back: "返回上一处"
+      };
+      return { action, label: labels[action] || "前往目标位置" };
+    }
+    if (step === "guest") return { action: "guest", label: "接待阿澄" };
+    if (m.panel !== targetActions[step]) {
+      const labels = { arrange: "查看价签与周转箱", bottles: "查看十七号饮料格", scanner: "查看扫码器", recorder: "查看回放台" };
+      return { action: targetActions[step], label: labels[step] };
+    }
+    if (step === "arrange") {
+      if (m.held) return { action: "slot-" + goods[m.held].price, label: "放到 ¥" + goods[m.held].price + " 价签" };
+      const remaining = ["bag", "coffee", "umbrella"].find(id => !m.placed.includes(id));
+      return { action: "item-" + remaining, label: "拿起" + goods[remaining].name };
+    }
+    if (step === "bottles") {
+      if (m.bottle === "amber") return { action: "take-soda", label: "把异常汽水装进背包" };
+      return { action: "bottle-amber", label: "翻看橘子汽水" };
+    }
+    if (step === "scanner") return { action: "scan-soda", label: "扫描背包里的汽水" };
+    if (!m.mounted.includes("ticket")) return { action: "mount-ticket", label: "放上旧车票" };
+    if (!m.mounted.includes("receipt")) return { action: "mount-receipt", label: "放上未来收据" };
+    if (m.frame !== "17") return { action: "frame-17", label: "调到 00:17" };
+    return { action: "inspect-badge", label: "查看画面里的工牌" };
+  }
+  function nextInstruction(m) {
+    const step = phase(m);
+    if (ctx.revisit) return "背包和线索册都在画面上方。看完后回到值班。";
+    if (m.scene !== tasks[step][4] && step !== "continue") {
+      return "先到" + rooms[tasks[step][4]].title + "。画面里发亮的圆点可以点，近景可返回。";
+    }
+    if (step === "arrange") return m.held
+      ? "包装上的售价是 ¥" + goods[m.held].price + "。把它放到相同的价签。"
+      : "先从周转箱拿起一件货。点商品后会看到包装上的售价。";
+    if (step === "guest") return "点击阿澄，选择怎么卖伞，再读完她的回应。";
+    if (step === "bottles") return "票背写着十七号格。今晚是 11 月 08 日，找生产日期晚于今晚的汽水。";
+    if (step === "scanner") return "瓶子已经在背包里。打开扫码器，把条码对准红光。";
+    if (step === "recorder") return "把旧票与未来收据夹在屏幕旁，找两张纸上相同的时间。";
+    return "你已经认出门外那人的工牌。现在可以回到门铃响起的剧情。";
+  }
   function hintTarget(m) {
     const step = phase(m);
     const destination = tasks[step][4];
@@ -245,7 +293,14 @@
       }
       default: return "";
     }
-    return `<section class="ex-detail" aria-labelledby="ex-detail-title"><header><h3 id="ex-detail-title" tabindex="-1">${title}</h3>${btn("detail-close", "收起", 'class="ex-dismiss"')}</header><p>${body}</p>${buttons ? '<div class="ex-choices">'+buttons+'</div>' : ""}</section>`;
+    const finishedHere = (p === "arrange" && m.ticket) || (p === "bottles" && m.soda) ||
+      (p === "scanner" && m.receipt);
+    const next = finishedHere ? nextAction(m) : null;
+    return `<section class="ex-detail" aria-labelledby="ex-detail-title"><header><h3 id="ex-detail-title" tabindex="-1">${title}</h3>${btn("detail-close", "收起", 'class="ex-dismiss"')}</header><p>${body}</p>
+      ${message ? `<p class="ex-detail-feedback">${message}</p>` : ""}
+      ${buttons ? '<div class="ex-choices">'+buttons+'</div>' : ""}
+      ${next ? `<div class="ex-detail-next"><span>下一步</span>${btn(next.action, next.label)}</div>` : ""}
+    </section>`;
   }
   function itemLine(title, text) { return `<span class="ex-evidence-line"><b>${title}</b>　${text}</span>`; }
 
@@ -258,14 +313,33 @@
       `<span class="ex-pin" aria-hidden="true"></span><span class="ex-hotspot-label">${label}</span>`,
       `class="ex-hotspot" style="left:${x}%;top:${y}%"`)).join("");
     const caption = m.scene === "shelf" && m.shelfChanged ? "刚才背光的瓶子已经靠到柜门。地板干着，几个橘色瓶盖却在滴水。" : room.caption;
+    const next = nextAction(m);
+    const milestones = [
+      ["整理货架", m.ticket],
+      ["接待阿澄", m.guestDone],
+      ["异常收银", m.receipt],
+      ["监控时间", m.solved]
+    ];
     root.innerHTML = `<div class="ex-shell" data-scene="${m.scene}" data-anomaly="${m.scene === "shelf" && m.shelfChanged}" data-soda="${m.soda}" data-receipt="${m.receipt}" data-frame="${m.frame}">
       <header class="ex-header"><div><small class="ex-kicker">第一夜 · 雾港公交站</small><h2 class="ex-title" tabindex="-1">${room.title}</h2></div>
       <nav class="ex-tools" aria-label="调查记录">${btn("bag", "背包", selected(m.panel === "bag"))}${btn("book", "线索册", selected(m.panel === "book"))}${ctx.revisit ? btn("continue", "回到值班") : ""}</nav></header>
-      <div class="ex-task"><small>当班任务</small><strong>${ctx.revisit ? "查阅完线索，就回到柜台继续值班" : tasks[phase(m)][0]}</strong></div>
-      <div class="ex-stage"><div class="ex-art" aria-hidden="true"></div><div class="ex-effects" aria-hidden="true"></div><div class="ex-prop" aria-hidden="true"></div>${hotspots}</div>
-      <div class="ex-footer">${room.parent ? btn("back", "‹ 返回" + rooms[room.parent].title, 'class="ex-back"') : ""}<span class="ex-caption">${caption}</span></div>
-      <p class="ex-notice" role="status"${message ? "" : " hidden"}>${message}</p>
-      ${detail(m)}<p class="ex-hint" aria-live="polite" hidden></p></div>`;
+      <div class="ex-layout">
+        <div class="ex-main">
+          <div class="ex-stage"><div class="ex-art" aria-hidden="true"></div><div class="ex-effects" aria-hidden="true"></div><div class="ex-prop" aria-hidden="true"></div>${hotspots}</div>
+          <div class="ex-footer">${room.parent ? btn("back", "‹ 返回" + rooms[room.parent].title, 'class="ex-back"') : ""}<span class="ex-caption">${caption}</span></div>
+          ${detail(m)}
+        </div>
+        <aside class="ex-rail" aria-label="第一夜任务栏">
+          <small class="ex-rail-kicker">今晚要查的事</small>
+          <ol class="ex-progress">${milestones.map(([label, done], index) =>
+            `<li class="${done ? "is-done" : index === milestones.findIndex(([, complete]) => !complete) ? "is-current" : ""}"><span aria-hidden="true">${done ? "✓" : index + 1}</span>${label}</li>`).join("")}</ol>
+          <div class="ex-current"><small>当前目标</small><strong>${ctx.revisit ? "查看已找到的线索" : tasks[phase(m)][0]}</strong><p>${nextInstruction(m)}</p>
+            ${btn(next.action, next.label, 'class="ex-next-button"')}
+          </div>
+          <p class="ex-notice" role="status"${message ? "" : " hidden"}>${message}</p>
+          <p class="ex-hint" aria-live="polite" hidden></p>
+        </aside>
+      </div></div>`;
     updateHint();
     if (focus) root.querySelector(focus)?.focus({ preventScroll: false });
     else if (active) root.querySelector(`[data-scene-action="${active}"]:not([disabled])`)?.focus({ preventScroll: true });

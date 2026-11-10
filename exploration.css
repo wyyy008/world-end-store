@@ -1,6 +1,6 @@
 /* First-night locations and their physical interaction targets. */
 #exploration-root {
-  width: min(100%, 1100px);
+  width: min(100%, 1250px);
   min-width: 0;
   margin-inline: auto;
 }
@@ -13,6 +13,75 @@
   --ex-serif: "Songti SC", "STSong", "Noto Serif CJK SC", SimSun, Georgia, serif;
   color: #f1e9d9;
   line-height: 1.55;
+}
+
+.ex-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 285px);
+  align-items: start;
+  gap: 16px;
+}
+.ex-main { min-width: 0; }
+.ex-rail {
+  position: sticky;
+  top: 20px;
+  border: 1px solid #67533c;
+  background: #201c17;
+  padding: 17px;
+  box-shadow: 0 12px 30px #0004;
+}
+.ex-rail-kicker, .ex-current small {
+  color: #d4a76c;
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+.ex-progress {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 15px 0 18px;
+  padding: 0;
+}
+.ex-progress li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #a79b8a;
+  font-size: 13px;
+}
+.ex-progress li span {
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #695b49;
+  border-radius: 50%;
+  font-size: 11px;
+}
+.ex-progress li.is-current { color: #f7e4c3; font-weight: 600; }
+.ex-progress li.is-current span { border-color: #e8bd7b; color: #e8bd7b; }
+.ex-progress li.is-done { color: #c7d4bb; }
+.ex-progress li.is-done span { border-color: #869c7d; color: #b7d2a6; }
+.ex-current { border-top: 1px solid #695640; padding-top: 14px; }
+.ex-current strong { display: block; margin-top: 4px; color: #f5ead9; font-size: 17px; }
+.ex-current p { margin: 8px 0 12px; color: #d8cbb8; font-size: 13px; }
+.ex-next-button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #dfaf70;
+  border-radius: 3px;
+  background: #cb965b;
+  color: #21170d;
+  font-weight: 700;
+  text-align: center;
+}
+.ex-next-button:hover { background: #f2bd7b; }
+.ex-next-button:active:not(:disabled) { transform: none; }
+.ex-rail .ex-notice {
+  border-left: 2px solid #e8bd7b;
+  margin-top: 16px;
+  padding-left: 10px;
+  color: #ffe3ba;
 }
 
 .ex-shell button {
@@ -320,6 +389,33 @@
 }
 
 .ex-detail p { margin: 8px 0; color: #514539; }
+.ex-detail .ex-detail-feedback {
+  margin: 12px 0;
+  padding: 8px 10px;
+  border-left: 3px solid #936029;
+  background: #f8dcae;
+  color: #352515;
+  font-weight: 600;
+}
+.ex-detail-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #b3a38e;
+}
+.ex-detail-next span { color: #705942; font-size: 12px; }
+.ex-detail-next button {
+  min-height: 44px;
+  border: 1px solid #725334;
+  border-radius: 3px;
+  background: #513d28;
+  padding: 7px 13px;
+  color: #fff0d4;
+  font-weight: 600;
+}
 .ex-detail small { color: #705942; }
 .ex-detail header button {
   background-color: transparent;
@@ -405,6 +501,15 @@
 }
 
 @media (max-width: 600px) {
+  .ex-layout { display: flex; flex-direction: column; gap: 10px; }
+  .ex-rail { order: -1; position: static; width: 100%; padding: 12px; }
+  .ex-main { width: 100%; }
+  .ex-progress { grid-template-columns: repeat(2, 1fr); gap: 5px 9px; margin: 9px 0; }
+  .ex-progress li { font-size: 11px; }
+  .ex-current { padding-top: 9px; }
+  .ex-current strong { font-size: 15px; }
+  .ex-current p { margin: 5px 0 8px; }
+  .ex-rail .ex-notice { margin-top: 9px; }
   .ex-header { gap: 6px; padding-bottom: 9px; }
   .ex-tools { gap: 4px; }
   .ex-tools button { padding-inline: 8px; }
