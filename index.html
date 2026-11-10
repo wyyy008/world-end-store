@@ -8,21 +8,22 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="世界尽头的便利店 · 免费试玩版">
     <meta property="og:description" content="八个雨夜，五封没有送出的信。">
-    <meta property="og:image" content="https://wyyy008.github.io/world-end-store/assets/logo.jpg">
+    <meta property="og:image" content="https://wyyy008.github.io/world-end-store/assets/scenes/road-wide.jpg">
     <title>世界尽头的便利店 · 第一夜</title>
-    <link rel="icon" href="assets/logo-128.png" type="image/png">
-    <link rel="apple-touch-icon" href="assets/logo-256.png">
+    <link rel="icon" href="assets/brand-mark.svg" type="image/svg+xml">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="styles.css?v=4.0">
     <link rel="stylesheet" href="exploration.css?v=4.0">
     <link rel="stylesheet" href="chapter-transition.css?v=4.0">
+    <link rel="stylesheet" href="opening.css?v=4.1">
     <script src="content.js?v=20261109224206" defer></script>
     <script src="audio.js?v=4.0" defer></script>
     <script src="scene-manager.js?v=4.0" defer></script>
     <script src="chapter-transition.js?v=4.0" defer></script>
     <script src="game.js?v=4.0" defer></script>
     <script src="save-tools.js?v=20261109224206" defer></script>
+    <script src="opening.js?v=4.1" defer></script>
   </head>
   <body>
     <svg class="portrait-sprite" aria-hidden="true" focusable="false">
@@ -62,11 +63,32 @@
         </symbol>
       </defs>
     </svg>
+    <dialog class="opening-film" id="opening-film" aria-label="世界尽头的便利店开屏动画">
+      <div class="opening-scene">
+        <div class="opening-art" aria-hidden="true"></div>
+        <div class="opening-shade" aria-hidden="true"></div>
+        <div class="opening-rain" aria-hidden="true"></div>
+        <div class="opening-bus" aria-hidden="true"><span></span><span></span></div>
+        <div class="opening-lamps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="opening-copy" aria-live="polite">
+          <p class="opening-line opening-line-one">如果你有机会留住一段即将消失的过去，</p>
+          <p class="opening-line opening-line-two">你愿意付出什么代价？</p>
+        </div>
+        <div class="opening-end">
+          <img src="assets/brand-mark.svg" alt="" width="64" height="64">
+          <h2>世界尽头的<br>便利店</h2>
+          <p>EVERY MEMORY HAS A PRICE.</p>
+          <button type="button" id="opening-start">开始营业</button>
+        </div>
+        <button type="button" class="opening-skip" id="opening-skip">跳过动画</button>
+        <button type="button" class="opening-sound" id="opening-sound">开启雨声</button>
+      </div>
+    </dialog>
     <section class="title-screen" id="title-screen" aria-labelledby="game-title">
       <div class="title-panel">
         <div class="title-main">
           <div>
-            <h1 id="game-title"><img class="title-wordmark" src="assets/logo.png" alt="世界尽头的便利店" width="1774" height="887"></h1>
+            <h1 id="game-title" class="title-brand"><img src="assets/brand-mark.svg" alt="" width="72" height="72"><span>世界尽头的<br><strong>便利店</strong></span></h1>
             <p class="title-subtitle">没有收件人的包裹</p>
             <p class="title-edition">V4.0 · 八夜试玩</p>
             <p class="title-premise">末班车走了，便利店刚开门。货架上有三样东西放错了位置，门边的女孩还在等人。第八夜第一班车来以前，替柜台下的包裹找到去处。</p>
@@ -91,12 +113,13 @@
               <span id="achievement-count">0 / 10</span>
             </button>
             <button class="text-button title-help-button" id="open-settings" type="button">设置</button>
+            <button class="text-button title-help-button" id="replay-opening" type="button">重看开屏动画</button>
           </div>
         </div>
         <aside class="title-side" aria-label="夜里的店">
           <div class="title-street" aria-hidden="true">
             <div class="title-window">
-              <img class="title-logo" src="assets/logo.svg" alt="雨夜里亮着灯的便利店门口，放着一个没有署名的包裹">
+              <img class="title-logo" src="assets/scenes/road-wide.jpg" alt="雨夜的便利店与公交站">
             </div>
             <div class="title-timetable" aria-hidden="true">
               <span>末班车 · 23:40</span>
@@ -116,7 +139,7 @@
       <aside class="sidebar" aria-label="主菜单">
         <a class="brand" id="brand-home" href="#" aria-label="返回游戏标题页">
           <span class="brand-mark" aria-hidden="true">
-            <img src="assets/logo-128.png" alt="">
+            <img src="assets/brand-mark.svg" alt="">
           </span>
           <span>
             <strong>世界尽头</strong>
@@ -159,7 +182,7 @@
             <span></span><span></span><span></span>
           </button>
           <div class="mobile-brand">
-            <span class="mini-mark" aria-hidden="true"><img src="assets/logo-128.png" alt=""></span>
+            <span class="mini-mark" aria-hidden="true"><img src="assets/brand-mark.svg" alt=""></span>
             世界尽头的便利店
           </div>
           <p class="topbar-scope" id="topbar-scope">第 1 夜 · 雾港公交站</p>

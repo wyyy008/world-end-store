@@ -9,8 +9,8 @@ if ($currentBranch -ne "main") {
   throw "当前分支是 $currentBranch。此脚本只发布 main，V4 开发分支请先完成审阅再合并。"
 }
 $destAssets = Join-Path $dest "assets"
-$scripts = @("content.js", "audio.js", "game.js", "save-tools.js", "scene-manager.js", "chapter-transition.js")
-$releaseFiles = @("index.html", "styles.css", "exploration.css", "chapter-transition.css", "README.md", "FIRST_NIGHT_V3.md", "FIRST_NIGHT_V4.md", "publish.ps1") + $scripts
+$scripts = @("content.js", "audio.js", "game.js", "save-tools.js", "scene-manager.js", "chapter-transition.js", "opening.js")
+$releaseFiles = @("index.html", "styles.css", "exploration.css", "chapter-transition.css", "opening.css", "README.md", "FIRST_NIGHT_V3.md", "FIRST_NIGHT_V4.md", "publish.ps1") + $scripts
 
 # Bust browser caches for the app's local CSS/JS on every publish.
 $indexPath = Join-Path $dest "index.html"
@@ -18,7 +18,7 @@ $cacheStamp = Get-Date -Format "yyyyMMddHHmmss"
 $indexHtml = Get-Content -LiteralPath $indexPath -Raw -Encoding UTF8
 $indexHtml = [regex]::Replace(
   $indexHtml,
-  '((?:styles|exploration|chapter-transition)\.css|(?:content|audio|game|save-tools|scene-manager|chapter-transition)\.js)(\?v=[^"]*)?',
+  '((?:styles|exploration|chapter-transition|opening)\.css|(?:content|audio|game|save-tools|scene-manager|chapter-transition|opening)\.js)(\?v=[^"]*)?',
   '$1?v=' + $cacheStamp
 )
 Set-Content -LiteralPath $indexPath -Value $indexHtml -Encoding UTF8 -NoNewline

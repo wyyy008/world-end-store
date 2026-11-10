@@ -3690,6 +3690,18 @@ function buildFinaleSteps(choice) {
     scene: "rain",
     sceneLabel: "终章 · 店又向前走了一夜"
   });
+  steps.push({
+    speaker: "旁白",
+    text: "如果你终于学会了告别，",
+    scene: "rain",
+    sceneLabel: "终章 · 开场时的提问"
+  });
+  steps.push({
+    speaker: "旁白",
+    text: "你还愿意付出同样的代价吗？",
+    scene: "rain",
+    sceneLabel: "终章 · 留给你的回答"
+  });
   return steps;
 }
 

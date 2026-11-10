@@ -27,7 +27,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p _site
-          cp index.html styles.css exploration.css chapter-transition.css game.js content.js audio.js scene-manager.js chapter-transition.js save-tools.js _site/
+          cp index.html styles.css exploration.css chapter-transition.css opening.css game.js content.js audio.js scene-manager.js chapter-transition.js opening.js save-tools.js _site/
           cp -r assets _site/assets
 
       - name: Configure Pages

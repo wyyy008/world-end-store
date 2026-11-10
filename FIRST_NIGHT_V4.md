@@ -17,6 +17,7 @@
 | `chapter-transition.js`、`chapter-transition.css` | 第一夜至第二夜的章节演出 |
 | `assets/audio/station-announcement.wav`、`audio.js` | 离线车站播报及受设置控制的音效 |
 | `game.js`、`index.html` | 经营和人物主线接入、存档、页面入口 |
+| `opening.js`、`opening.css`、`assets/brand-mark.svg` | 雨夜开屏、六盏灯与新标志 |
 | `.github/workflows/pages.yml`、`publish.ps1` | 部署时包含新增代码与素材 |
 
 ## 验收
