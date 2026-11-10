@@ -248,6 +248,9 @@ function createInitialState() {
   const firstNight = CONTENT.firstNight;
   return {
     version: 5,
+    exploration: null,
+    revisitingShop: false,
+    departure: null,
     reading: null,
     pendingFeedback: null,
     pastProgress: {},
@@ -279,6 +282,9 @@ function createInitialState() {
       scanned: [],
       changeErrors: 0,
       clues: [],
+      inferenceSolved: false,
+      directDoor: false,
+      anomalyChoice: null,
       decision: null
     },
     pastSeen: [],
@@ -327,13 +333,26 @@ function normalizeSavedState(saved) {
   const stage = saved.stage ?? night.cast[0].id;
   if (!stages.has(stage)) return null;
   normalized.stage = stage;
+  if (saved.exploration != null) {
+    normalized.exploration = SceneManager.normalize(saved.exploration);
+    if (!normalized.exploration) return null;
+  }
+  normalized.revisitingShop = Boolean(normalized.exploration?.solved && saved.revisitingShop === true && !saved.nightClosed && saved.nightIndex === 0);
+  if (saved.departure != null) {
+    if (!normalized.exploration || saved.nightIndex !== 0 || saved.nightClosed !== true ||
+        !Object.hasOwn(CONTENT.routes, saved.departure)) return null;
+    normalized.departure = saved.departure;
+  }
   if (saved.firstNightExperience !== undefined) {
     const experience = saved.firstNightExperience;
-    if (!record(experience) || !["sale", "receipt", "acheng", "investigate", "visitor", "visitor-result", "done"].includes(experience.phase) ||
+    if (!record(experience) || !["sale", "receipt", "acheng", "investigate", "anomaly", "anomaly-result", "visitor", "visitor-result", "done"].includes(experience.phase) ||
         !Array.isArray(experience.scanned) || experience.scanned.length > 3 || !experience.scanned.every((id) => ["umbrella", "coffee", "bag"].includes(id)) ||
         new Set(experience.scanned).size !== experience.scanned.length || !integer(experience.changeErrors, 0, 100) ||
         !Array.isArray(experience.clues) || experience.clues.length > 3 || !experience.clues.every((id) => ["receipt", "camera", "timetable"].includes(id)) ||
         new Set(experience.clues).size !== experience.clues.length ||
+        (experience.inferenceSolved !== undefined && typeof experience.inferenceSolved !== "boolean") ||
+        (experience.anomalyChoice !== undefined && experience.anomalyChoice !== null && !["cancel", "force", "print"].includes(experience.anomalyChoice)) ||
+        (experience.anomalyChoice == null && experience.phase === "anomaly-result") ||
         (experience.decision !== null && !["open", "wait", "verify"].includes(experience.decision)) ||
         (experience.phase === "visitor-result" && experience.decision === null)) return null;
     normalized.firstNightExperience = {
@@ -341,6 +360,9 @@ function normalizeSavedState(saved) {
       scanned: [...experience.scanned],
       changeErrors: experience.changeErrors,
       clues: [...experience.clues],
+      inferenceSolved: experience.inferenceSolved ?? false,
+      directDoor: experience.directDoor === true || experience.inferenceSolved === undefined,
+      anomalyChoice: experience.anomalyChoice ?? null,
       decision: experience.decision
     };
   } else if (saved.served?.["acheng-1"] || (saved.transactions || []).length > 0 || saved.nightIndex > 0 || saved.nightClosed) {
@@ -667,6 +689,8 @@ function renderTitleScreen() {
 }
 
 function showTitleScreen() {
+  SceneManager.deactivate();
+  ChapterTransition.stop();
   dialogIds.forEach((id) => closeDialog(document.querySelector(`#${id}`)));
   closeDialog(elements.characterDialog);
   closeDialog(elements.historyDialog);
@@ -692,6 +716,10 @@ function continueGame() {
   elements.titleScreen.hidden = true;
   document.body.classList.remove("title-active", "intro-active");
   render();
+  if (state.departure) {
+    playDeparture();
+    return;
+  }
   if (resumeReading()) {
     return;
   }
@@ -715,6 +743,8 @@ function startNewGameFromTitle() {
   vnHistory.length = 0;
   window.GameAudio?.restoreAmbience();
   state = createInitialState();
+  state.exploration = SceneManager.createState();
+  state.firstNightExperience.phase = "acheng";
   state.introSeen = true;
   saveWriteBlocked = false;
   clearTimeout(typeTimer);
@@ -976,6 +1006,63 @@ function firstNightPhase() {
     ? state.firstNightExperience.phase : "done";
 }
 
+function exploringShop() {
+  return Boolean(state.exploration && state.nightIndex === 0 && !state.nightClosed &&
+    (state.firstNightExperience.phase === "acheng" || state.revisitingShop));
+}
+
+// Puzzle discoveries and shop transactions share a single autosave and memory book.
+function saveExploration() {
+  const model = state.exploration;
+  if (model.ticket && !state.flags.foundShelfTicket) {
+    state.flags.foundShelfTicket = true;
+    addMemory("排回原位的商品底下压着一张旧车票。00:17，票角还留着值班标记。");
+  }
+  if (model.receipt && !state.flags.futureReceiptFound) {
+    state.flags.futureReceiptFound = true;
+    addMemory("异常汽水扫出了明天的收据。收据上的 00:17 和旧票对上了。");
+  }
+  if (model.solved && !state.flags.recognizedBadge) {
+    state.flags.recognizedBadge = true;
+    addMemory("00:17 的录像里，门外的人穿着上一班店员的围裙。旧工牌上露出一道半月形的白痕。");
+  }
+  saveState();
+}
+
+function leaveExploration() {
+  if (!exploringShop() || !state.exploration.solved) return;
+  if (state.firstNightExperience.phase === "acheng") {
+    state.firstNightExperience.phase = "anomaly";
+    state.firstNightExperience.clues = ["receipt", "camera"];
+    state.firstNightExperience.inferenceSolved = true;
+    state.flags.thirdBellTimeFound = true;
+  }
+  state.revisitingShop = false;
+  commit();
+  focusFirstNightScene();
+}
+
+function renderExploration() {
+  const root = document.querySelector("#exploration-root");
+  const active = exploringShop() && elements.titleScreen.hidden;
+  document.body.classList.toggle("exploring-shop", active);
+  root.hidden = !active;
+  document.querySelector("#revisit-shop").hidden = active || !state.exploration?.solved || state.nightIndex !== 0 || state.nightClosed;
+  if (!active) {
+    SceneManager.deactivate();
+    return;
+  }
+  SceneManager.render({
+    root, model: state.exploration, revisit: state.revisitingShop, sound: playSfx, onSave: saveExploration,
+    onGuest() {
+      if (state.pendingFeedback) return restorePendingFeedback();
+      const guest = currentGuest();
+      if (guest?.id === "acheng-1" && !state.served[guest.id]) openGuestFlow(guest);
+    },
+    onComplete: leaveExploration
+  });
+}
+
 function firstNightGuidance() {
   const experience = state.firstNightExperience;
   switch (firstNightPhase()) {
@@ -991,10 +1078,26 @@ function firstNightGuidance() {
       detail: "点开小票，看看普通商品明细下面还印着什么。",
       button: "检查小票"
     };
-    case "investigate": return {
-      action: "first-night", title: "查清第三次门铃前发生了什么",
-      detail: `自由查看小票、监控与站牌 · 已找到 ${experience.clues.length}/3 条线索。找到两条就可以去门边。`,
-      button: "查看线索"
+    case "investigate":
+      if (experience.directDoor) return {
+        action: "first-night", title: "查清第三次门铃前发生了什么",
+        detail: `点开两处线索，再到门边。已记录 ${experience.clues.length}/3 处。`,
+        button: "查看线索"
+      };
+      return {
+        action: "first-night", title: experience.clues.length >= 2 ? "这些线索指向同一个时间" : "查清第三次门铃前发生了什么",
+        detail: `自由查看小票、监控与站牌 · 已找到 ${experience.clues.length}/3 条线索。找到两条后推断它们共同指向的时间。`,
+        button: experience.clues.length >= 2 ? "整理线索" : "查看线索"
+      };
+    case "anomaly": return {
+      action: "first-night", title: "收银机出现了一件不在货架上的商品",
+      detail: "先检查屏幕，再决定取消、结算，还是打印记录。这里没有金钱上的正确答案。",
+      button: "检查收银机"
+    };
+    case "anomaly-result": return {
+      action: "first-night", title: "看看异常交易留下了什么",
+      detail: "你的处理方式已经记录。读完屏幕和纸上的变化，再回应下一次门铃。",
+      button: "查看交易结果"
     };
     case "visitor": return {
       action: "first-night", title: "第三次门铃响了。决定怎样回应门外的人",
@@ -1089,8 +1192,56 @@ function inspectFirstNightClue(id) {
   if (result) result.textContent = clue.result;
 }
 
-function approachThirdVisitor() {
+function solveFirstNightInference(time) {
   if (firstNightPhase() !== "investigate" || state.firstNightExperience.clues.length < 2) return;
+  if (time !== "00:17") {
+    playSfx("blocked");
+    const result = document.querySelector("#first-night-clue-result");
+    if (result) result.textContent = "这个时间没有同时出现在两条线索里。再看看收据、监控或站牌。";
+    return;
+  }
+  state.firstNightExperience.inferenceSolved = true;
+  state.firstNightExperience.phase = "anomaly";
+  state.flags.thirdBellTimeFound = true;
+  addMemory("小票、监控和站牌指向同一时刻：00:17。你刚认出这个时间，收银机就亮了。");
+  playSfx("page");
+  commit();
+  showToast("00:17。收银机亮起一笔没有人放到柜台上的商品。");
+}
+
+const ANOMALY_RESULTS = {
+  cancel: {
+    title: "取消键没有删掉这笔交易",
+    text: "你按下取消。屏幕暗了一瞬，重新亮起时，未寄出的信仍列在最末行；买家一栏却变成空白。",
+    trace: "未完成记录被保留。也许这间店知道的，比它愿意打印的更多。"
+  },
+  force: {
+    title: "收银机替你完成了结算",
+    text: "你强制结算。钱箱没有打开，纸上却印出你的名字。它像是在确认一件尚未交到你手里的东西。",
+    trace: "收据留在柜台。零元交易没有改变现金，却改变了包裹上的墨迹。"
+  },
+  print: {
+    title: "打印出的记录多了一行",
+    text: "你没有碰结算键，只打印交易记录。纸尾写着：收件人待定。门外随后响起第三次门铃。",
+    trace: "你把这张记录夹进记忆册。下一夜，也许能对照它问出一个名字。"
+  }
+};
+
+function resolveFirstNightAnomaly(choice) {
+  if (firstNightPhase() !== "anomaly" || !Object.hasOwn(ANOMALY_RESULTS, choice)) return;
+  const experience = state.firstNightExperience;
+  experience.phase = "anomaly-result";
+  experience.anomalyChoice = choice;
+  state.flags[`anomaly_${choice}`] = true;
+  addTransaction({ label: `未寄出的信 · ${choice === "cancel" ? "未完成" : choice === "force" ? "强制结算" : "打印记录"}`, amount: 0 }, "收件人待定");
+  addMemory(ANOMALY_RESULTS[choice].text);
+  playSfx(choice === "cancel" ? "blocked" : "page");
+  commit();
+}
+
+function approachThirdVisitor() {
+  const earlyDoor = firstNightPhase() === "investigate" && state.firstNightExperience.directDoor && state.firstNightExperience.clues.length >= 2;
+  if (firstNightPhase() !== "anomaly-result" && !earlyDoor) return;
   state.firstNightExperience.phase = "visitor";
   playSfx("door");
   commit();
@@ -1153,18 +1304,46 @@ function renderFirstNightScene() {
   } else if (phase === "investigate") {
     elements.customerScene.innerHTML = `<div class="night-one-interaction investigation-interaction">
       <h3>雨声里有三处不对劲</h3>
-      <p>先看任意两处，再决定是否去开门。查过监控，会多一种处理办法。</p>
+      <p>${experience.directDoor ? "先查看两处线索，再到门边。查过监控，开门时会多一种回应。" : "先看任意两处，找出共同的时间。查过监控，门铃响起时会多一种处理办法。"}</p>
       <div class="clue-hotspots">${Object.entries(FIRST_NIGHT_CLUES).map(([id, clue]) => `<button type="button" class="clue-hotspot ${experience.clues.includes(id) ? "is-found" : ""}" data-first-clue="${id}"><span aria-hidden="true">${clue.symbol}</span><strong>${clue.name}</strong><small>${experience.clues.includes(id) ? "已发现 · 可重看" : "点击查看"}</small></button>`).join("")}</div>
       <p class="clue-result" id="first-night-clue-result" role="status">${experience.clues.length ? FIRST_NIGHT_CLUES[experience.clues.at(-1)].result : "先从手边的收据、监控或门外站牌查起。"}</p>
-      <button type="button" class="primary-button approach-door" id="approach-third-visitor" ${experience.clues.length < 2 ? "disabled" : ""}>${experience.clues.length < 2 ? `还需 ${2 - experience.clues.length} 条线索` : "走向店门，回应第三次门铃"}</button>
+      ${experience.clues.length >= 2 ? `<div class="inference-choice"><strong>这几处异常共同指向哪个时间？</strong><div>${["22:40", "00:17", "23:40"].map((time) => `<button type="button" data-inference-time="${time}">${time}</button>`).join("")}</div></div>` : `<p class="clue-progress">再找到 ${2 - experience.clues.length} 条线索，就能整理时间线。</p>`}
     </div>`;
     elements.customerScene.querySelectorAll("[data-first-clue]").forEach((button) => button.addEventListener("click", () => inspectFirstNightClue(button.dataset.firstClue)));
+    elements.customerScene.querySelectorAll("[data-inference-time]").forEach((button) => button.addEventListener("click", () => solveFirstNightInference(button.dataset.inferenceTime)));
+    if (experience.directDoor && experience.clues.length >= 2) {
+      const door = document.createElement("button");
+      door.id = "approach-third-visitor";
+      door.type = "button";
+      door.className = "primary-button";
+      door.textContent = "走到店门边";
+      door.addEventListener("click", approachThirdVisitor);
+      elements.customerScene.querySelector(".inference-choice").replaceWith(door);
+    }
+  } else if (phase === "anomaly") {
+    elements.customerScene.innerHTML = `<div class="night-one-interaction anomaly-interaction">
+      <h3>收银台上没有这件东西</h3>
+      <p>${state.exploration ? "你刚认出旧工牌，柜台里又响了一声。汽水的收据还攥在手里，空着的扫描区却自己登了一件商品。购买者写着你。" : "扫描区是空的。POS 却多出一笔交易，购买者写着你。"}</p>
+      <div class="anomaly-pos" aria-label="异常交易记录"><span>POS / 未知商品</span><strong>未寄出的信</strong><dl><div><dt>价格</dt><dd>¥0</dd></div><div><dt>库存</dt><dd>−1</dd></div><div><dt>购买者</dt><dd>你自己</dd></div></dl></div>
+      <div class="visitor-choices anomaly-choices">
+        <button type="button" data-anomaly-choice="cancel"><strong>取消这笔交易</strong><span>看看机器是否愿意忘记它</span></button>
+        <button type="button" data-anomaly-choice="force"><strong>强制结算</strong><span>接受收银机写下的买家</span></button>
+        <button type="button" data-anomaly-choice="print"><strong>只打印交易记录</strong><span>先把证据留在纸上</span></button>
+      </div>
+    </div>`;
+    elements.customerScene.querySelectorAll("[data-anomaly-choice]").forEach((button) => button.addEventListener("click", () => resolveFirstNightAnomaly(button.dataset.anomalyChoice)));
+  } else if (phase === "anomaly-result") {
+    const result = ANOMALY_RESULTS[experience.anomalyChoice];
+    elements.customerScene.innerHTML = `<div class="night-one-interaction visitor-result-interaction">
+      <h3>${result.title}</h3><p>${result.text}</p><blockquote>${result.trace}</blockquote>
+      <button type="button" class="primary-button" id="approach-third-visitor">收好记录，看看第三次门铃</button>
+    </div>`;
     elements.customerScene.querySelector("#approach-third-visitor").addEventListener("click", approachThirdVisitor);
   } else if (phase === "visitor") {
     const cameraSeen = experience.clues.includes("camera");
     elements.customerScene.innerHTML = `<div class="night-one-interaction visitor-interaction">
       <h3>玻璃外站着一个人</h3>
-      <p>店里的时钟突然跳到小票上的时间。门没有开，门铃却响了。玻璃上映出一个像你的轮廓；阿澄的伞还靠在门边。</p>
+      <p>${state.exploration ? "玻璃门外的人低着头，拇指来回擦着胸前的工牌。那道半月形白痕和录像里的一样。她把脸抬起来，看着你站的地方。“今天轮到你了？”" : "店里的时钟突然跳到小票上的时间。门没有开，门铃却响了。玻璃上映出一个像你的轮廓；阿澄的伞还靠在门边。"}</p>
       <div class="visitor-choices">
         <button type="button" data-visitor-choice="open"><strong>开门问她要去哪儿</strong><span>让门外的人自己说出目的</span></button>
         <button type="button" data-visitor-choice="wait"><strong>先守住门边的伞</strong><span>等影子给出下一个动作</span></button>
@@ -1356,6 +1535,8 @@ function firstNightSubtitle(night) {
     receipt: "小票上多了一行字。先把它看清楚，再接待门边的人。",
     acheng: "阿澄还站在门边。听听她为什么把伞留下。",
     investigate: "阿澄走后，店里有三处异常。点物件找线索。",
+    anomaly: "收银机自己亮了。屏幕上的商品没有出现在货架上。",
+    "anomaly-result": "你已处理这笔异常交易。收好记录，看看门外的变化。",
     visitor: "门铃第三次响起。先想想刚才查到的东西。",
     "visitor-result": "刚才的决定留下了痕迹。读完这一幕，再继续营业。"
   };
@@ -1437,7 +1618,7 @@ function guestLine(guest) {
 
 function clockLabel() {
   const night = currentNight();
-  if (night.number === 1 && state.flags.firstSaleDone && ["visitor", "visitor-result", "done"].includes(state.firstNightExperience.phase)) {
+  if (night.number === 1 && (state.flags.recognizedBadge || (state.flags.firstSaleDone && ["visitor", "visitor-result", "done"].includes(state.firstNightExperience.phase)))) {
     return "00:17";
   }
   const [startHour, startMinute] = night.clockStart.split(":").map(Number);
@@ -1527,7 +1708,7 @@ function restockBlockedReason(key, amount = 1) {
 }
 
 function render() {
-  const firstNightActive = ["sale", "receipt", "acheng", "investigate", "visitor", "visitor-result"].includes(firstNightPhase());
+  const firstNightActive = ["sale", "receipt", "acheng", "investigate", "anomaly", "anomaly-result", "visitor", "visitor-result"].includes(firstNightPhase());
   document.body.classList.toggle("first-night-active", firstNightActive);
   const closingButton = document.querySelector("#open-closing");
   closingButton.disabled = firstNightActive;
@@ -1540,6 +1721,7 @@ function render() {
   renderMemoryPreview();
   renderCharacterCount();
   renderGuidance();
+  renderExploration();
   document.body.classList.toggle("is-finished", state.finished);
   document.body.classList.toggle("is-night-closed", state.nightClosed);
 }
@@ -1559,7 +1741,7 @@ function renderShell() {
   elements.shopPlace.textContent = night.windowTitle;
   elements.shopWeather.textContent = night.weather;
   elements.shopInterior.dataset.art = locationArtForNight(night);
-  const focusScene = ["sale", "receipt", "acheng", "investigate", "visitor", "visitor-result"].includes(firstNightPhase());
+  const focusScene = ["sale", "receipt", "acheng", "investigate", "anomaly", "anomaly-result", "visitor", "visitor-result"].includes(firstNightPhase());
   document.querySelector("#shop-title").textContent = focusScene ? "柜台与店门" : "店里的东西";
   document.querySelector(".shop-panel .panel-head p").textContent = focusScene
     ? "点画面中的物品，查清今晚第三次门铃。"
@@ -1734,7 +1916,7 @@ function openGuestFlow(guest) {
 }
 
 function renderCustomer() {
-  if (["sale", "receipt", "investigate", "visitor", "visitor-result"].includes(firstNightPhase())) {
+  if (["sale", "receipt", "investigate", "anomaly", "anomaly-result", "visitor", "visitor-result"].includes(firstNightPhase())) {
     renderCounterStage([]);
     renderFirstNightScene();
     return;
@@ -1869,6 +2051,8 @@ function renderCounterStage(guests) {
     sale: "第一笔交易 · 先把柜台上的商品逐一扫码",
     receipt: "收银机吐出一张来自明天的小票",
     investigate: "阿澄走后 · 雨声盖住了第三次门铃",
+    anomaly: "这笔交易没有人把商品放到柜台上",
+    "anomaly-result": "收银机仍保存着刚才的决定",
     visitor: "00:17 · 门外的人还没有进来",
     "visitor-result": "第三次门铃留下了什么"
   };
@@ -1881,6 +2065,8 @@ function renderCounterStage(guests) {
       ? `<button type="button" class="scene-hotspot scene-receipt" data-scene-receipt="true"><span>▤</span><strong>拿起小票</strong></button>`
       : flow === "investigate"
         ? Object.entries(FIRST_NIGHT_CLUES).map(([id, clue]) => `<button type="button" class="scene-hotspot scene-clue-${id} ${experience.clues.includes(id) ? "is-found" : ""}" data-scene-clue="${id}"><span>${clue.symbol}</span><strong>${clue.name}</strong></button>`).join("")
+        : flow === "anomaly" || flow === "anomaly-result"
+          ? `<button type="button" class="scene-hotspot scene-register" data-scene-register="true"><span>▤</span><strong>查看收银机</strong></button>`
         : flow === "visitor"
           ? `<button type="button" class="scene-hotspot scene-door" data-scene-door="true"><span>◇</span><strong>回应门外的人</strong></button>`
           : "";
@@ -1892,6 +2078,7 @@ function renderCounterStage(guests) {
   stage.querySelectorAll("[data-scene-scan]").forEach((button) => button.addEventListener("click", () => scanFirstSaleItem(button.dataset.sceneScan)));
   stage.querySelector("[data-scene-receipt]")?.addEventListener("click", inspectFirstReceipt);
   stage.querySelectorAll("[data-scene-clue]").forEach((button) => button.addEventListener("click", () => inspectFirstNightClue(button.dataset.sceneClue)));
+  stage.querySelector("[data-scene-register]")?.addEventListener("click", focusFirstNightScene);
   stage.querySelector("[data-scene-door]")?.addEventListener("click", focusFirstNightScene);
 }
 
@@ -2381,7 +2568,11 @@ function renderTradeFeedback(guest, feedback) {
 function acknowledgeFeedback() {
   state.pendingFeedback = null;
   if (state.firstNightExperience.phase === "acheng" && currentNight().number === 1 && state.served["acheng-1"]) {
-    state.firstNightExperience.phase = "investigate";
+    if (state.exploration) {
+      state.exploration.guestDone = true;
+    } else {
+      state.firstNightExperience.phase = "investigate";
+    }
   }
   closeDialog(document.querySelector("#trade-dialog"));
   commit();
@@ -2877,7 +3068,7 @@ function openClosingDialog(config = {}) {
     restorePendingFeedback();
     return;
   }
-  if (["sale", "receipt", "acheng", "investigate", "visitor", "visitor-result"].includes(firstNightPhase())) {
+  if (["sale", "receipt", "acheng", "investigate", "anomaly", "anomaly-result", "visitor", "visitor-result"].includes(firstNightPhase())) {
     showToast("今晚的门铃还没安静。先完成柜台前的事，再决定留下什么。");
     focusFirstNightScene();
     return;
@@ -2998,6 +3189,7 @@ function openClosingDialog(config = {}) {
 }
 
 function finishShift(choice) {
+  if (state.nightClosed || state.finished || exploringShop()) return;
   state.pendingFeedback = null;
   if (choice === "openParcel" && !state.flags.parcelOnCounter) {
     showToast("包裹还压在柜台下。先把它放上柜台。");
@@ -3044,8 +3236,14 @@ function finishShift(choice) {
 
 function receiptRows() {
   const rows = [];
+  if (currentNight().number === 1 && state.flags.recognizedBadge) {
+    rows.push(["旧票与录像", "00:17 · 上一班店员的工牌"]);
+  }
   if (currentNight().number === 1 && state.flags.futureReceiptFound) {
     rows.push(["明天的小票", "00:17 · 第三次门铃"]);
+  }
+  if (currentNight().number === 1 && state.firstNightExperience.anomalyChoice) {
+    rows.push(["未寄出的信", ({ cancel: "取消后仍留有未完成记录", force: "零元结算，收据印上你的名字", print: "打印记录：收件人待定" })[state.firstNightExperience.anomalyChoice]]);
   }
   if (currentNight().number === 1 && state.firstNightExperience.decision) {
     rows.push(["门外的人", ({ open: "你打开门，留下倒着延伸的水迹", wait: "你守住阿澄的伞，等影子离开", verify: "你对照监控，叫住了那道影子" })[state.firstNightExperience.decision]]);
@@ -3122,6 +3320,12 @@ function buildNightOpeningSteps() {
     xiaoman: "xiaoman",
     traveler: "traveler"
   };
+  if (night.number === 1 && state.exploration) {
+    return [
+      { speaker: "旁白", text: "门铃第一次响时，送报人正好出门。他把找零压在晚报底下，冲你做了个口型：明天见。末班公交从他身后开了过去。", scene: "rain", sceneLabel: "第一夜 · 雾港公交站" },
+      { speaker: "阿澄", text: "第二声门铃。她收起伞，往旁边挪了半步，替后面还没来的人让路。“你的伞要是只卖四块，会亏的。是不是放错了？”", portrait: "acheng", character: "澄", scene: "counter", sceneLabel: "门边 · 阿澄" }
+    ];
+  }
   if (night.number === 1 && firstNightPhase() === "sale") {
     return [
       { speaker: "旁白", text: "雾港的雨敲着玻璃。今晚先做一件最普通的事：替柜台前的客人结账。", scene: "rain", sceneLabel: "第一夜 · 雾港公交站" },
@@ -3142,6 +3346,15 @@ function buildNightOpeningSteps() {
       sceneLabel: "包裹 · 一页信"
     }
   ];
+
+  if (night.number === 2 && state.firstNightExperience.anomalyChoice) {
+    const echo = {
+      cancel: "昨夜你按下取消，收银机却仍留着一笔未完成记录。新世界的第一盏灯亮起时，那行字也跟着亮了。",
+      force: "昨夜你强制结算的零元交易还夹在收据里。新世界的第一盏灯亮起时，纸上的名字更清楚了。",
+      print: "昨夜打印的交易记录跟着店到了这里。纸尾的“收件人待定”没有褪色，像在等有人亲口说出名字。"
+    };
+    steps.push({ speaker: "旁白", text: echo[state.firstNightExperience.anomalyChoice], scene: "counter", sceneLabel: "柜台 · 从雾港带来的记录" });
+  }
 
   if (arc) {
     steps.push({
@@ -3831,7 +4044,34 @@ function showSummary() {
 }
 
 function startNextNight(routeId = null) {
-  if (state.nightIndex >= 7) {
+  if (!state.nightClosed || state.nightIndex >= 7 || state.departure) return;
+  if (state.nightIndex === 0 && state.exploration) {
+    if (!Object.hasOwn(CONTENT.routes, routeId)) return;
+    state.departure = routeId;
+    saveState();
+    playDeparture();
+    return;
+  }
+  enterNextNight(routeId);
+}
+
+function playDeparture() {
+  const route = state.departure;
+  closeDialog(document.querySelector("#summary-dialog"));
+  ChapterTransition.play({
+    root: document.querySelector("#chapter-transition"),
+    route,
+    soundEnabled: !settings.muted && settings.master > 0 && settings.sfx > 0,
+    onFinish() {
+      if (!state.nightClosed || state.departure !== route) return;
+      state.departure = null;
+      enterNextNight(route);
+    }
+  });
+}
+
+function enterNextNight(routeId) {
+  if (!state.nightClosed || state.nightIndex >= 7) {
     return;
   }
   state.pendingFeedback = null;
@@ -3841,7 +4081,6 @@ function startNextNight(routeId = null) {
       return;
     }
     state.route = routeId;
-    unlockAchievement(routeId === "station" ? "station-route" : "summer-route");
   }
   playSfx("door");
   window.GameAudio?.restoreAmbience();
@@ -3871,7 +4110,8 @@ function startNextNight(routeId = null) {
   );
   closeDialog(document.querySelector("#summary-dialog"));
   commit();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (state.nightIndex === 1) unlockAchievement(routeId === "station" ? "station-route" : "summer-route");
+  window.scrollTo({ top: 0, behavior: "instant" });
   if (!state.openedNights.includes(currentNight().number)) {
     startNightOpening();
   } else {
@@ -4534,6 +4774,12 @@ document.querySelector("#brand-home").addEventListener("click", (event) => {
   showTitleScreen();
 });
 document.querySelector("#open-closing").addEventListener("click", openClosingDialog);
+document.querySelector("#revisit-shop").addEventListener("click", () => {
+  if (!state.exploration?.solved || state.nightIndex !== 0 || state.nightClosed) return;
+  state.revisitingShop = true;
+  commit();
+  document.querySelector("#exploration-root button")?.focus({ preventScroll: true });
+});
 document.querySelector("#next-step-button")?.addEventListener("click", performGuidedStep);
 document.querySelector("#open-memory").addEventListener("click", openMemoryDialog);
 document.querySelector("#open-characters").addEventListener("click", () => openCharacterDialog());

@@ -7,6 +7,7 @@
   let ambienceStarted = false;
   let bgmTimer = null;
   let bgmIndex = 0;
+  let chapterAnnouncement = null;
   const ambienceNodes = [];
   let volumes = { master: 0.8, bgm: 0.55, sfx: 0.7, muted: false };
 
@@ -31,6 +32,9 @@
   }
 
   function applyVolumes() {
+    if (chapterAnnouncement) {
+      chapterAnnouncement.volume = volumes.muted ? 0 : volumes.master * volumes.sfx;
+    }
     if (!context) {
       return;
     }
@@ -88,6 +92,17 @@
 
   function playSfx(name) {
     switch (name) {
+      case "till-close":
+        noiseBurst(0.12, 0.12, 900);
+        tone(120, "triangle", 0.15, 0.12, 55);
+        break;
+      case "printer":
+        noiseBurst(0.52, 0.07, 2500);
+        [0, 0.12, 0.24, 0.36].forEach(delay => tone(168, "sawtooth", 0.1, 0.026, 215, delay));
+        break;
+      case "cicada":
+        [0, 0.25, 0.5, 0.9, 1.15].forEach(delay => tone(2200, "triangle", 0.2, 0.04, 2530, delay));
+        break;
       case "ui":
         tone(520, "triangle", 0.06, 0.045, 760);
         break;
@@ -226,6 +241,22 @@
 
   window.GameAudio = {
     unlock,
+    playChapterAnnouncement() {
+      if (!chapterAnnouncement) {
+        chapterAnnouncement = new Audio("assets/audio/station-announcement.wav");
+      }
+      chapterAnnouncement.volume = volumes.muted ? 0 : volumes.master * volumes.sfx;
+      chapterAnnouncement.currentTime = 0;
+      // Start on the route-selection gesture. The clip itself times the platform
+      // chime and voice to the window dissolve, including on touch browsers.
+      chapterAnnouncement.play().catch(() => {});
+    },
+    stopChapterAnnouncement() {
+      if (chapterAnnouncement) {
+        chapterAnnouncement.pause();
+        chapterAnnouncement.currentTime = 0;
+      }
+    },
     setVolumes(next) {
       volumes = { ...volumes, ...next };
       applyVolumes();

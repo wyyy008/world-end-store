@@ -1,0 +1,437 @@
+/* First-night locations and their physical interaction targets. */
+#exploration-root {
+  width: min(100%, 1100px);
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.ex-shell {
+  --ex-paper: #efe5ce;
+  --ex-ink: #302b24;
+  --ex-brass: #e8bd7b;
+  --ex-hairline: #514433;
+  --ex-serif: "Songti SC", "STSong", "Noto Serif CJK SC", SimSun, Georgia, serif;
+  color: #f1e9d9;
+  line-height: 1.55;
+}
+
+.ex-shell button {
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.ex-shell button:focus-visible {
+  outline: 3px solid #ffe4a1;
+  outline-offset: 3px;
+}
+
+.ex-header, .ex-task, .ex-tools, .ex-footer, .ex-choices {
+  display: flex;
+  align-items: center;
+}
+
+.ex-header {
+  justify-content: space-between;
+  gap: 15px;
+  padding: 0 0 14px;
+}
+
+.ex-kicker {
+  margin: 0 0 2px;
+  color: var(--ex-brass);
+  font-size: 12px;
+  letter-spacing: .12em;
+}
+
+.ex-title {
+  margin: 0;
+  font: 600 clamp(23px, 3.2vw, 37px)/1.2 var(--ex-serif);
+  letter-spacing: .04em;
+}
+
+.ex-tools {
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ex-tools button, .ex-back, .ex-detail header button {
+  border: 1px solid var(--ex-hairline);
+  border-radius: 4px;
+  min-height: 44px;
+  padding: 4px 13px;
+  background-color: #231f19;
+  color: #e9ddc4;
+  font: 500 13px/1.4 var(--font);
+}
+
+.ex-tools button:hover, .ex-tools button[aria-expanded="true"], .ex-back:hover {
+  border-color: var(--ex-brass);
+  background-color: #362e23;
+}
+.ex-tools .is-selected { border-color: #ccab75; color: #ffda98; }
+
+.ex-task {
+  gap: 13px;
+  min-height: 43px;
+  padding: 8px 14px;
+  border: 1px solid #554735;
+  border-bottom: 0;
+  border-left: 3px solid #d3a367;
+  background-color: #211c15;
+}
+
+.ex-task small {
+  flex: none;
+  color: var(--ex-brass);
+  font-size: 12px;
+}
+
+.ex-task strong {
+  color: #eee6d5;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ex-stage {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background-color: #171613;
+  box-shadow: inset 0 0 0 1px #65543b;
+}
+
+.ex-art, .ex-effects, .ex-prop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ex-art {
+  z-index: -3;
+  background: #30291e center / cover no-repeat;
+  transform-origin: var(--ex-origin-x, 50%) var(--ex-origin-y, 50%);
+}
+
+[data-scene="overview"] .ex-art {
+  background-image: url("assets/scenes/store-wide.jpg");
+}
+[data-scene="shelf"] .ex-art {
+  background-image: url("assets/scenes/ex-shelf.jpg");
+}
+[data-scene="till"] .ex-art {
+  background-image: url("assets/scenes/ex-till.jpg");
+}
+[data-scene="cctv"] .ex-art {
+  background-image: url("assets/scenes/ex-cctv.jpg");
+}
+[data-scene="parcel"] .ex-art {
+  background-image: url("assets/scenes/ex-parcel.jpg");
+}
+[data-scene="door"] .ex-art {
+  background-image: url("assets/scenes/ex-door.jpg");
+}
+
+.ex-effects {
+  z-index: -1;
+  box-shadow: inset 0 0 3vw #180f0b47;
+}
+
+.ex-stage:has([data-scene-action="guest"]) .ex-prop::before {
+  content: "";
+  position: absolute;
+  inset: 13% 10% 40% 38%;
+  background: url("assets/characters/acheng.png") center top / auto 225% no-repeat;
+  filter: brightness(.79) sepia(.21) drop-shadow(2px 4px 4px #1b19154d);
+}
+
+[data-scene="shelf"][data-anomaly="true"] .ex-art {
+  filter: saturate(.72) brightness(.83);
+}
+
+[data-scene="shelf"][data-anomaly="true"] .ex-effects {
+  background:
+    linear-gradient(178deg, #adc7b73b, transparent 48%),
+    radial-gradient(ellipse at 70% 12%, #9bfff173, transparent 37%);
+  mix-blend-mode: screen;
+}
+
+/* Lift the orange bottle from the artwork forward into the empty price slot. */
+[data-scene="shelf"][data-anomaly="true"][data-soda="false"] .ex-prop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("assets/scenes/ex-shelf.jpg") center / cover;
+  clip-path: polygon(67.5% 36.8%,67.3% 17.5%,68.6% 12%,69.4% 8%,69.3% 3%,69.7% 2%,72.1% 2%,72.5% 3%,72.4% 8%,73.2% 12%,74.5% 18%,74.5% 36%,74% 37%);
+  transform: translate(-26%, 3%) scale(1.06);
+  filter: brightness(1.13);
+}
+
+[data-scene="cctv"] .ex-effects::before {
+  content: "";
+  position: absolute;
+  inset: 15% 26% 40% 35%;
+  border-radius: 12%;
+  background: repeating-linear-gradient(transparent 0 3px, #11292240 4px);
+}
+
+/* The receipt emerges from the register's existing paper outlet. */
+[data-scene="till"][data-receipt="true"] .ex-prop::after {
+  content: "00:17";
+  position: absolute;
+  top: 39%;
+  left: 14%;
+  width: 5.5%;
+  height: 8%;
+  background: repeating-linear-gradient(0deg, transparent 0 4px, #60544155 4px 5px) #e4d6b4;
+  color: #554734;
+  font: bold clamp(5px, 1vw, 10px)/1.1 monospace;
+  text-align: center;
+  transform: skew(9deg,-4deg) rotate(-5deg);
+  box-shadow: 1px 2px 3px #2a2019;
+}
+
+[data-scene="cctv"] .ex-prop::after {
+  position: absolute;
+  top: 20%;
+  left: 37.5%;
+  color: #c3efdc;
+  font: 600 clamp(10px, 1.4vw, 16px)/1 monospace;
+  letter-spacing: .1em;
+  text-shadow: 1px 2px 2px #0a2826;
+}
+[data-frame="03"] .ex-prop::after { content: "00:03"; }
+[data-frame="17"] .ex-prop::after { content: "00:17"; }
+[data-frame="41"] .ex-prop::after { content: "00:41"; }
+
+.ex-hotspot {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: #fff3d6;
+}
+.ex-hotspot:active:not(:disabled) {
+  transform: translate(-50%, -50%);
+}
+
+.ex-pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border: 1px solid #ffdaa0;
+  border-radius: 50%;
+  box-shadow: 0 1px 6px #120b03b3;
+  background-color: #312616e6;
+  transition: transform 150ms ease, background-color 150ms;
+}
+
+.ex-pin::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border: 1px solid #ffdfac;
+  background: #ffe0a9;
+  transform: rotate(45deg);
+}
+
+.ex-hotspot-label {
+  position: absolute;
+  top: calc(50% + 13px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 7px;
+  border: 1px solid #e1bb7869;
+  border-radius: 3px;
+  background: #19150feb;
+  color: #fff2d9;
+  font: 500 12px/1.4 var(--font);
+  white-space: nowrap;
+}
+
+.ex-hotspot:hover, .ex-hotspot:focus-visible { z-index: 3; }
+.ex-hotspot:hover .ex-pin, .ex-hotspot:focus-visible .ex-pin {
+  transform: scale(1.16);
+  background-color: #61451f;
+}
+
+.ex-hotspot.is-hinted .ex-pin::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 2px solid #ffdb8f;
+  border-radius: 50%;
+  animation: ex-hint-ring 1.75s ease-out infinite;
+}
+.ex-back.is-hinted {
+  border-color: #ffdb8f;
+  box-shadow: 0 0 0 2px #ffdb8f77;
+}
+
+.ex-footer {
+  align-items: center;
+  gap: 13px;
+  min-height: 56px;
+  padding: 8px 14px;
+  border: 1px solid #4a4032;
+  border-top: 0;
+  background: #1c1915;
+}
+
+.ex-back { flex: none; }
+.ex-caption {
+  margin: 0;
+  color: #ded1bc;
+  font: 15px/1.55 var(--ex-serif);
+}
+
+.ex-detail {
+  position: relative;
+  margin: 14px 0 0;
+  padding: clamp(14px, 2vw, 24px);
+  border-left: 3px solid #c69c66;
+  border-radius: 2px;
+  background: var(--ex-paper);
+  color: var(--ex-ink);
+  scroll-margin: 12px;
+}
+
+.ex-detail header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ex-detail :is(h2,h3,h4) {
+  margin: 0;
+  color: #312a21;
+  font: 600 21px/1.4 var(--ex-serif);
+}
+
+.ex-detail p { margin: 8px 0; color: #514539; }
+.ex-detail small { color: #705942; }
+.ex-detail header button {
+  background-color: transparent;
+  border-color: #9c8e78;
+  color: #463d31;
+}
+.ex-evidence-line {
+  display: block;
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px dashed #b3a38e;
+}
+.ex-evidence-line b { color: #33291c; }
+
+.ex-choices {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ex-choice-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 6px;
+}
+.ex-choice-row small {
+  min-width: 3.4em;
+  font-size: 12px;
+}
+
+.ex-choices button {
+  min-height: 44px;
+  border: 1px solid #a79374;
+  border-radius: 3px;
+  padding: 8px 13px;
+  background: #f8efde;
+  color: #392f26;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.ex-choices button:hover,
+.ex-choices .is-selected, .ex-choices .is-filled, .ex-choices [aria-pressed="true"] {
+  border-color: #655039;
+  background: #41382b;
+  color: #fff3da;
+}
+
+.ex-choices button:disabled {
+  border-style: dashed;
+  background: #e3d6c1;
+  color: #655a4c;
+  cursor: default;
+}
+
+.ex-detail button:focus-visible { outline-color: #644219; }
+
+.ex-notice, .ex-hint {
+  margin: 8px 0 0;
+  padding-inline: 4px;
+  color: #f0d8ae;
+  font-size: 14px;
+}
+.ex-notice:empty, .ex-hint:empty { display: none; }
+.ex-hint:not(:empty) {
+  border-left: 2px solid #bc9255;
+  padding-left: 10px;
+  color: #d5c6ae;
+}
+
+.ex-leave .ex-stage, .ex-stage.ex-leave { animation: ex-fade-out 120ms ease-in both; }
+.ex-enter .ex-stage, .ex-stage.ex-enter { animation: ex-fade-in 180ms ease-out both; }
+.ex-investigate .ex-art, .ex-art.ex-investigate { animation: ex-approach 420ms cubic-bezier(.22,.7,.15,1) both; }
+
+@keyframes ex-fade-in { from {opacity: 0;} to {opacity: 1;} }
+@keyframes ex-fade-out { from {opacity: 1;} to {opacity: 0;} }
+@keyframes ex-approach { from {transform: scale(1);} to {transform: scale(1.12);} }
+@keyframes ex-hint-ring {
+  from { transform: scale(.82); opacity: 1; }
+  to { transform: scale(1.45); opacity: 0; }
+}
+
+@media (max-width: 600px) {
+  .ex-header { gap: 6px; padding-bottom: 9px; }
+  .ex-tools { gap: 4px; }
+  .ex-tools button { padding-inline: 8px; }
+  .ex-task { padding: 7px 9px; gap: 8px; }
+  .ex-task strong { font-size: 13px; }
+  .ex-footer { padding: 6px 9px; gap: 8px; }
+  .ex-caption { font-size: 14px; }
+  .ex-back { padding-inline: 8px; }
+  .ex-hotspot-label { padding: 1px 4px; }
+  .ex-detail { margin-top: 9px; }
+  .ex-header:has([data-scene-action="continue"]) { flex-wrap: wrap; }
+  .ex-choice-row small { width: 100%; }
+  .ex-choice-row button { padding-inline: 8px; }
+  .ex-stage [data-scene-action="go-parcel"] .ex-hotspot-label,
+  .ex-stage [data-scene-action="arrange"] .ex-hotspot-label {
+    top: auto;
+    bottom: calc(50% + 13px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-shell *, .ex-shell *::before, .ex-shell *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.reduce-motion .ex-shell *, .reduce-motion .ex-shell *::before, .reduce-motion .ex-shell *::after {
+  animation: none !important;
+  transition: none !important;
+}

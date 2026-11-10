@@ -3,21 +3,14 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$source = "C:\Users\wuyiy\Documents\world_end_store_plan"
 $dest = $PSScriptRoot
-
-if (-not (Test-Path -LiteralPath $source)) {
-  throw "Source project not found: $source"
+$currentBranch = (& git -C $dest branch --show-current).Trim()
+if ($currentBranch -ne "main") {
+  throw "当前分支是 $currentBranch。此脚本只发布 main，V4 开发分支请先完成审阅再合并。"
 }
-
-foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js", "README.md", "FIRST_NIGHT_V3.md")) {
-  Copy-Item -LiteralPath (Join-Path $source $name) -Destination (Join-Path $dest $name) -Force
-}
-
-$sourceAssets = Join-Path $source "assets"
 $destAssets = Join-Path $dest "assets"
-New-Item -ItemType Directory -Path $destAssets -Force | Out-Null
-Copy-Item -Path (Join-Path $sourceAssets "*") -Destination $destAssets -Recurse -Force
+$scripts = @("content.js", "audio.js", "game.js", "save-tools.js", "scene-manager.js", "chapter-transition.js")
+$releaseFiles = @("index.html", "styles.css", "exploration.css", "chapter-transition.css", "README.md", "FIRST_NIGHT_V3.md", "FIRST_NIGHT_V4.md", "publish.ps1") + $scripts
 
 # Bust browser caches for the app's local CSS/JS on every publish.
 $indexPath = Join-Path $dest "index.html"
@@ -25,20 +18,14 @@ $cacheStamp = Get-Date -Format "yyyyMMddHHmmss"
 $indexHtml = Get-Content -LiteralPath $indexPath -Raw -Encoding UTF8
 $indexHtml = [regex]::Replace(
   $indexHtml,
-  '(styles\.css|content\.js|audio\.js|game\.js|save-tools\.js)(\?v=[^"]*)?',
+  '((?:styles|exploration|chapter-transition)\.css|(?:content|audio|game|save-tools|scene-manager|chapter-transition)\.js)(\?v=[^"]*)?',
   '$1?v=' + $cacheStamp
 )
 Set-Content -LiteralPath $indexPath -Value $indexHtml -Encoding UTF8 -NoNewline
 
-node --check (Join-Path $dest "game.js")
-if ($LASTEXITCODE -ne 0) { throw "Game syntax check failed; publish stopped." }
-node --check (Join-Path $dest "content.js")
-if ($LASTEXITCODE -ne 0) { throw "Content syntax check failed; publish stopped." }
-node --check (Join-Path $dest "audio.js")
-if ($LASTEXITCODE -ne 0) { throw "Audio syntax check failed; publish stopped." }
-node --check (Join-Path $dest "save-tools.js")
-if ($LASTEXITCODE -ne 0) {
-  throw "Syntax check failed; publish stopped."
+foreach ($script in $scripts) {
+  node --check (Join-Path $dest $script)
+  if ($LASTEXITCODE -ne 0) { throw "Syntax check failed for $script" }
 }
 
 $gh = "C:\Program Files\GitHub CLI\gh.exe"
@@ -67,7 +54,7 @@ if (-not $env:GH_TOKEN) {
 $repo = "wyyy008/world-end-store"
 $branch = "main"
 $files = @()
-foreach ($name in @("index.html", "styles.css", "game.js", "content.js", "audio.js", "save-tools.js", "README.md", "FIRST_NIGHT_V3.md", "publish.ps1")) {
+foreach ($name in $releaseFiles) {
   $files += @{ path = $name; source = Join-Path $dest $name }
 }
 $workflowPath = ".github/workflows/pages.yml"

@@ -14,10 +14,14 @@
     <link rel="apple-touch-icon" href="assets/logo-256.png">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=20261109224206">
+    <link rel="stylesheet" href="styles.css?v=4.0">
+    <link rel="stylesheet" href="exploration.css?v=4.0">
+    <link rel="stylesheet" href="chapter-transition.css?v=4.0">
     <script src="content.js?v=20261109224206" defer></script>
-    <script src="audio.js?v=20261109224206" defer></script>
-    <script src="game.js?v=20261109224206" defer></script>
+    <script src="audio.js?v=4.0" defer></script>
+    <script src="scene-manager.js?v=4.0" defer></script>
+    <script src="chapter-transition.js?v=4.0" defer></script>
+    <script src="game.js?v=4.0" defer></script>
     <script src="save-tools.js?v=20261109224206" defer></script>
   </head>
   <body>
@@ -64,8 +68,8 @@
           <div>
             <h1 id="game-title"><img class="title-wordmark" src="assets/logo.png" alt="世界尽头的便利店" width="1774" height="887"></h1>
             <p class="title-subtitle">没有收件人的包裹</p>
-            <p class="title-edition">免费试玩 · 八夜</p>
-            <p class="title-premise">接待走进店里的人，听他们把话说完，再决定打烊时留下什么。五个人的往事，会在交谈中慢慢浮现。第八夜第一班车来以前，替柜台下的包裹找到去处。</p>
+            <p class="title-edition">V4.0 · 八夜试玩</p>
+            <p class="title-premise">末班车走了，便利店刚开门。货架上有三样东西放错了位置，门边的女孩还在等人。第八夜第一班车来以前，替柜台下的包裹找到去处。</p>
             <div class="title-ticket" aria-hidden="true">
               <span class="title-ticket-stub">雾港 · 末班车</span>
               <strong>第八夜 · 第一班车</strong>
@@ -175,6 +179,8 @@
             <button class="secondary-button" id="open-closing" type="button">准备打烊</button>
           </div>
 
+          <section id="exploration-root" aria-label="雾港便利店 · 场景探索" hidden></section>
+          <button class="secondary-button" id="revisit-shop" type="button" hidden>回店内查看 · 背包与线索册</button>
           <section class="next-step" aria-label="接下来做什么">
             <div>
               <h2 id="next-step-title">先接待门边的人</h2>
@@ -458,7 +464,8 @@
         <p><strong>主线</strong>在第八夜第一班车到站前，把五封没有送出的信送到五个人手里，再决定没有收件人的包裹去哪里。</p>
         <p><strong>今晚</strong>首章目标下方会直接写出这一夜的可执行目标。完成上车条件，旧票机才会给你车票。</p>
         <p><strong>人物回忆</strong>会随着柜台前的交谈自然穿插，读完就回到当前这一夜。人物档案只用来回看你已经历的片段。</p>
-        <p><strong>时间</strong>每夜有六盏灯，也就是六件可以做的事。补货、整理和接待常客会消耗一格，查看商品与对话不耗时。</p>
+        <p><strong>第一夜</strong>点店内的物件走近查看。先去货架核对价签。找到的物品会进入背包，重要字迹会抄入线索册，可以随时翻看。</p>
+        <p><strong>时间</strong>每夜有六盏灯。经营补货、打烊前的小事和接待常客会消耗时间。探索、解谜、返回和阅读线索都不耗时。</p>
         <p><strong>顾客</strong>读他们做了什么、留下了什么，而不是刷好感度。</p>
         <p><strong>打烊</strong>选择留下一件东西。它会跟着店进入下一夜。</p>
         <p><strong>通行</strong>每夜都有通行条件。达成后打烊时会从特殊渠道得到一张车票；没有车票也能走，但店会被动漂移并损失 ¥5。</p>
@@ -590,6 +597,7 @@
       <div class="history-list" id="history-list"></div>
     </dialog>
 
+    <dialog id="chapter-transition" aria-label="第一夜驶向第二夜" hidden></dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>

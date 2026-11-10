@@ -6438,6 +6438,14 @@ body.finale-active .app-shell {
 .first-night-active .counter-stage { height: 330px; }
 .first-night-active .page-head > button { display: none; }
 
+.exploring-shop .sheet > .page-head,
+.exploring-shop .sheet > .next-step,
+.exploring-shop .sheet > .chapter-goal,
+.exploring-shop .sheet > .shift-strip,
+.exploring-shop .sheet > .workspace { display: none; }
+#exploration-root[hidden], #revisit-shop[hidden], #chapter-transition[hidden] { display: none; }
+#revisit-shop { justify-self: start; min-height: 44px; }
+
 .counter-stage[data-flow="sale"] {
   background-image: url("assets/scenes/first-sale-wide.jpg");
   background-position: center bottom;
@@ -6464,6 +6472,7 @@ body.finale-active .app-shell {
 .scene-clue-receipt { left: 10%; bottom: 13%; }
 .scene-clue-camera { right: 8%; top: 25%; }
 .scene-clue-timetable { right: 11%; bottom: 14%; }
+.scene-register { left: 10%; bottom: 15%; }
 .scene-door { left: 50%; bottom: 17%; transform: translateX(-50%); }
 .scene-door:hover { transform: translate(-50%, -3px); }
 
@@ -6529,6 +6538,20 @@ body.finale-active .app-shell {
 
 .clue-hotspot { background: #202c30; }
 .clue-result { min-height: 66px; margin: 13px 0 !important; border-left: 2px solid var(--accent); background: #242019; padding: 11px 14px; color: var(--text) !important; }
+.clue-progress { margin: 12px 0 0 !important; color: var(--accent) !important; font-size: 12px; }
+.inference-choice { margin-top: 14px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.inference-choice > strong { display: block; margin-bottom: 10px; font-size: 14px; }
+.inference-choice > div { display: flex; gap: 9px; }
+.inference-choice button { min-height: 44px; flex: 1; border: 1px solid #806445; border-radius: 8px; background: #292219; color: var(--text); cursor: pointer; font-variant-numeric: tabular-nums; }
+.inference-choice button:hover { border-color: var(--accent); background: #392a1a; }
+.inference-choice button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.anomaly-pos { margin: 16px 0; border: 1px solid #47605b; border-radius: 10px; background: #142321; padding: 16px; color: #c6edd5; }
+.anomaly-pos > span { display: block; color: #83b7a1; font-size: 11px; }
+.anomaly-pos > strong { display: block; margin: 7px 0 14px; font-family: var(--display-font); font-size: 25px; }
+.anomaly-pos dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; }
+.anomaly-pos dl > div { border-top: 1px solid #47605b; padding-top: 9px; }
+.anomaly-pos dt { color: #83b7a1; font-size: 11px; }
+.anomaly-pos dd { margin: 2px 0 0; font-variant-numeric: tabular-nums; }
 .approach-door { width: 100%; padding: 11px 15px; cursor: pointer; }
 .approach-door:disabled { opacity: .55; cursor: not-allowed; }
 .visitor-choices { display: grid; gap: 9px; }
@@ -6552,6 +6575,7 @@ body.finale-active .app-shell {
   .scene-clue-receipt { left: 4%; bottom: 8%; }
   .scene-clue-camera { right: 3%; top: 31%; }
   .scene-clue-timetable { right: 3%; bottom: 8%; }
+  .scene-register { left: 5%; bottom: 10%; }
   .counter-stage[data-flow="visitor"],
   .counter-stage[data-flow="visitor-result"] { background-position: 62% 50%; }
   .night-one-interaction { padding: 16px; }
