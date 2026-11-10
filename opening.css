@@ -43,23 +43,23 @@ dialog.opening-film::backdrop { background: #090d10; }
 }
 .opening-art {
   z-index: -3;
-  background: url("assets/scenes/road-wide.jpg") center / cover no-repeat;
-  filter: brightness(.15) saturate(.72);
-  transform: scale(1.07);
+  background: #07131c url("assets/scenes/opening-wide.jpg") center / cover no-repeat;
+  filter: brightness(.22) saturate(.8);
+  transform: scale(1.035);
   transition: filter 2s ease, transform 10s linear;
 }
 .opening-film[data-phase="first"] .opening-art,
 .opening-film[data-phase="second"] .opening-art,
-.opening-film[data-phase="title"] .opening-art { filter: brightness(.45) saturate(.82); transform: scale(1); }
-.opening-film[data-phase="title"] .opening-art { filter: brightness(.68) saturate(.9); }
+.opening-film[data-phase="title"] .opening-art { filter: brightness(.72) saturate(.9); transform: scale(1); }
+.opening-film[data-phase="title"] .opening-art { filter: brightness(.94) saturate(.98); }
 .opening-shade {
   z-index: -2;
-  background: linear-gradient(90deg, #090c0ff0 0%, #0b0e10a0 38%, #080b0de8 100%),
-              linear-gradient(0deg, #080b0ce8, transparent 55%);
-  opacity: 1;
+  background: radial-gradient(ellipse at center, transparent 27%, #050a10aa 100%),
+              linear-gradient(0deg, #05090dbb 0%, transparent 38%, #05090d55 100%);
+  opacity: .78;
   transition: opacity 1.8s ease;
 }
-.opening-film[data-phase="title"] .opening-shade { opacity: .72; }
+.opening-film[data-phase="title"] .opening-shade { opacity: .58; }
 .opening-rain {
   z-index: -1;
   opacity: .28;
@@ -67,54 +67,23 @@ dialog.opening-film::backdrop { background: #090d10; }
   background-size: 100px 190px;
   animation: opening-rain 1.8s linear infinite;
 }
-.opening-bus {
-  position: absolute;
-  left: 100%;
-  bottom: 24%;
-  width: clamp(180px, 29vw, 450px);
-  height: clamp(48px, 7vw, 100px);
-  border-radius: 22px 35px 4px 4px;
-  background: linear-gradient(#202429dc, #0a0d10ef);
-  box-shadow: 0 12px 22px #080a0dbb;
-  transform: translateX(0);
-  opacity: 0;
-}
-.opening-bus::before {
-  content: "";
-  position: absolute;
-  left: 9%;
-  right: 12%;
-  top: 12%;
-  height: 38%;
-  background: repeating-linear-gradient(90deg, #d1b7807a 0 17%, #101718 18% 20%);
-  opacity: .65;
-}
-.opening-bus span {
-  position: absolute;
-  bottom: -10%;
-  width: 15%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #080b0c;
-}
-.opening-bus span:first-child { left: 17%; }
-.opening-bus span:last-child { right: 16%; }
-.opening-film[data-phase="first"] .opening-bus { opacity: .76; animation: opening-bus 4.9s linear forwards; }
 .opening-lamps {
   position: absolute;
-  top: clamp(28px, 7vh, 74px);
+  top: 48.7%;
   left: 50%;
   display: flex;
-  gap: clamp(12px, 3vw, 38px);
+  justify-content: space-between;
+  width: min(47vw, 690px);
   transform: translateX(-50%);
+  pointer-events: none;
 }
 .opening-lamps i {
   display: block;
-  width: clamp(11px, 1.55vw, 20px);
+  width: clamp(8px, 1vw, 14px);
   aspect-ratio: 1;
   border: 1px solid #b6a68691;
   border-radius: 50%;
-  background: #283039;
+  background: #282826;
   transition: background 300ms, box-shadow 300ms;
 }
 .opening-film[data-lights="1"] .opening-lamps i:nth-child(-n+1),
@@ -210,16 +179,24 @@ dialog.opening-film::backdrop { background: #090d10; }
 .opening-film button:focus-visible { outline: 3px solid #ffe4ac; outline-offset: 3px; }
 .opening-film [hidden] { display: none; }
 @keyframes opening-rain { to { background-position: -60px 190px; } }
-@keyframes opening-bus { from { transform: translateX(0); } to { transform: translateX(calc(-100vw - 110%)); } }
 @media (max-width: 640px) {
   .opening-skip { top: auto; bottom: max(18px, env(safe-area-inset-bottom)); }
   .title-main .title-brand { gap: 12px; font-size: clamp(35px, 10vw, 52px); }
-  .opening-art { background-position: 35% center; }
+  .opening-art { background-image: url("assets/scenes/opening-portrait.jpg"); background-size: cover; }
+  .opening-lamps { top: 49.5%; width: 63vw; }
   .opening-copy, .opening-end { inset: 14% 5% 8%; }
+  .opening-end { inset: 14% 5% auto; place-content: start center; }
+  .opening-end img { width: 48px; }
   .opening-line { width: 88vw; font-size: clamp(24px, 6.5vw, 36px); }
-  .opening-end h2 { font-size: clamp(43px, 11.5vw, 70px); }
+  .opening-end h2 { font-size: clamp(38px, 10vw, 56px); }
   .opening-end p { letter-spacing: .12em; }
-  .opening-bus { bottom: 29%; }
+}
+@media (max-width: 360px) and (max-height: 700px) {
+  .opening-end { inset: 7% 4% auto; gap: 6px; }
+  .opening-end img { width: 42px; }
+  .opening-end h2 { font-size: 34px; }
+  .opening-end p { margin-bottom: 4px; font-size: 9px; }
+  .opening-end button { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .opening-film *, .opening-film *::before, .opening-film *::after { animation: none !important; transition: none !important; }
