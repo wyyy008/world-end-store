@@ -1,0 +1,25 @@
+name: V4.1 P0 regression
+on:
+  push:
+    branches:
+      - fix/v4.1-p0-save-transactions-tests
+  pull_request:
+  workflow_dispatch:
+jobs:
+  node-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check game.js
+          node --check content.js
+          node --check audio.js
+          node --check save-tools.js
+          node --check tests/p0-regression.test.cjs
+      - name: P0 regression
+        run: node --test tests/p0-regression.test.cjs
