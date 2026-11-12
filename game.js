@@ -349,6 +349,17 @@ function normalizeSavedState(saved) {
   } else if (saved.introSeen) {
     normalized.firstNightExperience.phase = "acheng";
   }
+  // Validate first-night checkpoints without rejecting legacy v5 saves that
+  // predate the interactive opening (those are migrated to "done" above).
+  const opening = normalized.firstNightExperience;
+  if (saved.firstNightExperience !== undefined && saved.nightIndex === 0) {
+    if (["receipt", "acheng", "investigate", "visitor", "visitor-result"].includes(opening.phase) &&
+        opening.scanned.length !== 3) return null;
+    if (["visitor", "visitor-result"].includes(opening.phase) && opening.clues.length < 2) return null;
+    if (opening.decision === "verify" && !opening.clues.includes("camera")) return null;
+    if (opening.phase === "visitor-result" && !opening.decision) return null;
+    if (["sale", "receipt", "acheng", "investigate", "visitor"].includes(opening.phase) && opening.decision !== null) return null;
+  }
   if (saved.interludeReturnStage != null && !stages.has(saved.interludeReturnStage)) return null;
   normalized.interludeReturnStage = saved.interludeReturnStage ?? null;
   if (saved.served !== undefined && !record(saved.served)) return null;
@@ -1032,6 +1043,13 @@ function finishFirstSale(change) {
     playSfx("blocked");
     commit();
     showToast(experience.changeErrors >= 2 ? "应收 ¥20，收到 ¥50；请找回 ¥30。" : "找零金额不对。顾客把零钱轻轻推回柜台。请再试一次。");
+    return;
+  }
+  if (!Number.isInteger(state.stock.umbrella) || state.stock.umbrella < 1 ||
+      !Number.isInteger(state.stock.coffee) || state.stock.coffee < 1 ||
+      !Number.isFinite(state.cash)) {
+    playSfx("blocked");
+    showToast("商品库存或钱箱数据异常，交易已暂停。请检查存档。");
     return;
   }
   experience.phase = "receipt";
@@ -2082,7 +2100,14 @@ function serveQuickCustomer(guest) {
   }
 
   const quantity = guest.quantity || 1;
-  if (state.stock[guest.product] < quantity) {
+  if (!Number.isInteger(quantity) || quantity < 1 ||
+      !Object.hasOwn(products, guest.product) || !Number.isFinite(guest.amount) ||
+      !Number.isFinite(state.cash) || state.served[guest.id]) {
+    playSfx("blocked");
+    showToast("交易状态异常，请重新检查当前顾客。");
+    return;
+  }
+  if (!Number.isInteger(state.stock[guest.product]) || state.stock[guest.product] < quantity) {
     openStockShortageDialog(guest);
     playSfx("blocked");
     return;
@@ -2278,7 +2303,17 @@ function completePurchase(guest, option) {
   }
 
   const quantity = guest.quantity || 1;
-  if (state.stock[guest.product] < quantity) {
+  const allowedOptions = ["gift", "low", "normal", "high"];
+  const amount = option === "gift" ? 0 : guest.prices?.[option];
+  if (!allowedOptions.includes(option) || !Number.isFinite(amount) ||
+      !Number.isFinite(state.cash) || !Number.isInteger(quantity) || quantity < 1 ||
+      !Object.hasOwn(products, guest.product) || state.time < 1 ||
+      state.served[guest.id]) {
+    playSfx("blocked");
+    showToast("交易状态异常，请重新检查当前顾客。");
+    return;
+  }
+  if (!Number.isInteger(state.stock[guest.product]) || state.stock[guest.product] < quantity) {
     showToast("货架上的商品不够了。");
     playSfx("blocked");
     return;
@@ -2292,7 +2327,6 @@ function completePurchase(guest, option) {
     gift: "不收钱，送给客人"
   };
   logVnChoice(priceChoiceLabels[option] || "完成交易");
-  const amount = option === "gift" ? 0 : guest.prices[option];
   state.stock[guest.product] -= quantity;
   state.cash += amount;
   spendTime(1);
