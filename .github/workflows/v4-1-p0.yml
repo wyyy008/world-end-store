@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - fix/v4.1-p0-save-transactions-tests
+      - feature/v4.2-first-night-demo-phase1
   pull_request:
   workflow_dispatch:
 jobs:
@@ -22,4 +23,4 @@ jobs:
           node --check save-tools.js
           node --check tests/p0-regression.test.cjs
       - name: P0 regression
-        run: node --test tests/p0-regression.test.cjs
+        run: node --test tests/p0-regression.test.cjs tests/v42-first-night.test.cjs
