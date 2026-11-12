@@ -53,3 +53,29 @@ test("keeps original visitor transition and save version", () => {
   assert.match(source, /const SAVE_KEY = "world-end-store-chapter-one-v5"/);
   assert.match(source, /version: 5/);
 });
+
+test("second night reflects all three visitor decisions without replacing original opening", () => {
+  const build = extract("buildNightOpeningSteps");
+  for (const choice of ["open", "wait", "verify"]) {
+    const state = { flags: { ["thirdVisitor_" + choice]: true }, nightIndex: 1 };
+    const night = { number: 2, place: "无眠车站", weather: "雨", cast: [{ id: "visitor", name: "旅人", line: "你好", initial: "旅", arrival: "来客" }] };
+    const ctx = { state, currentNight: () => night, characterArcEntries: () => [],
+      portraitIdForName: () => "traveler", firstNightPhase: () => "done" };
+    vm.createContext(ctx);
+    vm.runInContext(build, ctx);
+    const steps = ctx.buildNightOpeningSteps();
+    assert.ok(steps.some(x => x.sceneLabel === "昨夜留下的痕迹"), choice);
+    assert.ok(steps.some(x => x.sceneLabel === "同一班车"), choice);
+  }
+});
+test("legacy second night without visitor flags preserves original opening", () => {
+  const ctx = { state: { flags: {} }, currentNight: () => ({
+    number: 2, place: "无眠车站", weather: "雨",
+    cast: [{ id: "visitor", name: "旅人", line: "你好", initial: "旅", arrival: "来客" }]
+  }), characterArcEntries: () => [], portraitIdForName: () => "traveler", firstNightPhase: () => "done" };
+  vm.createContext(ctx);
+  vm.runInContext(extract("buildNightOpeningSteps"), ctx);
+  const steps = ctx.buildNightOpeningSteps();
+  assert.equal(steps.filter(x => x.sceneLabel === "昨夜留下的痕迹").length, 0);
+  assert.ok(steps.some(x => x.sceneLabel === "同一班车"));
+});
