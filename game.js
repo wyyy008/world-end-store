@@ -353,8 +353,8 @@ function normalizeSavedState(saved) {
   // predate the interactive opening (those are migrated to "done" above).
   const opening = normalized.firstNightExperience;
   if (saved.firstNightExperience !== undefined && saved.nightIndex === 0) {
-    if (["receipt", "acheng", "investigate", "visitor", "visitor-result", "done"].includes(opening.phase) &&
-        (opening.scanned.length !== 3 || opening.changeErrors > 100)) return null;
+    if (["receipt", "acheng", "investigate", "visitor", "visitor-result"].includes(opening.phase) &&
+        opening.scanned.length !== 3) return null;
     if (["visitor", "visitor-result"].includes(opening.phase) && opening.clues.length < 2) return null;
     if (opening.decision === "verify" && !opening.clues.includes("camera")) return null;
     if (opening.phase === "visitor-result" && !opening.decision) return null;
