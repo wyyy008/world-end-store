@@ -1107,6 +1107,26 @@ function inspectFirstNightClue(id) {
   if (result) result.textContent = clue.result;
 }
 
+// Optional commercial-demo deduction: deliberately stored in existing flags so
+// historical v5 saves and all eight nights keep the same schema.
+function compareFirstNightEvidence() {
+  if (firstNightPhase() !== "investigate") return;
+  const clues = state.firstNightExperience.clues;
+  if (!clues.includes("receipt") || !clues.includes("camera")) {
+    showToast("先对照收据背面的时间和监控画面。");
+    return;
+  }
+  if (state.flags.firstNightTimeDeduction) {
+    showToast("你已经确认：00:17 不是普通的营业时间，而是两份记录共同指向的异常时刻。");
+    return;
+  }
+  state.flags.firstNightTimeDeduction = true;
+  addMemory("你对照了收据和监控：00:17 同时出现在明日收据与提前出现的影子中。第三次门铃前，应先确认门外的时间。");
+  playSfx("page");
+  commit();
+  showToast("证据吻合：明日收据与提前十七秒的监控，都指向 00:17。");
+}
+
 function approachThirdVisitor() {
   if (firstNightPhase() !== "investigate" || state.firstNightExperience.clues.length < 2) return;
   state.firstNightExperience.phase = "visitor";
@@ -1174,9 +1194,16 @@ function renderFirstNightScene() {
       <p>先看任意两处，再决定是否去开门。查过监控，会多一种处理办法。</p>
       <div class="clue-hotspots">${Object.entries(FIRST_NIGHT_CLUES).map(([id, clue]) => `<button type="button" class="clue-hotspot ${experience.clues.includes(id) ? "is-found" : ""}" data-first-clue="${id}"><span aria-hidden="true">${clue.symbol}</span><strong>${clue.name}</strong><small>${experience.clues.includes(id) ? "已发现 · 可重看" : "点击查看"}</small></button>`).join("")}</div>
       <p class="clue-result" id="first-night-clue-result" role="status">${experience.clues.length ? FIRST_NIGHT_CLUES[experience.clues.at(-1)].result : "先从手边的收据、监控或门外站牌查起。"}</p>
+      <div class="evidence-comparison" aria-label="证据推理">
+        <h4>推理板 · 00:17</h4>
+        <p>为什么收据上的明日时间，会与监控里的提前影子相互呼应？</p>
+        <button type="button" class="evidence-compare-button" id="compare-first-night-evidence" ${!experience.clues.includes("receipt") || !experience.clues.includes("camera") ? "disabled" : ""}>${state.flags.firstNightTimeDeduction ? "已确认：两份记录指向同一异常时刻" : "对照收据与监控，确认异常时间"}</button>
+        <small>${state.flags.firstNightTimeDeduction ? "推理结果已写入记忆册。" : "先找到收据和监控。推理是额外发现，不会阻止继续剧情。"}</small>
+      </div>
       <button type="button" class="primary-button approach-door" id="approach-third-visitor" ${experience.clues.length < 2 ? "disabled" : ""}>${experience.clues.length < 2 ? `还需 ${2 - experience.clues.length} 条线索` : "走向店门，回应第三次门铃"}</button>
     </div>`;
     elements.customerScene.querySelectorAll("[data-first-clue]").forEach((button) => button.addEventListener("click", () => inspectFirstNightClue(button.dataset.firstClue)));
+    elements.customerScene.querySelector("#compare-first-night-evidence").addEventListener("click", compareFirstNightEvidence);
     elements.customerScene.querySelector("#approach-third-visitor").addEventListener("click", approachThirdVisitor);
   } else if (phase === "visitor") {
     const cameraSeen = experience.clues.includes("camera");
