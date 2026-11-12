@@ -1,3 +1,4 @@
+.title-screen { --display-font: "SimSun", "Songti SC", "STSong", serif; }
 .title-main .title-brand {
   display: flex;
   align-items: center;
@@ -5,7 +6,7 @@
   max-width: 650px;
   margin: 0;
   color: #f1e6d3;
-  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "SimSun", serif;
+  font-family: "SimSun", "Songti SC", "STSong", "Noto Serif CJK SC", serif;
   font-size: clamp(37px, 4.6vw, 68px);
   font-weight: 500;
   letter-spacing: .035em;
@@ -15,22 +16,26 @@
 .title-main .title-brand span { display: block; }
 .title-brand strong { font-weight: 600; letter-spacing: .15em; }
 .brand-mark img, .mini-mark img { transform: none; object-fit: contain; }
-.title-window { aspect-ratio: 4 / 3; border-radius: 4px; overflow: hidden; }
+.title-window { aspect-ratio: 4 / 3; border: 0; border-radius: 0; overflow: hidden; box-shadow: none; }
+.title-window::after, .title-street::before { display: none; }
 .title-window .title-logo { object-fit: cover; }
-.title-main { background: radial-gradient(ellipse at 85% 18%, #2635454d, transparent 45%), #0b0d0f; }
-.title-action { border-radius: 6px; transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease; }
+.title-main { background: #11110f; }
+.title-action { border-radius: 2px; transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease; }
 .title-action:active:not(:disabled) { transform: translateY(1px); }
 .title-action.primary-button {
-  border: 1px solid #eac38e;
-  background: linear-gradient(#ecc894, #d8a866);
-  box-shadow: inset 0 1px #fff4d6a6, 0 5px 18px #0006;
-  color: #281b0d;
+  border: 1px solid #ddd4bf;
+  background: #ddd4bf;
+  box-shadow: none;
+  color: #30352d;
 }
-.title-action.primary-button:hover { background: #f4d4a5; }
-.title-action.primary-button small { color: #4f3922; }
-.title-action.secondary-button { border-color: #8e7456; background: #1a1b1cb5; }
+.title-action.primary-button:hover { background: #eee5d1; }
+.title-action.primary-button small { color: #515749; }
+.title-action.secondary-button { border-color: #6b6d60; background: #1a1b18; }
+.title-ticket { border: 0; border-radius: 0; background: #d4cbb7; color: #3c3a30; }
+.title-ticket-stub, .title-ticket-status { color: #5a5749; }
+.title-ticket strong { color: #35362d; }
 
-@media (max-width: 640px) {
+@media (max-width: 940px) {
   .title-screen {
     background: #09131b url("assets/scenes/opening-portrait.jpg") center / cover no-repeat;
   }
@@ -50,8 +55,8 @@
   .title-brand img { width: 46px; }
   .title-subtitle { margin-top: 11px; font-size: 16px; }
   .title-edition { margin-top: 3px; }
-  .title-premise { margin-top: 9px; font-size: 13px; line-height: 1.55; color: #f0e4d3; text-shadow: 0 2px 8px #071017; }
-  .title-ticket { margin-top: 13px; padding: 8px 11px; border: 1px solid #c69b6666; border-left: 3px solid #e5b779; border-radius: 3px; background: #111b20cd; }
+  .title-premise { margin-top: 9px; font-size: 13px; line-height: 1.55; color: #f0e4d3; text-shadow: none; }
+  .title-ticket { margin-top: 13px; padding: 8px 11px; border: 0; border-radius: 0; background: #d4cbb7; }
   .title-ticket strong { font-size: 15px; }
   .title-actions { gap: 7px; margin-top: 20px; }
   .title-action { min-height: 49px; padding: 8px 14px; }

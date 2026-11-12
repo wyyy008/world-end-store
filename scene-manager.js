@@ -109,12 +109,12 @@
     return "continue";
   }
   const tasks = {
-    arrange: ["把交班箱里的三件商品归架", "上一班把售价记在每件货的包装上。", "临窗货架下层有三条价格签。", "点货架的「价签与周转箱」。依次拿起纸袋、咖啡、雨伞，分别放到 4、6、10 元的价签后面。", "shelf"],
-    guest: ["去收银台接待等伞的阿澄", "第二声门铃过去好一会儿了，那把湿伞还滴着水。", "阿澄在收银台等你。", "回店内全景，进收银台，点阿澄的身影。听完她的话，完成这笔交易。", "till"],
-    bottles: ["找出票背上寄存的那瓶汽水", "车票背面还有一行铅笔字。", "十七号格就在临窗货架上层。今晚是 11 月 08 日。", "回到货架，点「十七号饮料格」。翻看橘子汽水的日期，把 11 月 09 日生产的那瓶取下来。", "shelf"],
-    scanner: ["把异常汽水带到收银台扫码", "瓶底的条码在灯下泛白。", "收银台右侧有一道红色的扫描光。", "进入收银台，点「扫码器」，再把背包里的橘子汽水放上去。", "till"],
-    recorder: ["到监控室，用两张纸核对录像", "票面和小票上都印着时间。", "收银台后面通向监控室，把两张纸压在回放台旁。", "在监控室点「回放台」，放上旧车票和未来收据。选两者共有的 00:17 录像，再查看胸牌。", "cctv"],
-    continue: ["带着工牌线索，去听第三次门铃", "门上的铃铛轻轻摆了一下。", "门口有人等着。", "点线索下方的「去听第三次门铃」，或进店门近景，点门外的人。", "door"]
+    arrange: ["先把这三件货摆好", "售价都印在包装上。", "临窗货架下层有三条价格签。", "点货架的「价签与周转箱」。纸袋放到 4 元、咖啡放到 6 元、雨伞放到 10 元的价签后面。", "shelf"],
+    guest: ["阿澄还在柜台等伞", "她把湿伞换了只手，站着没动。", "阿澄在收银台等你。", "回店内全景，进收银台，点阿澄。听完她的话，再决定这把伞怎么卖。", "till"],
+    bottles: ["票背提到了十七号格", "车票背面还有一行铅笔字。", "十七号格就在临窗货架上层。今晚是 11 月 08 日。", "回到货架，点「十七号饮料格」。翻看橘子汽水的日期，把 11 月 09 日生产的那瓶取下来。", "shelf"],
+    scanner: ["扫一下这瓶汽水", "瓶底还有条码。", "收银台右侧有一道红色的扫描光。", "进入收银台，点「扫码器」，再扫描背包里的橘子汽水。", "till"],
+    recorder: ["去监控里找这个时间", "车票和小票上都写着 00:17。", "监控室在收银台后面，回放台上有两枚磁夹。", "在监控室点「回放台」，放上旧车票和未来收据。调到 00:17，再查看那人的胸牌。", "cctv"],
+    continue: ["第三声门铃响了", "门上的铃铛还在晃。", "门口有人等着。", "点「去听第三次门铃」，或进店门近景，点门外的人。", "door"]
   };
   const targetActions = { arrange: "arrange", guest: "guest", bottles: "bottles", scanner: "scanner", recorder: "recorder", continue: "continue" };
   function nextAction(m) {
@@ -126,7 +126,7 @@
       const action = hintTarget(m);
       const labels = {
         "go-shelf": "去货架", "go-till": "去收银台", "go-cctv": "去监控室",
-        back: "返回上一处"
+        back: rooms[m.scene].parent === "till" ? "回收银台" : "回到店里"
       };
       return { action, label: labels[action] || "前往目标位置" };
     }
@@ -154,16 +154,16 @@
     const step = phase(m);
     if (ctx.revisit) return "背包和线索册都在画面上方。看完后回到值班。";
     if (m.scene !== tasks[step][4] && step !== "continue") {
-      return "先到" + rooms[tasks[step][4]].title + "。画面里发亮的圆点可以点，近景可返回。";
+      return "先去" + rooms[tasks[step][4]].title + "。点画面里的标记就能过去。";
     }
     if (step === "arrange") return m.held
-      ? "包装上的售价是 ¥" + goods[m.held].price + "。把它放到相同的价签。"
-      : "先从周转箱拿起一件货。点商品后会看到包装上的售价。";
-    if (step === "guest") return "点击阿澄，选择怎么卖伞，再读完她的回应。";
+      ? "手里拿着" + goods[m.held].name + "，标价 ¥" + goods[m.held].price + "。找一张相同的价签。"
+      : "拿起一件货，看看包装上卖多少钱。";
+    if (step === "guest") return "她有话想说。点她，先听听。";
     if (step === "bottles") return "票背写着十七号格。今晚是 11 月 08 日，找生产日期晚于今晚的汽水。";
     if (step === "scanner") return "瓶子已经在背包里。打开扫码器，把条码对准红光。";
     if (step === "recorder") return "把旧票与未来收据夹在屏幕旁，找两张纸上相同的时间。";
-    return "你已经认出门外那人的工牌。现在可以回到门铃响起的剧情。";
+    return "记下工牌上的白痕。门外那个人还没走。";
   }
   function hintTarget(m) {
     const step = phase(m);
@@ -297,9 +297,9 @@
       (p === "scanner" && m.receipt);
     const next = finishedHere ? nextAction(m) : null;
     return `<section class="ex-detail" aria-labelledby="ex-detail-title"><header><h3 id="ex-detail-title" tabindex="-1">${title}</h3>${btn("detail-close", "收起", 'class="ex-dismiss"')}</header><p>${body}</p>
-      ${message ? `<p class="ex-detail-feedback">${message}</p>` : ""}
+      ${message ? `<p class="ex-detail-feedback" role="status" aria-atomic="true">${message}</p>` : ""}
       ${buttons ? '<div class="ex-choices">'+buttons+'</div>' : ""}
-      ${next ? `<div class="ex-detail-next"><span>下一步</span>${btn(next.action, next.label)}</div>` : ""}
+      ${next ? `<div class="ex-detail-next">${btn(next.action, next.label)}</div>` : ""}
     </section>`;
   }
   function itemLine(title, text) { return `<span class="ex-evidence-line"><b>${title}</b>　${text}</span>`; }
@@ -315,13 +315,13 @@
     const caption = m.scene === "shelf" && m.shelfChanged ? "刚才背光的瓶子已经靠到柜门。地板干着，几个橘色瓶盖却在滴水。" : room.caption;
     const next = nextAction(m);
     const milestones = [
-      ["整理货架", m.ticket],
-      ["接待阿澄", m.guestDone],
-      ["异常收银", m.receipt],
-      ["监控时间", m.solved]
+      ["货摆好了", "整理货架", m.ticket],
+      ["阿澄的伞", "接待阿澄", m.guestDone],
+      ["收好小票", "核对汽水", m.receipt],
+      ["记下工牌", "查看录像", m.solved]
     ];
     root.innerHTML = `<div class="ex-shell" data-scene="${m.scene}" data-anomaly="${m.scene === "shelf" && m.shelfChanged}" data-soda="${m.soda}" data-receipt="${m.receipt}" data-frame="${m.frame}">
-      <header class="ex-header"><div><small class="ex-kicker">第一夜 · 雾港公交站</small><h2 class="ex-title" tabindex="-1">${room.title}</h2></div>
+      <header class="ex-header"><div><small class="ex-kicker">十一月八日 · 夜班</small><h2 class="ex-title" tabindex="-1">${room.title}</h2></div>
       <nav class="ex-tools" aria-label="调查记录">${btn("bag", "背包", selected(m.panel === "bag"))}${btn("book", "线索册", selected(m.panel === "book"))}${ctx.revisit ? btn("continue", "回到值班") : ""}</nav></header>
       <div class="ex-layout">
         <div class="ex-main">
@@ -330,13 +330,13 @@
           ${detail(m)}
         </div>
         <aside class="ex-rail" aria-label="第一夜任务栏">
-          <small class="ex-rail-kicker">今晚要查的事</small>
-          <ol class="ex-progress">${milestones.map(([label, done], index) =>
-            `<li class="${done ? "is-done" : index === milestones.findIndex(([, complete]) => !complete) ? "is-current" : ""}"><span aria-hidden="true">${done ? "✓" : index + 1}</span>${label}</li>`).join("")}</ol>
-          <div class="ex-current"><small>当前目标</small><strong>${ctx.revisit ? "查看已找到的线索" : tasks[phase(m)][0]}</strong><p>${nextInstruction(m)}</p>
+          <div class="ex-note-heading"><span class="ex-rail-kicker">值班手记</span><small>雾港 · 11/08</small></div>
+          <ol class="ex-progress">${milestones.map(([finished, pending, done], index) =>
+            `<li class="${done ? "is-done" : index === milestones.findIndex(([, , complete]) => !complete) ? "is-current" : ""}"${!done && index === milestones.findIndex(([, , complete]) => !complete) ? ' aria-current="step"' : ""}><span aria-hidden="true">${done ? "✓" : ""}</span>${done ? finished : pending}</li>`).join("")}</ol>
+          <div class="ex-current"><strong>${ctx.revisit ? "翻翻之前记下的事" : tasks[phase(m)][0]}</strong><p>${nextInstruction(m)}</p>
             ${btn(next.action, next.label, 'class="ex-next-button"')}
           </div>
-          <p class="ex-notice" role="status"${message ? "" : " hidden"}>${message}</p>
+          <p class="ex-notice" role="status"${message && !m.panel ? "" : " hidden"}>${m.panel ? "" : message}</p>
           <p class="ex-hint" aria-live="polite" hidden></p>
         </aside>
       </div></div>`;
