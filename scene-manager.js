@@ -342,7 +342,13 @@
       </div></div>`;
     updateHint();
     if (focus) root.querySelector(focus)?.focus({ preventScroll: false });
-    else if (active) root.querySelector(`[data-scene-action="${active}"]:not([disabled])`)?.focus({ preventScroll: true });
+    else if (active) {
+      const replacement = root.querySelector(`[data-scene-action="${active}"]:not([disabled])`)
+        || root.querySelector(`[data-scene-action="${next.action}"]:not([disabled])`)
+        || root.querySelector("#ex-detail-title")
+        || root.querySelector(".ex-title");
+      replacement?.focus({ preventScroll: true });
+    }
   }
 
   function render(context) {

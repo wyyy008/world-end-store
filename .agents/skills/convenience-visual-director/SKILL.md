@@ -5,7 +5,7 @@ description: 为《世界尽头的便利店》设计并实现夜景、对话界�
 
 # 视觉导演
 
-先阅读仓库 README.md、GDD.md、FIRST_NIGHT_V3.md 和实际 UI 代码。确认现有素材目录与布局，不假设使用 React。
+先阅读仓库 README.md、FIRST_NIGHT_V3.md、FIRST_NIGHT_V4.md 和实际 UI 代码。确认现有素材目录与布局，不假设使用 React。
 
 ## 风格原则
 - 温柔、克制、略带不安的雨夜便利店；悬疑来自日常事物的微小不一致。
