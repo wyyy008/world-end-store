@@ -3204,6 +3204,34 @@ function buildNightOpeningSteps() {
     }
   ];
 
+  // A single non-branching callback keeps both second-night routes intact.
+  // Older saves without the first-night flags simply skip this extra beat.
+  if (night.number === 2) {
+    const echo = state.flags.thirdVisitor_verify
+      ? "你想起昨夜监控里提前抬起的手。今夜门铃响起前，你先看了一眼玻璃的倒影。"
+      : state.flags.thirdVisitor_open
+        ? "昨夜那道向门外延伸的水迹，今夜出现在收银台脚边。你没有忘记开门时看见的空雨幕。"
+        : state.flags.thirdVisitor_wait
+          ? "昨夜被扶正的伞仍靠在门边。第二夜开灯时，它的影子先一步落到了地上。"
+          : null;
+    if (echo) {
+      steps.push({
+        speaker: "旁白",
+        text: echo,
+        scene: "door",
+        sceneLabel: "昨夜留下的痕迹"
+      });
+    }
+    if (state.flags.firstNightTimeDeduction) {
+      steps.push({
+        speaker: "旁白",
+        text: "你再次核对收据上的 00:17。至少现在，你知道门铃声与时钟并不总在同一个时间里。",
+        scene: "counter",
+        sceneLabel: "记忆 · 00:17"
+      });
+    }
+  }
+
   if (arc) {
     steps.push({
       speaker: arc.name,
