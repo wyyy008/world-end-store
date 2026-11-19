@@ -23,16 +23,16 @@
     ticket: { name: "旧车票", text: "雾港末班车　00:17　｜　验票孔 07。翻到背面，铅笔写着「十七号格，那瓶橘子汽水替我留着」。" },
     receipt: { name: "未来收据", text: "交易时间　11 月 09 日 00:17　｜　橘子汽水 ×1　｜　当班 07。店里的值班簿还停在 11 月 08 日。" }
   };
-  const badgeClue = "第三位客人穿着上一班店员的围裙。工牌上写着 07，右下角有一道半月形白痕。";
+  const badgeClue = "第三位客人穿着上一班店员的围裙。工牌上写着 07，右下角有一道半月形白痕。它与随箱单的落款和纸角磨痕对上了。";
   const times = { "03": "00:03", "17": "00:17", "41": "00:41" };
-  const views = ["arrange", "bottles", "scanner", "recorder", "waybill", "timetable", "bag", "book", "identity"];
+  const views = ["arrange", "bottles", "scanner", "recorder", "waybill", "timetable", "bag", "book", "identity", "tidy", "label", "umbrella"];
   const validKey = (table, key) => typeof key === "string" && Object.hasOwn(table, key);
 
   function createState() {
     return {
       scene: "overview", panel: "", placed: [], held: "", bottle: "", frame: "",
       ticket: false, guestDone: false, shelfChanged: false, soda: false, receipt: false,
-      mounted: [], solved: false, parcelRead: false, boardRead: false
+      mounted: [], sortedGoods: [], solved: false, parcelRead: false, boardRead: false
     };
   }
 
@@ -46,6 +46,8 @@
     const known = (list, table) => Array.isArray(list) ? [...new Set(list.filter(key => validKey(table, key)))] : [];
     result.placed = known(raw.placed, goods);
     result.mounted = known(raw.mounted, papers);
+    result.sortedGoods = Array.isArray(raw.sortedGoods)
+      ? [...new Set(raw.sortedGoods.filter(key => key === "umbrella" || key === "lunchbox"))] : [];
     if (validKey(goods, raw.held) && !result.placed.includes(raw.held)) result.held = raw.held;
     if (validKey(bottles, raw.bottle)) result.bottle = raw.bottle;
     if (validKey(times, raw.frame)) result.frame = raw.frame;
@@ -69,6 +71,7 @@
   let hintLevel = 0;
   let previousGuest = false;
   let message = "";
+  let selectedClues = [];
   const reduced = () => document.body.classList.contains("reduce-motion") || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const artwork = [];
   function preload() {
@@ -98,6 +101,7 @@
     timer = 0;
     ctx = null;
     message = "";
+    selectedClues = [];
   }
 
   function phase(m) {
@@ -113,23 +117,60 @@
     guest: ["阿澄还在柜台等伞", "她把湿伞换了只手，站着没动。", "阿澄在收银台等你。", "回店内全景，进收银台，点阿澄。听完她的话，再决定这把伞怎么卖。", "till"],
     bottles: ["票背提到了十七号格", "车票背面还有一行铅笔字。", "十七号格就在临窗货架上层。今晚是 11 月 08 日。", "回到货架，点「十七号饮料格」。翻看橘子汽水的日期，把 11 月 09 日生产的那瓶取下来。", "shelf"],
     scanner: ["扫一下这瓶汽水", "瓶底还有条码。", "收银台右侧有一道红色的扫描光。", "进入收银台，点「扫码器」，再扫描背包里的橘子汽水。", "till"],
-    recorder: ["去监控里找这个时间", "车票和小票上都写着 00:17。", "监控室在收银台后面，回放台上有两枚磁夹。", "在监控室点「回放台」，放上旧车票和未来收据。调到 00:17，再查看那人的胸牌。", "cctv"],
+    recorder: ["去监控里找这个时间", "车票和小票上都写着 00:17。", "监控室在收银台后面，回放台上有两枚磁夹。", "放上旧车票和未来收据，调到 00:17。再对照柜下随箱单的落款与画面里的工牌。", "cctv"],
     continue: ["第三声门铃响了", "门上的铃铛还在晃。", "门口有人等着。", "点「去听第三次门铃」，或进店门近景，点门外的人。", "door"]
   };
   const targetActions = { arrange: "arrange", guest: "guest", bottles: "bottles", scanner: "scanner", recorder: "recorder", continue: "continue" };
+  function destination(m, step) {
+    return step === "recorder" && m.frame === "17" && !m.parcelRead ? "parcel" : tasks[step][4];
+  }
+  function toward(m, room) {
+    if (m.scene === "overview") return "go-" + (room === "cctv" || room === "parcel" ? "till" : room);
+    if (m.scene === "till" && (room === "cctv" || room === "parcel")) return "go-" + room;
+    if ((m.scene === "cctv" && room === "parcel") || (m.scene === "parcel" && room === "cctv")) return "go-" + room;
+    return "back";
+  }
+  function towardNightOne(m, room, action, label) {
+    if (m.scene === room) return {action, label};
+    const move = toward(m, room);
+    const target = move === "back" ? rooms[m.scene].parent : move.slice(3);
+    return {action: move, label: move === "back" ? "回" + rooms[target].title : "去" + rooms[target].title};
+  }
+
+  function nightOneGuide(m, night) {
+    if (ctx.revisit) return {action: "continue", label: "回到值班", title: "值班记录", text: "刚才记下的东西还在本子上。"};
+    if (night.pair) return {
+      ...towardNightOne(m, "door", "continue", "看看门外"),
+      title: "门边有响动", text: "铃响了一下，店门还关着。"
+    };
+    if (night.phase === "shelf") return {
+      ...towardNightOne(m, "shelf", "tidy", "整理陈列"),
+      title: "理一理临窗货架", text: "扎好散开的伞带，把饭盒的标签转过来。"
+    };
+    const canPair = Object.keys(night.pairs).some(key => key.split("+").every(id => night.clues.includes(id)));
+    if (canPair) return {
+      action: m.panel === "book" ? "book-focus" : "book", label: m.panel === "book" ? "选择线索" : "打开记忆册",
+      title: "把两条线索放在一起", text: "看看它们记的是不是同一趟末班车。"
+    };
+    return {
+      ...towardNightOne(m, "door", "timetable", "看末班车站牌"),
+      title: "查查末班车", text: "阿澄把伞朝着站牌。也可以从收银台后面进监控室。"
+    };
+  }
   function nextAction(m) {
     if (ctx.revisit) return { action: "continue", label: "回到值班" };
     const step = phase(m);
-    const destination = tasks[step][4];
+    const target = destination(m, step);
     if (step === "continue") return { action: "continue", label: "去听第三次门铃" };
-    if (m.scene !== destination) {
+    if (m.scene !== target) {
       const action = hintTarget(m);
       const labels = {
-        "go-shelf": "去货架", "go-till": "去收银台", "go-cctv": "去监控室",
+        "go-shelf": "去货架", "go-till": "去收银台", "go-cctv": "去监控室", "go-parcel": "查看柜下随箱单",
         back: rooms[m.scene].parent === "till" ? "回收银台" : "回到店里"
       };
       return { action, label: labels[action] || "前往目标位置" };
     }
+    if (step === "recorder" && target === "parcel") return { action: "waybill", label: "翻看随箱单" };
     if (step === "guest") return { action: "guest", label: "接待阿澄" };
     if (m.panel !== targetActions[step]) {
       const labels = { arrange: "查看价签与周转箱", bottles: "查看十七号饮料格", scanner: "查看扫码器", recorder: "查看回放台" };
@@ -148,13 +189,13 @@
     if (!m.mounted.includes("ticket")) return { action: "mount-ticket", label: "放上旧车票" };
     if (!m.mounted.includes("receipt")) return { action: "mount-receipt", label: "放上未来收据" };
     if (m.frame !== "17") return { action: "frame-17", label: "调到 00:17" };
-    return { action: "inspect-badge", label: "查看画面里的工牌" };
+    return { action: "deduce-clerk", label: "对照工牌与随箱单" };
   }
   function nextInstruction(m) {
     const step = phase(m);
     if (ctx.revisit) return "背包和线索册都在画面上方。看完后回到值班。";
-    if (m.scene !== tasks[step][4] && step !== "continue") {
-      return "先去" + rooms[tasks[step][4]].title + "。点画面里的标记就能过去。";
+    if (m.scene !== destination(m, step) && step !== "continue") {
+      return "先去" + rooms[destination(m, step)].title + "。点画面里的标记就能过去。";
     }
     if (step === "arrange") return m.held
       ? "手里拿着" + goods[m.held].name + "，标价 ¥" + goods[m.held].price + "。找一张相同的价签。"
@@ -162,21 +203,31 @@
     if (step === "guest") return "她有话想说。点她，先听听。";
     if (step === "bottles") return "票背写着十七号格。今晚是 11 月 08 日，找生产日期晚于今晚的汽水。";
     if (step === "scanner") return "瓶子已经在背包里。打开扫码器，把条码对准红光。";
-    if (step === "recorder") return "把旧票与未来收据夹在屏幕旁，找两张纸上相同的时间。";
+    if (step === "recorder") return m.frame === "17" && !m.parcelRead
+      ? "画面里的 07 和半月白痕似曾见过。去柜下翻看随箱单。"
+      : m.frame === "17" ? "把工牌上的 07 与白痕，同随箱单的落款和纸角对照。"
+      : "把旧票与未来收据夹在屏幕旁，找两张纸上相同的时间。";
     return "记下工牌上的白痕。门外那个人还没走。";
   }
   function hintTarget(m) {
     const step = phase(m);
-    const destination = tasks[step][4];
-    if (m.scene === destination) return targetActions[step];
-    if (m.scene === "till" && destination === "cctv") return "go-cctv";
-    if (m.scene === "overview") return "go-" + (destination === "cctv" ? "till" : destination);
-    return "back";
+    const target = destination(m, step);
+    if (m.scene === target) return step === "recorder" && target === "parcel" ? "waybill" : targetActions[step];
+    return toward(m, target);
   }
   function updateHint() {
     if (!ctx) return;
     const node = ctx.root.querySelector(".ex-hint");
     if (!node) return;
+    if (ctx.nightSix) {
+      const hints = ctx.nightSix.phase === "shelf"
+        ? ["阿澄走前看了一眼临窗货架。", "查看货架上的雨伞和饭盒。", "在货架点「整理陈列」，分别归位纸盒和雨伞，再确认。"]
+        : ["想想小票上的时间在哪里出现过。", "到门边看站牌，或进监控室看回放。", "打开记忆册，选收据与站牌，或收据与监控，再点「关联」】【。"];
+      const copy = hints[hintLevel - 1] || "";
+      node.textContent = copy;
+      node.hidden = !copy;
+      return;
+    }
     const text = hintLevel && !ctx.revisit ? tasks[phase(ctx.model)][hintLevel] : "";
     if (node.textContent !== text) node.textContent = text;
     node.hidden = !text;
@@ -186,6 +237,7 @@
     });
   }
   function tick() {
+    if (ctx.nightSix) return;
     const now = Date.now();
     // Store menus and guest conversations suspend the player's exploration clock.
     if (!document.hidden && !ctx.root.closest("[hidden]") && !document.querySelector("dialog[open]")) elapsed += now - tickAt;
@@ -197,6 +249,14 @@
   const btn = (id, label, attrs = "") => `<button type="button" data-scene-action="${id}" ${attrs}>${label}</button>`;
   const selected = value => `class="${value ? "is-selected" : ""}" aria-pressed="${!!value}"`;
   function spots(m) {
+    if (ctx.nightSix) {
+      if (m.scene === "shelf") return [["tidy", "整理陈列", 48, 81], ["label", "饭盒标签", 52, 39]];
+      if (m.scene === "door") {
+        const row = [["timetable", "末班车站牌", 32, 38], ["umbrella", "阿澄的伞", 63, 75]];
+        if (ctx.nightSix.pair && !ctx.revisit) row.push(["continue", "玻璃门", 61, 41]);
+        return row;
+      }
+    }
     switch (m.scene) {
       case "overview": return [["go-shelf", "货架", 17, 39], ["go-till", "收银台", 11, 80], ["go-door", "店门", 65, 49]];
       case "shelf": return [["arrange", "价签与周转箱", 48, 86], ["bottles", "十七号饮料格", 50, 20]];
@@ -217,6 +277,53 @@
   function detail(m) {
     const p = m.panel;
     let title, body, buttons = "";
+    if (ctx.nightSix) {
+      const night = ctx.nightSix;
+      if (p === "tidy") {
+        title = "整理临窗货架";
+        body = night.phase === "shelf" ? "伞带垂在货架外面，饭盒的标签朝里。"
+          : '伞已经扎好，饭盒的标签终于露出来了。';
+        if (night.phase === "shelf") {
+          buttons = btn("sort-umbrella", m.sortedGoods.includes("umbrella") ? "✓ 雨伞已归位" : "收好雨伞", selected(m.sortedGoods.includes("umbrella"))) +
+            btn("sort-lunchbox", m.sortedGoods.includes("lunchbox") ? "✓ 饭盒已摆正" : "摆正饭盒", selected(m.sortedGoods.includes("lunchbox"))) +
+            btn("commit-tidy", night.time > 0 ? "确认整理 · 1 格" : "确认整理", m.sortedGoods.length === 2 ? "" : "disabled");
+        } else buttons = btn("label", "看看饭盒标签");
+      } else if (p === "book" || p === "bag") {
+        title = "值班记忆册";
+        body = night.pair ? "这两条记录已经夹在同一页。" : "圈出两条证据，再试着关联。";
+        const pairedIds = night.pair?.split("+") || [];
+        const cards = night.clues.map(id => {
+          const clue = night.definitions[id];
+          const contents = `<strong>${clue.name}</strong><span>${clue.result}</span>`;
+          if (night.pair) return `<div class="ex-clue-entry ${pairedIds.includes(id) ? "is-linked" : ""}">${contents}</div>`;
+          return btn("select-" + id, contents, `class="ex-clue-entry ${selectedClues.includes(id) ? "is-selected" : ""}" aria-pressed="${selectedClues.includes(id)}"`);
+        });
+        buttons = `<div class="ex-clue-entries">${cards.join("")}</div>`;
+        if (night.pair) buttons += `<p class="ex-link-result" role="status">${night.pairs[night.pair]}</p>`;
+        else buttons += btn("connect", `关联线索 · ${selectedClues.length}/2`, selectedClues.length === 2 ? "" : "disabled");
+      } else if (p === "scanner") {
+        title = "收银机的副联";
+        body = night.definitions.receipt.result;
+      } else if (p === "recorder") {
+        title = "门口摄像头 · 00:17";
+        body = night.clues.includes("camera") ? night.definitions.camera.result
+          + '<span class="ex-clock-pair"><span>录像时间 <b>00:17:00</b></span><span>店里时钟 <b>00:16:43</b></span></span>'
+          : "门外空着。屏幕的玻璃上却多了一道影子。";
+        if (!night.clues.includes("camera") && night.phase === "investigate") buttons = btn("camera-compare", "对照录像和门外");
+      } else if (p === "timetable") {
+        title = "雾港站 · 末班到站";
+        body = night.definitions.timetable.result;
+      } else if (p === "label") {
+        title = "一张没到取货日的标签";
+        body = "「小满，明天吃。」笔画干了，标签却和新贴的一样平整。";
+      } else if (p === "umbrella") {
+        title = "门边的透明雨伞";
+        body = "伞尖朝向站牌。阿澄特意让它立在玻璃旁，从外面看也认得出来。";
+      }
+      if (title) return `<section class="ex-detail" aria-labelledby="ex-detail-title"><header><h3 id="ex-detail-title" tabindex="-1">${title}</h3>${btn("detail-close", "收起")}</header><p>${body}</p>
+        ${message ? `<p class="ex-detail-feedback" role="status">${message}</p>` : ""}
+        ${buttons ? `<div class="ex-choices">${buttons}</div>` : ""}</section>`;
+    }
     switch (p) {
       case "arrange": {
         title = m.ticket ? "价签槽里掉出一张旧票" : "把三件货放回价签后面";
@@ -251,8 +358,16 @@
         if (both) {
           buttons += '<div class="ex-choice-row"><small>门口回放</small>' + ["03","17","41"].map(id => btn("frame-" + id, times[id], selected(m.frame === id))).join("") + "</div>";
           if (m.frame === "17") {
-            body += '<span class="ex-evidence-line">00:17　玻璃里的人正要转身，围裙上的工牌闪了一下。</span>';
-            buttons += btn("inspect-badge", "暂停画面，查看胸牌");
+            body += '<span class="ex-evidence-line"><b>00:17 的画面</b>　门外的人身上有旧围裙。胸牌写着 07，右下角有一道半月形白痕。</span>';
+            if (m.parcelRead) {
+              body += '<span class="ex-evidence-line"><b>柜下随箱单</b>　「交给下一班。」落款 07，纸角也有一道半月形磨痕。</span>';
+              buttons += '<div class="ex-deduction"><strong>这两处 07 与白痕说明了什么？</strong>' +
+                btn("deduce-passenger", "只是末班车的验票乘客") +
+                btn("deduce-bottle", "来拿十七号格汽水的客人") +
+                btn("deduce-clerk", "她用过上一班店员的工牌和随箱单") + '</div>';
+            } else {
+              buttons += btn("go-parcel", "去柜下核对随箱单");
+            }
           }
         }
         break;
@@ -294,7 +409,7 @@
       default: return "";
     }
     const finishedHere = (p === "arrange" && m.ticket) || (p === "bottles" && m.soda) ||
-      (p === "scanner" && m.receipt);
+      (p === "scanner" && m.receipt) || (p === "waybill" && m.frame === "17" && !m.solved);
     const next = finishedHere ? nextAction(m) : null;
     return `<section class="ex-detail" aria-labelledby="ex-detail-title"><header><h3 id="ex-detail-title" tabindex="-1">${title}</h3>${btn("detail-close", "收起", 'class="ex-dismiss"')}</header><p>${body}</p>
       ${message ? `<p class="ex-detail-feedback" role="status" aria-atomic="true">${message}</p>` : ""}
@@ -313,28 +428,36 @@
       `<span class="ex-pin" aria-hidden="true"></span><span class="ex-hotspot-label">${label}</span>`,
       `class="ex-hotspot" style="left:${x}%;top:${y}%"`)).join("");
     const caption = m.scene === "shelf" && m.shelfChanged ? "刚才背光的瓶子已经靠到柜门。地板干着，几个橘色瓶盖却在滴水。" : room.caption;
-    const next = nextAction(m);
-    const milestones = [
+    const night = ctx.nightSix;
+    const next = night ? nightOneGuide(m, night) : nextAction(m);
+    const milestones = night ? [
+      ["小票已收好", "收好小票", true],
+      ["阿澄的伞", "接待阿澄", true],
+      ["陈列已整理", "整理货架", night.phase !== "shelf"],
+      ["已关联线索", "比对线索", Boolean(night.pair)]
+    ] : [
       ["货摆好了", "整理货架", m.ticket],
       ["阿澄的伞", "接待阿澄", m.guestDone],
       ["收好小票", "核对汽水", m.receipt],
       ["记下工牌", "查看录像", m.solved]
     ];
-    root.innerHTML = `<div class="ex-shell" data-scene="${m.scene}" data-anomaly="${m.scene === "shelf" && m.shelfChanged}" data-soda="${m.soda}" data-receipt="${m.receipt}" data-frame="${m.frame}">
+    root.innerHTML = `<div class="ex-shell" data-scene="${m.scene}" data-night-six="${Boolean(night)}" data-anomaly="${m.scene === "shelf" && m.shelfChanged}" data-soda="${m.soda}" data-receipt="${m.receipt}" data-frame="${m.frame}">
       <header class="ex-header"><div><small class="ex-kicker">十一月八日 · 夜班</small><h2 class="ex-title" tabindex="-1">${room.title}</h2></div>
-      <nav class="ex-tools" aria-label="调查记录">${btn("bag", "背包", selected(m.panel === "bag"))}${btn("book", "线索册", selected(m.panel === "book"))}${ctx.revisit ? btn("continue", "回到值班") : ""}</nav></header>
+      <nav class="ex-tools" aria-label="调查记录">${night ? "" : btn("bag", "背包", selected(m.panel === "bag"))}${btn("book", night ? "记忆册" : "线索册", selected(m.panel === "book"))}${ctx.revisit ? btn("continue", "回到值班") : ""}</nav></header>
       <div class="ex-layout">
         <div class="ex-main">
-          <div class="ex-stage"><div class="ex-art" aria-hidden="true"></div><div class="ex-effects" aria-hidden="true"></div><div class="ex-prop" aria-hidden="true"></div>${hotspots}</div>
+          <div class="ex-stage"><div class="ex-art" aria-hidden="true"></div><div class="ex-effects" aria-hidden="true"></div><div class="ex-prop" aria-hidden="true"></div>
+            ${night && m.scene === "cctv" && m.panel === "recorder" && night.clues.includes("camera") ? '<div class="ex-camera-frame" aria-hidden="true"><span>CAM 01 · 00:17</span></div>' : ""}${hotspots}</div>
           <div class="ex-footer">${room.parent ? btn("back", "‹ 返回" + rooms[room.parent].title, 'class="ex-back"') : ""}<span class="ex-caption">${caption}</span></div>
           ${detail(m)}
         </div>
         <aside class="ex-rail" aria-label="第一夜任务栏">
-          <div class="ex-note-heading"><span class="ex-rail-kicker">值班手记</span><small>雾港 · 11/08</small></div>
+          <div class="ex-note-heading"><span class="ex-rail-kicker">值班手记</span><small>${night?.phase === "shelf" ? `剩余 ${night.time} 格` : "雾港 · 11/08"}</small></div>
           <ol class="ex-progress">${milestones.map(([finished, pending, done], index) =>
             `<li class="${done ? "is-done" : index === milestones.findIndex(([, , complete]) => !complete) ? "is-current" : ""}"${!done && index === milestones.findIndex(([, , complete]) => !complete) ? ' aria-current="step"' : ""}><span aria-hidden="true">${done ? "✓" : ""}</span>${done ? finished : pending}</li>`).join("")}</ol>
-          <div class="ex-current"><strong>${ctx.revisit ? "翻翻之前记下的事" : tasks[phase(m)][0]}</strong><p>${nextInstruction(m)}</p>
+          <div class="ex-current"><strong>${night ? next.title : ctx.revisit ? "翻翻之前记下的事" : tasks[phase(m)][0]}</strong><p>${night ? next.text : nextInstruction(m)}</p>
             ${btn(next.action, next.label, 'class="ex-next-button"')}
+            ${night && !night.pair ? btn("hint", hintLevel === 0 ? "提示" : hintLevel < 3 ? "下一条提示" : "收起提示", 'class="ex-hint-button"') : ""}
           </div>
           <p class="ex-notice" role="status"${message && !m.panel ? "" : " hidden"}>${m.panel ? "" : message}</p>
           <p class="ex-hint" aria-live="polite" hidden></p>
@@ -396,7 +519,10 @@
     const m = ctx.model;
     m.panel = action;
     message = "";
-    if (action === "waybill") m.parcelRead = true;
+    if (action === "waybill") {
+      m.parcelRead = true;
+      if (m.frame === "17" && !m.solved) progress();
+    }
     if (action === "timetable") m.boardRead = true;
     save("inspect");
     sound("page");
@@ -436,6 +562,63 @@
     if (!trigger || !ctx.root.contains(trigger) || trigger.disabled || busy) return;
     const action = trigger.dataset.sceneAction;
     const m = ctx.model;
+    if (ctx.nightSix) {
+      const night = ctx.nightSix;
+      if (action === "hint") { hintLevel = (hintLevel + 1) % 4; draw(); return; }
+      if (action === "continue" && ((night.pair && m.scene === "door") || ctx.revisit)) { ctx.onComplete(); return; }
+      if (action === "book-focus") {
+        ctx.root.querySelector(".ex-clue-entry[aria-pressed]")?.focus();
+        return;
+      }
+      if (action === "timetable") {
+        investigate(action, trigger);
+        night.onClue("timetable");
+        return;
+      }
+      if (action === "umbrella") { investigate(action, trigger); night.onClue("umbrella"); return; }
+      if (action === "camera-compare") {
+        night.onClue("camera");
+        ctx.root.querySelector("#ex-detail-title")?.focus({preventScroll: true});
+        return;
+      }
+      if (action === "label") { investigate(action, trigger); night.onLabel(); return; }
+      if (action.startsWith("sort-") && night.phase === "shelf" && m.panel === "tidy") {
+        const id = action.slice(5);
+        if (m.sortedGoods.includes(id)) return;
+        m.sortedGoods.push(id);
+        finish("tidy-draft", id === "umbrella" ? "你把伞带绕紧，货架前空出了一点地方。" : "饭盒转了半圈。标签上有一行手写字。", "ui");
+        return;
+      }
+      if (action === "commit-tidy" && m.panel === "tidy" && m.sortedGoods.length === 2) {
+        message = "货架整理好了。";
+        night.onTidy();
+        sound("success");
+        return;
+      }
+      if (action.startsWith("select-")) {
+        const id = action.slice(7);
+        if (!night.clues.includes(id)) return;
+        if (selectedClues.length === 2 && !selectedClues.includes(id)) {
+          message = "先取消一条已圈出的线索，再选另一条。";
+        } else {
+          selectedClues = selectedClues.includes(id) ? selectedClues.filter(key => key !== id) : [...selectedClues, id];
+          message = "";
+        }
+        draw();
+        return;
+      }
+      if (action === "connect") {
+        if (selectedClues.length !== 2) return;
+        message = "";
+        night.onPair(selectedClues);
+        if (ctx?.nightSix && !ctx.nightSix.pair) {
+          message = "这两条记录没有共同的时间。找一件能核对 00:17 的东西。";
+          sound("blocked");
+          draw();
+        }
+        return;
+      }
+    }
     if (action === "back") { if (rooms[m.scene].parent) navigate(rooms[m.scene].parent); return; }
     if (action.startsWith("go-")) { navigate(action.slice(3)); return; }
     if (action === "guest" && !m.guestDone && m.ticket) { ctx.onGuest(); return; }
@@ -491,10 +674,16 @@
       m.frame = id;
       const footage = { "03": "00:03，只有一辆空公交驶过，车门没有开。", "17": "00:17，进度条停住。门外的人抬起手，胸前反出一道白光。", "41": "00:41，雨水漫过门槛。画面里一个人也没有。" };
       finish("frame", footage[id], "ui", advanced);
-    } else if (action === "inspect-badge" && m.mounted.length === 2 && m.frame === "17") {
+    } else if (action.startsWith("deduce-") && m.mounted.length === 2 && m.frame === "17" && m.parcelRead) {
+      if (action !== "deduce-clerk") {
+        finish("inference", action === "deduce-passenger"
+          ? "车票的 07 是验票孔；随箱单的 07 却是落款。纸角和工牌的白痕也对得上。再想想是谁用过它们。"
+          : "十七号格写的是汽水的位置；随箱单和工牌上的 07 指向当班的人。再对照那道半月形磨痕。", "blocked");
+        return;
+      }
       m.solved = true;
       m.panel = "identity";
-      finish("identity", "你记下了第三位客人的工牌特征。", "success", true);
+      finish("identity", "你把工牌和随箱单对上了。第三位客人用过上一班店员的东西。", "success", true);
       ctx.root.querySelector("#ex-detail-title")?.focus();
     }
   }

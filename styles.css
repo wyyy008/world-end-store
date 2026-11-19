@@ -6535,6 +6535,60 @@ body.finale-active .app-shell {
 .future-receipt strong { border-top: 1px dashed #a29b8e; padding-top: 7px; }
 .future-receipt em { border-top: 1px dashed #a29b8e; padding-top: 12px; color: #8b433c; font-style: normal; font-weight: 700; line-height: 1.6; }
 .future-receipt > span:last-child { color: #6e6455; font-size: 11px; text-align: right; }
+.v6-register-record, .v6-umbrella {
+  margin-top: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #9b89705c;
+}
+.v6-register-record button, .v6-umbrella button {
+  min-height: 44px;
+  margin: 4px 6px 0 0;
+  padding: 6px 12px;
+  border: 1px solid #baae94;
+  border-radius: 3px;
+  background: #e9dfcb;
+  color: #33291e;
+  cursor: pointer;
+}
+.scene-night-two-trace { left: 9%; bottom: 16%; }
+.v6-counter-arrival { padding: 14px 0; }
+.v6-counter-arrival p { margin: 4px 0 10px; }
+.v6-counter-arrival button { min-height: 44px; }
+.v6-first-night .scene-register[data-v6-register] {
+  border-radius: 3px;
+  border-color: #d9bf8d;
+  padding-inline: 13px;
+}
+.v6-first-night .night-one-interaction .v6-till-feedback {
+  padding: 9px 12px;
+  border-inline-start: 2px solid #be9468;
+  background: #352921;
+  color: #fae3ca;
+}
+.v6-first-night .night-one-interaction .v6-scene-time {
+  color: #e4c494;
+  font: 600 13px/1.35 var(--font);
+  font-variant-numeric: tabular-nums;
+}
+.v6-first-night:not(.reduce-motion) .counter-stage[data-flow="visitor"] {
+  animation: v6-door-reveal 950ms ease-out both;
+}
+@keyframes v6-door-reveal {
+  from { opacity: .6; filter: brightness(.68) saturate(.7); }
+  to { opacity: 1; filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v6-first-night:not(.reduce-motion) .counter-stage[data-flow="visitor"] { animation: none; }
+}
+#chapter-replay-active { margin-bottom: 12px; }
+.v6-first-night:not(.reduce-motion) .receipt-interaction .future-receipt { animation: v6-receipt-feed 540ms ease-out both; }
+@keyframes v6-receipt-feed {
+  from { opacity: 0; clip-path: inset(0 0 85%); transform: translateY(-10px); }
+  to { opacity: 1; clip-path: inset(0); transform: rotate(-1deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v6-first-night:not(.reduce-motion) .receipt-interaction .future-receipt { animation: none; }
+}
 
 .clue-hotspot { background: #202c30; }
 .clue-result { min-height: 66px; margin: 13px 0 !important; border-left: 2px solid var(--accent); background: #242019; padding: 11px 14px; color: var(--text) !important; }

@@ -8,6 +8,8 @@
   let bgmTimer = null;
   let bgmIndex = 0;
   let chapterAnnouncement = null;
+  let shopMood = "normal";
+  let rainGain, droneGain, musicGain, rainMotion;
   const ambienceNodes = [];
   let volumes = { master: 0.8, bgm: 0.55, sfx: 0.7, muted: false };
 
@@ -43,6 +45,19 @@
     masterGain.gain.setTargetAtTime(master, now, 0.04);
     bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm, now, 0.04);
     sfxGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.sfx, now, 0.03);
+  }
+
+  function applyShopMood() {
+    if (!rainGain || !droneGain || !musicGain) return;
+    const levels = {
+      receipt: [0.024, 0.006, 0.28, 0.005],
+      camera: [0.014, 0.021, 0.12, 0.003],
+      visitor: [0, 0, 0, 0],
+      "visitor-result": [0.019, 0.004, 0.2, 0.005]
+    }[shopMood] || [0.035, 0.012, 1, 0.01];
+    [rainGain, droneGain, musicGain, rainMotion].forEach((node, index) => {
+      node.gain.setTargetAtTime(levels[index], context.currentTime, 0.25);
+    });
   }
 
   function tone(frequency, type, duration, gain, endFrequency, when) {
@@ -115,6 +130,10 @@
       case "scan":
         tone(1350, "sine", 0.075, 0.045, 1850);
         break;
+      case "register-glitch":
+        tone(490, "triangle", 0.1, 0.035, 120);
+        noiseBurst(0.1, 0.018, 2000);
+        break;
       case "coin":
         tone(880, "sine", 0.18, 0.05, 1320);
         tone(1174, "sine", 0.22, 0.04, 1760, 0.06);
@@ -126,6 +145,14 @@
       case "door":
         tone(523, "sine", 0.6, 0.05, 523);
         tone(659, "sine", 0.72, 0.04, 880, 0.12);
+        break;
+      case "third-bell":
+        tone(523, "sine", 0.78, 0.052, 511, 0.28);
+        tone(659, "sine", 0.48, 0.026, 641, 0.45);
+        break;
+      case "umbrella-touch":
+        noiseBurst(0.055, 0.022, 850);
+        tone(290, "triangle", 0.11, 0.018, 180);
         break;
       case "success":
         [523, 659, 784, 1047].forEach((frequency, index) => {
@@ -169,7 +196,7 @@
     envelope.gain.setValueAtTime(0.0001, start);
     envelope.gain.linearRampToValueAtTime(gain, start + 0.6);
     envelope.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    osc.connect(envelope).connect(bgmGain);
+    osc.connect(envelope).connect(musicGain || bgmGain);
     osc.start(start);
     osc.stop(start + duration + 0.1);
   }
@@ -207,7 +234,7 @@
     const rainFilter = c.createBiquadFilter();
     rainFilter.type = "lowpass";
     rainFilter.frequency.value = 1400;
-    const rainGain = c.createGain();
+    rainGain = c.createGain();
     rainGain.gain.value = 0.035;
     rain.connect(rainFilter).connect(rainGain).connect(bgmGain);
     rain.start();
@@ -215,18 +242,21 @@
     const drone = c.createOscillator();
     drone.type = "sine";
     drone.frequency.value = 55;
-    const droneGain = c.createGain();
+    droneGain = c.createGain();
     droneGain.gain.value = 0.012;
     drone.connect(droneGain).connect(bgmGain);
     drone.start();
 
     const lfo = c.createOscillator();
     lfo.frequency.value = 0.07;
-    const lfoGain = c.createGain();
-    lfoGain.gain.value = 0.01;
-    lfo.connect(lfoGain).connect(rainGain.gain);
+    rainMotion = c.createGain();
+    rainMotion.gain.value = 0.01;
+    lfo.connect(rainMotion).connect(rainGain.gain);
     lfo.start();
 
+    musicGain = c.createGain();
+    musicGain.connect(bgmGain);
+    applyShopMood();
     ambienceNodes.push(rain, drone, lfo);
     scheduleBgm();
   }
@@ -263,6 +293,10 @@
     },
     playSfx,
     startAmbience,
+    setShopMood(mood) {
+      shopMood = mood;
+      applyShopMood();
+    },
     fadeAmbience(duration = 1.2) {
       if (!context || !bgmGain) {
         return;

@@ -9,7 +9,7 @@
   let readingFile = false;
 
   function currentSave() {
-    return normalizeSavedState(elements.titleScreen.hidden ? state : readSavedState());
+    return normalizeSavedState(elements.titleScreen.hidden && !chapterReplay ? state : readSavedState());
   }
 
   function report(message, isError = false) {
@@ -47,6 +47,7 @@
   });
 
   document.querySelector("#import-save").addEventListener("click", () => {
+    if (chapterReplay) { report("结束临时重玩后再导入存档。"); return; }
     cancelImport();
     report("");
     input.click();
@@ -94,10 +95,10 @@
   });
 
   document.querySelector("#confirm-import-save").addEventListener("click", () => {
-    if (!pendingSave) return;
+    if (!pendingSave || chapterReplay) return;
     try {
       // Do not replace the live game until the browser has accepted the save.
-      localStorage.setItem(SAVE_KEY, JSON.stringify(pendingSave));
+      localStorage.setItem(journeySaveKey(elements.titleScreen.hidden ? journeySlot : journeyDirectory().active), JSON.stringify(pendingSave));
     } catch {
       report("浏览器暂时无法保存，未替换当前旅途。请允许本站使用本地存储后再试。", true);
       return;

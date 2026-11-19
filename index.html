@@ -13,16 +13,17 @@
     <link rel="icon" href="assets/brand-mark.svg" type="image/svg+xml">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=4.0">
-    <link rel="stylesheet" href="exploration.css?v=4.4">
+    <link rel="stylesheet" href="styles.css?v=6.0.1">
+    <link rel="stylesheet" href="exploration.css?v=6.0.1">
     <link rel="stylesheet" href="chapter-transition.css?v=4.0">
     <link rel="stylesheet" href="opening.css?v=4.4">
     <script src="content.js?v=20261109224206" defer></script>
-    <script src="audio.js?v=4.0" defer></script>
-    <script src="scene-manager.js?v=4.4" defer></script>
+    <script src="audio.js?v=6.0.1" defer></script>
+    <script src="scene-manager.js?v=6.0.1" defer></script>
     <script src="chapter-transition.js?v=4.0" defer></script>
-    <script src="game.js?v=4.0" defer></script>
-    <script src="save-tools.js?v=20261109224206" defer></script>
+    <script src="chapter-replay.js?v=6.0" defer></script>
+    <script src="game.js?v=6.0.1" defer></script>
+    <script src="save-tools.js?v=6.0" defer></script>
     <script src="opening.js?v=4.1" defer></script>
   </head>
   <body>
@@ -100,7 +101,7 @@
           <div class="title-actions">
             <button class="title-action primary-button" id="new-game-button" type="button">
               <span>推门进去</span>
-              <small id="new-game-meta">新游戏 · 从第一夜开始</small>
+          <small id="new-game-meta">新游戏 · 从第一夜开始</small>
             </button>
             <button class="title-action secondary-button" id="continue-game-button" type="button">
               <span id="continue-game-label">继续游戏</span>
@@ -193,6 +194,7 @@
 
         <main class="sheet">
           <p class="save-warning" id="save-warning" role="status" hidden></p>
+          <button class="secondary-button" id="chapter-replay-active" type="button" hidden>临时重玩 · 旅途选项</button>
           <div class="page-head">
             <div>
               <h1 id="page-title">今晚的便利店</h1>
@@ -486,7 +488,7 @@
         <p><strong>主线</strong>在第八夜第一班车到站前，把五封没有送出的信送到五个人手里，再决定没有收件人的包裹去哪里。</p>
         <p><strong>今晚</strong>首章目标下方会直接写出这一夜的可执行目标。完成上车条件，旧票机才会给你车票。</p>
         <p><strong>人物回忆</strong>会随着柜台前的交谈自然穿插，读完就回到当前这一夜。人物档案只用来回看你已经历的片段。</p>
-        <p><strong>第一夜</strong>点店内的物件走近查看。先去货架核对价签。找到的物品会进入背包，重要字迹会抄入线索册，可以随时翻看。</p>
+        <p><strong>第一夜</strong>先点收银机，为第一位客人结账。接待阿澄后整理货架。查到不对劲的地方，可以在记忆册把两条线索放在一起。</p>
         <p><strong>时间</strong>每夜有六盏灯。经营补货、打烊前的小事和接待常客会消耗时间。探索、解谜、返回和阅读线索都不耗时。</p>
         <p><strong>顾客</strong>读他们做了什么、留下了什么，而不是刷好感度。</p>
         <p><strong>打烊</strong>选择留下一件东西。它会跟着店进入下一夜。</p>
@@ -561,6 +563,7 @@
           <p class="save-status" id="save-status" role="status" aria-live="polite">正在读取存档状态…</p>
           <div class="save-actions">
             <button class="secondary-button" id="export-save" type="button">下载存档</button>
+            <button class="secondary-button" id="open-chapter-replay" type="button">章节回溯</button>
             <button class="secondary-button" id="import-save" type="button">导入存档</button>
             <input id="import-save-file" type="file" accept=".json,application/json" hidden>
           </div>
@@ -601,11 +604,6 @@
         <button class="dialog-close" type="button" data-close="character-dialog" aria-label="关闭">×</button>
       </div>
       <p class="dialog-intro">他们的过去会在柜台前的故事里自然出现。这里收好你已经认识的人，也可以回看已经历的片段。</p>
-      <div class="character-web">
-        <strong>他们不是五条独立的故事</strong>
-        <p>阿澄和沈伯都在替没有回来的人留位置；0217 和小满都在等自己被看见；无名旅人把五封信带到同一间店。</p>
-        <p><span>你</span>不记得自己的过去，却是他们最后的地址。</p>
-      </div>
       <div class="character-list" id="character-list"></div>
     </dialog>
 
@@ -619,6 +617,11 @@
       <div class="history-list" id="history-list"></div>
     </dialog>
 
+    <dialog class="game-dialog" id="chapter-replay-dialog" aria-labelledby="chapter-replay-title">
+      <div class="dialog-head"><h2 id="chapter-replay-title">章节回溯</h2><button class="dialog-close" type="button" data-close="chapter-replay-dialog" aria-label="关闭">×</button></div>
+      <p class="dialog-intro" id="chapter-replay-note" role="status"></p>
+      <div class="save-actions" id="chapter-replay-list"></div>
+    </dialog>
     <dialog id="chapter-transition" aria-label="第一夜驶向第二夜" hidden></dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
