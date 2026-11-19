@@ -419,7 +419,8 @@ function normalizeSavedState(saved) {
     if (feedback.kind === "purchase" && (!["gift", "low", "normal", "high"].includes(feedback.option) ||
         (feedback.option !== "gift" && !Number.isFinite(guest.prices?.[feedback.option])))) return null;
     if (feedback.kind === "special" && !guest.choices?.some((choice) => choice.id === feedback.option)) return null;
-    if (feedback.kind === "quick" && feedback.option !== "normal") return null;
+    if (feedback.kind === "quick" && feedback.option !== "normal" &&
+        !(guest.id === "commuter-1" && feedback.option === "station-gift" && normalized.firstNightExperience.rules === 6)) return null;
     // Closed-night saves predate acknowledgement cleanup in some versions.
     // Their receipts are authoritative; an old response must not cover them.
     normalized.pendingFeedback = normalized.nightClosed || normalized.finished ? null : {
@@ -699,6 +700,8 @@ function renderTitleScreen() {
   updateSaveStatus();
   const saved = readSavedState();
   const playable = hasPlayableSave(saved);
+  const night = playable ? nightAtIndex(saved.nightIndex, saved.route) : CONTENT.firstNight;
+  preloadNightOpeningArt(night);
   elements.continueGameButton.disabled = !playable;
   elements.newGameMeta.textContent = playable ? "会覆盖当前进度" : "从第一夜开始";
 
@@ -708,7 +711,6 @@ function renderTitleScreen() {
     return;
   }
 
-  const night = nightAtIndex(saved.nightIndex, saved.route);
   elements.continueGameLabel.textContent = saved.reading ? "继续阅读" : saved.finished ? "查看结局" : "继续游戏";
   elements.continueGameMeta.textContent = saved.reading?.kind === "prologue"
     ? "序章 · 从上次读到的地方继续"
@@ -1623,8 +1625,8 @@ function nextStepGuidance(night = currentNight()) {
     if (night.number === 1 && guest.id === "commuter-1") {
       return {
         action: "guest", guestId: guest.id,
-        title: "卖给赶路的人一罐咖啡",
-        detail: "这位普通客人不耗营业时间。送他出门后，沈伯会带着两罐咖啡来到柜台。",
+        title: "给赶路的人递一罐咖啡",
+        detail: "客人把硬币放好了。这笔交易不耗营业时间。",
         button: "接待赶路的人"
       };
     }
@@ -1638,7 +1640,7 @@ function nextStepGuidance(night = currentNight()) {
     }
     return {
       action: "guest", guestId: guest.id,
-      title: `接待${guest.name}`,
+      title: guests.length > 1 ? "柜台前来了两位客人" : `${guest.name}在柜台前`,
       detail: guests.length > 1
         ? `${guests[1].name}也在柜台前。可以先接这一位，也可以在柜台选另一位；先后顺序会改变他们说的话。`
         : guest.mode === "quick"
@@ -1806,7 +1808,11 @@ function guestLine(guest) {
       wait: state.route === "station" ? "“车都晚了，我给晚到的人留了一会儿门。”" : "她看了眼放伞的地方：“我记得你等过。今天我自己拿走。”",
       verify: state.route === "station" ? "她把空白站牌推近了些。背面的小钟比店里的快十七秒。" : "她指向店钟：“刚刚倒过去十七秒。你上一次也看到了？”"
     }[state.firstNightExperience.decision];
-    return guest.id === witness && echo ? `${line} ${echo}` : line;
+    const mealEcho = guest.id === "xiaoman-2" && state.flags.xiaomanHotMeal
+      ? "她把筷子放在盒盖上。“上次是你陪我吃的，这次我给你留一半。”" : "";
+    const breakEcho = guest.id === "clerk-2" && state.flags.clerkPaidBreak
+      ? "她进门就把凳子拉出来。“上次坐过一次，今天知道放哪儿了。”" : "";
+    return [line, guest.id === witness ? echo : "", mealEcho, breakEcho].filter(Boolean).join(" ");
   }
   if (currentNight().number !== 2 || currentNight().cast[0].id !== guest.id) return line;
   const echo = {
@@ -1814,7 +1820,8 @@ function guestLine(guest) {
     wait: "她在门边看了眼伞尖留下的干痕。",
     verify: "她看见收银台压着的 00:17 静帧，话说到一半停了。"
   }[state.firstNightExperience.decision];
-  return echo ? `${line} ${echo}` : line;
+  const stationGift = state.flags.stationCoffeeGift ? "柜台边多了张纸条：「咖啡收到了。喝完都暖和了，谢谢。」" : "";
+  return [line, echo, stationGift].filter(Boolean).join(" ");
 }
 
 const NIGHT_TWO_TRACES = {
@@ -1972,6 +1979,7 @@ function renderShell() {
   elements.shopPlace.textContent = night.windowTitle;
   elements.shopWeather.textContent = night.weather;
   elements.shopInterior.dataset.art = locationArtForNight(night);
+  if (elements.titleScreen.hidden) preloadShiftArt(night);
   const focusScene = ["sale", "receipt", "acheng", "shelf", "investigate", "anomaly", "anomaly-result", "visitor", "visitor-result"].includes(firstNightPhase());
   document.querySelector("#shop-title").textContent = focusScene ? "柜台与店门" : "店里的东西";
   document.querySelector(".shop-panel .panel-head p").textContent = focusScene
@@ -2006,7 +2014,7 @@ function locationArtForNight(night = currentNight()) {
   if (place.includes("无眠车站")) return "station";
   if (place.includes("倒着走的夏天")) return "summer";
   if (place.includes("无名公路")) return "road";
-  if (place.includes("自动售货机隧道")) return "tunnel";
+  if (night.id === "vending-tunnel" || place.includes("自动售货机隧道")) return "tunnel";
   return "store";
 }
 
@@ -2017,6 +2025,56 @@ function sceneArtForStep(scene, night = currentNight()) {
   if (scene === "counter") return location === "summer" ? "summer" : "store";
   if (scene === "rain" || scene === "door") return location === "store" ? "road" : location;
   return location;
+}
+
+function backdropPath(art, dialogue = false) {
+  const variant = dialogue && window.matchMedia("(max-width: 640px)").matches ? "portrait" : "wide";
+  return `assets/scenes/${art}-${variant}.jpg`;
+}
+
+function portraitPath(id) {
+  return id && id !== "generic" ? `assets/characters/${id}.png` : "";
+}
+
+function preloadNightOpeningArt(night) {
+  const artwork = [backdropPath(sceneArtForStep("rain", night), true), backdropPath(locationArtForNight(night))];
+  if (night.number === 1) artwork.push("assets/scenes/first-sale-wide.jpg");
+  SceneManager.preloadArt(artwork);
+}
+
+function preloadShiftArt(night) {
+  const artwork = [];
+  const laterGuest = night.cast.find(guest => guest.id !== state.stage && !state.served[guest.id]);
+  if (!state.nightClosed && laterGuest) artwork.push(portraitPath(portraitIdForName(laterGuest.name)));
+  if (night.number === 1) {
+    const phase = firstNightPhase();
+    if (phase === "sale" || phase === "receipt") {
+      artwork.push(backdropPath("store", true), portraitPath("acheng"));
+    }
+    if (phase === "acheng") SceneManager.prepareRooms(["overview", "shelf"]);
+    if (phase === "investigate") artwork.push("assets/scenes/third-visitor-wide.jpg");
+  }
+  if (state.route && state.nightIndex < 7) {
+    const nextNight = nightAtIndex(state.nightIndex + 1);
+    artwork.push(backdropPath(sceneArtForStep("rain", nextNight), true));
+  }
+  SceneManager.preloadArt(artwork.filter(Boolean));
+}
+
+function preloadNextStoryArt(steps, index, fallbackScene) {
+  const current = steps[index];
+  const currentArt = sceneArtForStep(current.scene || fallbackScene);
+  const currentPortrait = current.character ? current.portrait || portraitIdForName(current.speaker) : "";
+  const upcoming = steps.slice(index + 1);
+  const nextArt = upcoming.find(step => sceneArtForStep(step.scene || fallbackScene) !== currentArt);
+  const nextPortrait = upcoming.find(step => {
+    const portrait = step.character ? step.portrait || portraitIdForName(step.speaker) : "";
+    return portrait && portrait !== "generic" && portrait !== currentPortrait;
+  });
+  const artwork = [];
+  if (nextArt) artwork.push(backdropPath(sceneArtForStep(nextArt.scene || fallbackScene), true));
+  if (nextPortrait) artwork.push(portraitPath(nextPortrait.portrait || portraitIdForName(nextPortrait.speaker)));
+  SceneManager.preloadArt(artwork);
 }
 
 function renderShift() {
@@ -2138,7 +2196,7 @@ function openGuestFlow(guest) {
     state.stage = guest.id;
   }
   if (guest.mode === "quick") {
-    serveQuickCustomer(guest);
+    reopenGuestFlow(guest);
   } else if (guest.mode === "special") {
     openSpecialDialog(guest);
   } else {
@@ -2201,7 +2259,7 @@ function renderCustomer() {
     const action = document.createElement("button");
     action.type = "button";
     action.className = "primary-button";
-    action.textContent = guest.action;
+    action.textContent = v6FirstNight() && guest.id === "commuter-1" ? "拿咖啡" : guest.action;
     action.addEventListener("click", () => openGuestFlow(guest));
 
     const cost = document.createElement("span");
@@ -2415,7 +2473,8 @@ function guestStockShortage(guest) {
 
 function reopenGuestFlow(guest) {
   if (guest.mode === "quick") {
-    serveQuickCustomer(guest);
+    if (v6FirstNight() && guest.id === "commuter-1") openCommuterCounter(guest);
+    else serveQuickCustomer(guest);
   } else if (guest.mode === "special") {
     openSpecialDialog(guest);
   } else {
@@ -2529,7 +2588,49 @@ function performTask(task) {
   showToast(task.toast);
 }
 
-function serveQuickCustomer(guest) {
+const commuterGift = {
+  quote: "“那我替店里送过去。站台还有个人，手一直揣在袖口里。”",
+  reaction: "他把自己的硬币拢回掌心，没打开咖啡，握着罐身出了门。",
+  memory: "你没收赶路的人的钱。这罐咖啡由他带给站台上冻得缩手的人。"
+};
+
+function openCommuterCounter(guest) {
+  if (state.stage !== guest.id || state.nightClosed || state.finished) return;
+  if (guestStockShortage(guest)) {
+    openStockShortageDialog(guest);
+    return;
+  }
+  const dialog = document.querySelector("#trade-dialog");
+  const body = document.querySelector("#trade-body");
+  document.querySelector("#trade-title").textContent = "柜台前：赶路的人";
+  body.innerHTML = guestVnShell(guest, `
+    <div class="trade-scene"><p>“一罐咖啡。外头有位乘客冻得直搓手，我带过去。”</p></div>
+    <div class="price-options counter-handoff">
+      <button class="price-button" type="button" data-counter-coffee aria-label="把咖啡放到柜台">
+        <span aria-hidden="true">${products.coffee.icon}</span><strong>把咖啡放到柜台</strong>
+      </button>
+      <p data-counter-ready role="status" hidden>他腾出一只手。六块钱还在台面上。</p>
+      <button class="price-button" type="button" data-commuter-deal="normal" hidden>收 ¥6，把咖啡递给他</button>
+      <button class="price-button" type="button" data-commuter-deal="station-gift" hidden>把零钱推回去，这罐店里请</button>
+    </div><div id="trade-result"></div>`);
+  dialog.classList.add("is-vn");
+  const coffee = body.querySelector("[data-counter-coffee]");
+  const options = [...body.querySelectorAll("[data-commuter-deal]")];
+  coffee.addEventListener("click", () => {
+    coffee.hidden = true;
+    body.querySelector("[data-counter-ready]").hidden = false;
+    for (const button of options) button.hidden = false;
+    options[0].focus();
+    playSfx("ui");
+  }, { once: true });
+  for (const button of options) {
+    button.addEventListener("click", () => serveQuickCustomer(guest, button.dataset.commuterDeal));
+  }
+  body.querySelector("[data-vn-history]")?.addEventListener("click", openHistoryDialog);
+  openDialog(dialog);
+}
+
+function serveQuickCustomer(guest, option = "normal") {
   if (state.stage !== guest.id || state.nightClosed || state.finished) {
     return;
   }
@@ -2541,13 +2642,16 @@ function serveQuickCustomer(guest) {
     return;
   }
 
-  playSfx("coin");
+  const gifted = option === "station-gift" && v6FirstNight() && guest.id === "commuter-1";
+  const amount = gifted ? 0 : guest.amount;
+  const response = gifted ? commuterGift : guest;
+  playSfx(gifted ? "gift" : "coin");
   state.stock[guest.product] -= quantity;
-  state.cash += guest.amount;
+  state.cash += amount;
   addTransaction(
     {
       label: `${products[guest.product].name} ×${quantity}`,
-      amount: guest.amount
+      amount
     },
     guest.name
   );
@@ -2556,12 +2660,14 @@ function serveQuickCustomer(guest) {
     state.flags.pendingInterlude = true;
   }
   markCharacterMet(guest.name);
-  unlockAchievement("first-trade");
-  addMemory(guest.memory);
-  state.pendingFeedback = { night: currentNight().number, guestId: guest.id, kind: "quick", option: "normal" };
-  if (guest.quote) logVnLine(guest.name, guest.quote, currentNight().place);
-  if (guest.reaction) logVnLine("旁白", guest.reaction, currentNight().place);
+  if (gifted) state.flags.stationCoffeeGift = true;
+  addMemory(response.memory);
+  state.pendingFeedback = { night: currentNight().number, guestId: guest.id, kind: "quick", option: gifted ? "station-gift" : "normal" };
+  if (response.quote) logVnLine(guest.name, response.quote, currentNight().place);
+  if (response.reaction) logVnLine("旁白", response.reaction, currentNight().place);
   advanceStage();
+  unlockAchievement("first-trade");
+  if (gifted) unlockAchievement("first-gift");
   commit();
   restorePendingFeedback();
 }
@@ -2637,6 +2743,9 @@ function showPortraitIn(slot, name) {
 
 function keptEchoForGuest(guest) {
   const kept = state.keptItems || [];
+  if (guest.id === "shen-2" && state.flags.shenPackedBoth) {
+    return '<p class="kept-echo">他看了眼空凳子。“昨晚两罐都带走了。今天我再给那个人留一罐。”</p>';
+  }
   if (guest.name === "阿澄" && kept.includes("coffee") && state.flags.unopenedCoffee) {
     return "<p class=\"kept-echo\">她看了一眼柜台上的那罐咖啡，没有问是谁留下的。</p>";
   }
@@ -2676,6 +2785,7 @@ function openTradeDialog(guest) {
 
   const normalPrice = guest.prices.normal;
   const nightOneUmbrella = v6FirstNight() && guest.id === "acheng-1";
+  const premium = v6FirstNight() ? guest.v6Premium : null;
   const umbrellaReply = {
     ask: "她捏着伞带，没马上接话。“我妈眼睛不好。以前在站牌那儿接我，她只认这把透亮的伞。……靠那边一点，灯照得见。”",
     leave: "你伸手扶了扶。她本来攥得很紧，这才松开两根手指。“谢谢。别替我挪到里面就行。从站牌那儿要看得见。”"
@@ -2702,9 +2812,10 @@ function openTradeDialog(guest) {
       </div>` : ""}
     </div>
     <div class="price-options">
+      ${premium ? `<p class="counter-cash">钱箱 ¥${state.cash} · 进货价 ¥${products[guest.product].cost * quantity}</p>` : ""}
       ${priceButton(guest.prices.low, "按低价卖出", priceNote(guest.prices.low), "low")}
-      ${priceButton(guest.prices.normal, "按原价卖出", priceNote(guest.prices.normal), "normal")}
-      ${priceButton(guest.prices.high, "按高价卖出", priceNote(guest.prices.high), "high")}
+      ${priceButton(guest.prices.normal, "按原价卖出", premium ? "沈伯留一罐在柜台" : priceNote(guest.prices.normal), "normal")}
+      ${priceButton(premium?.amount ?? guest.prices.high, "按高价卖出", premium?.detail ?? priceNote(guest.prices.high), "high")}
       <button class="price-button" type="button" data-trade-price="gift">
         <strong>不收钱，送给客人</strong>
         <span>交易会变成一件被记住的事</span>
@@ -2750,7 +2861,8 @@ function priceButton(amount, title, note, option) {
 }
 
 function completePurchase(guest, option) {
-  if (state.stage !== guest.id || state.nightClosed || state.finished) {
+  if (state.stage !== guest.id || state.nightClosed || state.finished ||
+      (option !== "gift" && !Object.hasOwn(guest.prices, option))) {
     return;
   }
 
@@ -2769,7 +2881,8 @@ function completePurchase(guest, option) {
     gift: "不收钱，送给客人"
   };
   logVnChoice(priceChoiceLabels[option] || "完成交易");
-  const amount = option === "gift" ? 0 : guest.prices[option];
+  const premium = v6FirstNight() && option === "high" ? guest.v6Premium : null;
+  const amount = premium?.amount ?? (option === "gift" ? 0 : guest.prices[option]);
   state.stock[guest.product] -= quantity;
   state.cash += amount;
   spendTime(1);
@@ -2785,23 +2898,26 @@ function completePurchase(guest, option) {
     state.flags.pendingInterlude = true;
   }
   markCharacterMet(guest.name);
-  unlockAchievement("first-trade");
-  if (option === "gift") {
-    unlockAchievement("first-gift");
-  }
   applyFlags(guest.effect?.[option === "gift" ? "gift" : "paid"]);
-  let purchaseMemory = guest.memory[option === "gift" ? "gift" : "paid"];
+  if (premium) {
+    state.flags.shenPackedBoth = true;
+    state.flags.unopenedCoffee = false;
+  }
+  let purchaseMemory = premium?.memory ?? guest.memory[option === "gift" ? "gift" : "paid"];
   if (option === "low") {
     purchaseMemory = `${purchaseMemory} ${guest.name}把找零数了两遍，才把钱放进柜台。`;
   }
-  if (option === "high") {
+  if (option === "high" && !premium) {
     purchaseMemory = `${purchaseMemory} ${guest.name}把硬币一枚一枚放在柜台上，没有还价。`;
   }
   addMemory(purchaseMemory);
   state.pendingFeedback = { night: currentNight().number, guestId: guest.id, kind: "purchase", option };
-  logVnLine(guest.name, guest.quote[option === "normal" ? "paid" : option] || guest.quote.paid, currentNight().place);
-  if (guest.reaction?.[option]) logVnLine("旁白", guest.reaction[option], currentNight().place);
+  logVnLine(guest.name, premium?.quote || guest.quote[option === "normal" ? "paid" : option] || guest.quote.paid, currentNight().place);
+  const reaction = premium?.reaction ?? guest.reaction?.[option];
+  if (reaction) logVnLine("旁白", reaction, currentNight().place);
   advanceStage();
+  unlockAchievement("first-trade");
+  if (option === "gift") unlockAchievement("first-gift");
   commit();
   renderPurchaseResult(guest, amount, option);
 }
@@ -2823,11 +2939,12 @@ function renderPurchaseResult(guest, amount, option) {
     priceOptions.hidden = true;
   }
 
-  const resultText = guest.result[option === "gift" ? "gift" : "paid"];
+  const premium = guest.v6Premium && option === "high" && state.flags.shenPackedBoth ? guest.v6Premium : null;
+  const resultText = premium?.memory ?? guest.result[option === "gift" ? "gift" : "paid"];
   const quoteKey = option === "gift" ? "gift" : option === "low" || option === "high" ? option : "paid";
-  const quote = guest.quote[quoteKey] || guest.quote[option === "gift" ? "gift" : "paid"];
+  const quote = premium?.quote || guest.quote[quoteKey] || guest.quote[option === "gift" ? "gift" : "paid"];
   const labels = { low: "少收一点", normal: "照常收钱", high: "按高价卖出", gift: "把东西送给客人" };
-  renderTradeFeedback(guest, { label: labels[option], quote, reaction: guest.reaction?.[option], memory: resultText, product: guest.product });
+  renderTradeFeedback(guest, { label: labels[option], quote, reaction: premium?.reaction ?? guest.reaction?.[option], memory: resultText, product: guest.product });
 }
 
 function renderTradeFeedback(guest, feedback) {
@@ -2900,11 +3017,21 @@ function restorePendingFeedback() {
   if (!dialog.open) dialog.showModal();
   if (pending.kind === "purchase") renderPurchaseResult(guest, pending.option === "gift" ? 0 : guest.prices[pending.option], pending.option);
   else if (pending.kind === "special") renderSpecialResult(guest, guest.choices.find((choice) => choice.id === pending.option));
-  else renderTradeFeedback(guest, { label: `把${products[guest.product].name}递给${guest.name}`, quote: guest.quote || guest.line, reaction: guest.reaction, memory: guest.result || guest.memory, product: guest.product });
+  else {
+    const response = pending.option === "station-gift" ? commuterGift : guest;
+    renderTradeFeedback(guest, {
+      label: pending.option === "station-gift" ? "店里请客" : `把${products[guest.product].name}递给${guest.name}`,
+      quote: response.quote || guest.line, reaction: response.reaction, memory: response.result || response.memory, product: guest.product
+    });
+  }
   return true;
 }
 
 function specialChoiceState(choice) {
+  const expense = -(choice.effect?.cash ?? 0);
+  if (expense > 0 && state.cash < expense) {
+    return { available: false, reason: `钱箱仅有 ¥${state.cash}，需要 ¥${expense}` };
+  }
   if (choice.requiresFlag && !state.flags[choice.requiresFlag]) {
     return { available: false, reason: choice.unavailable || "还缺少一件留下的事" };
   }
@@ -2948,6 +3075,7 @@ function openSpecialDialog(guest) {
       <p>${guest.note}</p>
     </div>
     <div class="special-options">
+      ${guest.choices.some(choice => choice.effect?.cash < 0) ? `<p class="counter-cash">钱箱 ¥${state.cash}</p>` : ""}
       ${guest.choices.map((choice) => {
         const availability = specialChoiceState(choice);
         return `
@@ -3059,11 +3187,11 @@ function completeSpecialChoice(guest, choice) {
     state.flags.pendingInterlude = true;
   }
   markCharacterMet(guest.name);
-  unlockAchievement("first-trade");
   state.pendingFeedback = { night: currentNight().number, guestId: guest.id, kind: "special", option: choice.id };
   if (choice.quote) logVnLine(guest.name, choice.quote, currentNight().place);
   if (choice.reaction) logVnLine("旁白", choice.reaction, currentNight().place);
   advanceStage();
+  unlockAchievement("first-trade");
   commit();
   renderSpecialResult(guest, choice);
 }
@@ -4047,6 +4175,7 @@ function showFinaleStep() {
   finaleCurrentText = step.text || "";
   elements.finaleStage.dataset.scene = step.scene || "rain";
   elements.finaleStage.dataset.art = sceneArtForStep(step.scene || "rain");
+  preloadNextStoryArt(finaleSteps, finaleIndex, "rain");
   elements.finaleSceneLabel.textContent = step.sceneLabel || "终章 · 第一班车";
   elements.finaleSpeaker.textContent = step.speaker || "旁白";
   elements.finaleCharacter.hidden = !step.character;
@@ -4207,6 +4336,10 @@ function finishFinale() {
 
 function showSummary() {
   const night = currentNight();
+  if (night.number === 1) {
+    ChapterTransition.prepare("station");
+    ChapterTransition.prepare("summer");
+  }
   if (night.number === 8) {
     playSfx("door");
     window.GameAudio?.fadeAmbience();
@@ -4229,7 +4362,7 @@ function showSummary() {
     ? transactions.map((item) => `
         <li>
           <span>${item.customer} · ${item.label}</span>
-          <span>¥${item.amount}</span>
+          <span>${item.amount < 0 ? `−¥${Math.abs(item.amount)}` : `¥${item.amount}`}</span>
         </li>
       `).join("")
     : `<li><span>今晚没有完成交易</span><span>¥0</span></li>`;
@@ -4332,8 +4465,8 @@ function showSummary() {
         <li><span>今晚记住的事</span><span>${state.memories.filter((item) => item.night === night.number).length} 件</span></li>
       </ul>
       <div class="receipt-total">
-        <span>今晚收入</span>
-        <strong>¥${total}</strong>
+        <span>交易净收入</span>
+        <strong>${total < 0 ? `−¥${Math.abs(total)}` : `¥${total}`}</strong>
       </div>
       <div class="receipt-cash">
         <span>打烊时现金</span>
@@ -4503,6 +4636,7 @@ function renderPrologueStep(resumeLine = 0) {
 
   elements.vnStage.dataset.scene = step.scene || "counter";
   elements.vnStage.dataset.art = sceneArtForStep(step.scene || "counter");
+  preloadNextStoryArt(CONTENT.prologue.steps, prologueIndex, "counter");
   elements.vnSceneLabel.textContent = step.sceneLabel;
   elements.vnSpeaker.textContent = step.speaker;
   elements.vnCharacter.hidden = !step.character;

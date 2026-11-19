@@ -13,16 +13,16 @@
     <link rel="icon" href="assets/brand-mark.svg" type="image/svg+xml">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=6.0.1">
-    <link rel="stylesheet" href="exploration.css?v=6.0.1">
-    <link rel="stylesheet" href="chapter-transition.css?v=4.0">
+    <link rel="stylesheet" href="styles.css?v=6.0.2">
+    <link rel="stylesheet" href="exploration.css?v=6.0.2">
+    <link rel="stylesheet" href="chapter-transition.css?v=6.0.2">
     <link rel="stylesheet" href="opening.css?v=4.4">
-    <script src="content.js?v=20261109224206" defer></script>
-    <script src="audio.js?v=6.0.1" defer></script>
-    <script src="scene-manager.js?v=6.0.1" defer></script>
-    <script src="chapter-transition.js?v=4.0" defer></script>
+    <script src="content.js?v=6.0.2" defer></script>
+    <script src="audio.js?v=6.0.2" defer></script>
+    <script src="scene-manager.js?v=6.0.2" defer></script>
+    <script src="chapter-transition.js?v=6.0.2" defer></script>
     <script src="chapter-replay.js?v=6.0" defer></script>
-    <script src="game.js?v=6.0.1" defer></script>
+    <script src="game.js?v=6.0.2" defer></script>
     <script src="save-tools.js?v=6.0" defer></script>
     <script src="opening.js?v=4.1" defer></script>
   </head>
@@ -213,15 +213,6 @@
             <button class="primary-button" id="next-step-button" type="button" aria-describedby="next-step-detail">去柜台</button>
           </section>
 
-          <section class="chapter-goal" aria-label="首章目标">
-            <span class="goal-label">首章主线</span>
-            <div class="goal-copy">
-              <strong>替没有收件人的包裹找到去处</strong>
-              <span id="goal-progress">距离第一班车还有 8 夜</span>
-            </div>
-            <span class="goal-route" id="goal-route">包裹还没有地址</span>
-          </section>
-
           <section class="shift-strip" aria-label="今晚营业情况">
             <div class="shift-cell shift-time-cell">
               <span class="cell-label">今晚还剩</span>
@@ -236,17 +227,11 @@
             <div class="shift-cell">
               <span class="cell-label">收银盒</span>
               <strong>¥<span id="cash-value">30</span></strong>
-              <small>现金会跟着店去下一站</small>
             </div>
             <div class="shift-cell">
               <span class="cell-label">车票</span>
               <strong><span id="ticket-value">7</span> 张</strong>
-              <small id="ticket-hint">还能再坐 7 次车</small>
-            </div>
-            <div class="shift-cell">
-              <span class="cell-label">记忆</span>
-              <strong><span id="memory-count">0</span> 件</strong>
-              <small>自动写进记忆册</small>
+              <small id="ticket-hint" hidden>还能再坐 7 次车</small>
             </div>
           </section>
 
@@ -270,14 +255,6 @@
                 </div>
 
                 <div class="scene-grid">
-                  <div class="shelf-zone">
-                    <div class="section-line">
-                      <h3>货架</h3>
-                      <span>6 个位置</span>
-                    </div>
-                    <div class="shelf-grid" id="shelf-grid"></div>
-                  </div>
-
                   <div class="counter-zone">
                     <div class="counter-top">
                       <span>柜台</span>
@@ -286,6 +263,14 @@
                     <div class="counter-stage" id="counter-stage" aria-label="柜台场景中的可交互物品"></div>
                     <div class="customer-frame" id="customer-scene"></div>
                     <div id="customer-actions" class="customer-actions"></div>
+                  </div>
+
+                  <div class="shelf-zone">
+                    <div class="section-line">
+                      <h3>货架</h3>
+                      <span>6 个位置</span>
+                    </div>
+                    <div class="shelf-grid" id="shelf-grid"></div>
                   </div>
                 </div>
               </div>
@@ -300,13 +285,22 @@
                 <div class="task-list" id="task-list"></div>
               </section>
 
-              <section class="rail-card memory-card">
-                <header class="rail-head">
-                  <h2>今晚记住的事</h2>
-                  <button class="text-button" id="open-memory-secondary" type="button">打开记忆册</button>
-                </header>
-                <div id="memory-preview"></div>
+              <section class="chapter-goal" aria-label="首章目标">
+                <div class="goal-copy">
+                  <strong>替没有收件人的包裹找到去处</strong>
+                  <span id="goal-progress">距离第一班车还有 8 夜</span>
+                </div>
+                <span class="goal-route" id="goal-route" hidden>包裹还没有地址</span>
               </section>
+
+              <details class="rail-card memory-card">
+                <summary class="memory-summary">
+                  <span>今晚记住的事</span>
+                  <small><span id="memory-count">0</span> 件</small>
+                </summary>
+                <div id="memory-preview"></div>
+                <button class="text-button" id="open-memory-secondary" type="button">打开记忆册</button>
+              </details>
             </aside>
           </div>
         </main>

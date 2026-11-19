@@ -16,11 +16,19 @@
     }
   };
 
+  function prepare(route) {
+    const variant = window.matchMedia("(orientation: portrait)").matches ? "portrait" : "wide";
+    const scenes = ["first-sale-wide", `road-${variant}`];
+    if (Object.hasOwn(routes, route)) scenes.push(`${route}-${variant}`);
+    window.SceneManager.preloadArt(scenes.map(scene => `assets/scenes/${scene}.jpg`));
+  }
+
   function scenePicture(scene, className) {
     const portrait = scene === "first-sale" ? "" :
       `<source media="(orientation: portrait)" srcset="assets/scenes/${scene}-portrait.jpg">`;
+    const priority = scene === "first-sale" ? "high" : "auto";
     return `<picture class="passage-shot ${className}" aria-hidden="true">${portrait}
-      <img src="assets/scenes/${scene}-wide.jpg" alt="" decoding="async"></picture>`;
+      <img src="assets/scenes/${scene}-wide.jpg" alt="" decoding="async" fetchpriority="${priority}"></picture>`;
   }
 
   function stop() {
@@ -42,6 +50,7 @@
     if (!root || !Object.hasOwn(routes, route)) return;
     if (active?.root === root && active.route === route) return;
     stop();
+    prepare(route);
     const info = routes[route];
     const dialog = root.tagName === "DIALOG" ? root : document.createElement("dialog");
     if (dialog !== root) root.replaceChildren(dialog);
@@ -69,6 +78,10 @@
     const listeners = new AbortController();
     const run = {root, dialog, route, timers: [], listeners};
     active = run;
+    for (const image of dialog.querySelectorAll(".passage-shot img")) {
+      image.addEventListener("error", () => { image.style.visibility = "hidden"; }, {signal: listeners.signal});
+      image.addEventListener("load", () => { image.style.visibility = ""; }, {signal: listeners.signal});
+    }
     const button = dialog.querySelector(".passage-control");
     const caption = dialog.querySelector(".passage-caption");
     const finish = () => {
@@ -119,5 +132,5 @@
     });
   }
 
-  window.ChapterTransition = {play, stop};
+  window.ChapterTransition = {play, stop, prepare};
 })();

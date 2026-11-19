@@ -20,6 +20,14 @@ async (page) => {
   await story();
   assert(JSON.parse(await original()).nightIndex === 1, "transition did not reach night 2");
   await click("[data-night-two-trace]");
+  const beforeWage = JSON.parse(await original());
+  await page.getByRole("button",{name:"接待 0217",exact:true}).click();
+  await click('[data-special-choice="pay-for-a-break"]');
+  const wage = JSON.parse(await original());
+  assert(wage.cash === beforeWage.cash - 24 && wage.flags.clerkPaidBreak &&
+    wage.transactions.at(-1).amount === -24, "night-two expense was not booked");
+  await click("#trade-continue");
+  await story();
   const base = await original();
   assert(JSON.parse(base).flags.doorTraceRead, "trace not stored");
   await page.evaluate(() => document.querySelector("#open-settings-nav").click());

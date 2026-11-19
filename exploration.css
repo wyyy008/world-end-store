@@ -660,6 +660,35 @@ body:not(.reduce-motion) .ex-camera-frame { animation: ex-fade-in 360ms ease-out
   .ex-current { grid-template-columns: minmax(0, 1fr) 92px; }
 }
 
+@media (max-width: 600px) {
+  [data-night-six="true"] .ex-rail {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 12px;
+  }
+
+  [data-night-six="true"] .ex-note-heading {
+    border: 0;
+    padding: 0 0 4px;
+  }
+
+  [data-night-six="true"] .ex-rail-kicker {
+    font: 600 12px/1.4 var(--font);
+  }
+
+  [data-night-six="true"] .ex-current {
+    border-top: 0;
+    padding-top: 1px;
+  }
+
+  [data-night-six="true"] .ex-progress {
+    order: 1;
+    margin: 8px 0 0;
+    border-top: 1px solid #aaa28e;
+    padding-top: 7px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ex-shell *, .ex-shell *::before, .ex-shell *::after {
     animation: none !important;

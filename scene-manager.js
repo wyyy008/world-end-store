@@ -73,15 +73,76 @@
   let message = "";
   let selectedClues = [];
   const reduced = () => document.body.classList.contains("reduce-motion") || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const artwork = [];
-  function preload() {
-    if (artwork.length) return;
-    ["store-wide", "ex-shelf", "ex-till", "ex-door", "ex-cctv", "ex-parcel"].forEach(name => {
-      const image = new Image();
+  const roomArt = {
+    overview: "store-wide", shelf: "ex-shelf", till: "ex-till",
+    door: "ex-door", cctv: "ex-cctv", parcel: "ex-parcel"
+  };
+  const requestedArt = new Map();
+  const queuedArt = [];
+  let activeArt = 0;
+
+  function pumpArtwork() {
+    while (activeArt < 2 && queuedArt.length) {
+      const request = queuedArt.shift();
+      const image = request.image = new Image();
+      activeArt++;
       image.decoding = "async";
-      image.src = "assets/scenes/" + name + ".jpg";
-      artwork.push(image);
-    });
+      image.fetchPriority = request.priority ? "auto" : "low";
+      const done = () => {
+        image.onload = image.onerror = null;
+        request.image = null;
+        activeArt--;
+        pumpArtwork();
+      };
+      image.onload = () => {
+        if (image.decode) image.decode().then(done, done);
+        else done();
+      };
+      image.onerror = done;
+      image.src = request.path;
+    }
+  }
+
+  function preloadArt(paths, priority = false) {
+    if (navigator.connection?.saveData && !priority) return;
+    for (const path of paths) {
+      const existing = requestedArt.get(path);
+      if (existing) {
+        if (priority && !existing.priority) {
+          existing.priority = true;
+          if (existing.image) existing.image.fetchPriority = "auto";
+          else {
+            const index = queuedArt.indexOf(existing);
+            if (index >= 0) queuedArt.unshift(queuedArt.splice(index, 1)[0]);
+          }
+        }
+        continue;
+      }
+      const request = {path, priority, image: null};
+      requestedArt.set(path, request);
+      if (priority) queuedArt.unshift(request);
+      else queuedArt.push(request);
+    }
+    pumpArtwork();
+  }
+
+  function prepareRooms(names, priority) {
+    preloadArt(names.map(name => "assets/scenes/" + roomArt[name] + ".jpg"), priority);
+  }
+
+  function prepareNearby(m) {
+    prepareRooms([m.scene], true);
+    // Start with the task route. Optional side rooms are warmed while their entry is visible.
+    const nearby = {
+      overview: ctx.nightSix?.phase === "shelf" ? ["shelf", "door", "till"] : ["door", "till", "shelf"],
+      shelf: ["overview", "door"],
+      till: ["cctv", "overview", "parcel"],
+      door: ["overview"],
+      cctv: ["till"],
+      parcel: ["till"]
+    };
+    prepareRooms(nearby[m.scene]);
+    if (m.scene === "door" || m.scene === "cctv") preloadArt(["assets/scenes/third-visitor-wide.jpg"]);
   }
   function save(event) { ctx.onSave(event); }
   function sound(name) { ctx.sound?.(name); }
@@ -480,7 +541,7 @@
     if (fresh) deactivate();
     ctx = context;
     if (fresh) {
-      preload();
+      prepareNearby(ctx.model);
       ctx.root.addEventListener("click", handleClick);
       ctx.root.addEventListener("keydown", handleKey);
       previousGuest = ctx.model.guestDone;
@@ -494,10 +555,12 @@
   }
   function navigate(next) {
     const m = ctx.model;
+    prepareRooms([next], true);
     const changeScene = () => {
       m.scene = next;
       m.panel = "";
       message = "";
+      prepareNearby(m);
       if (next === "shelf" && m.guestDone && !m.shelfChanged) {
         m.shelfChanged = true;
         message = "冷柜的灯从左端一盏盏暗下去。刚才还在最后一排的橘色瓶子贴到了玻璃上。";
@@ -687,5 +750,5 @@
       ctx.root.querySelector("#ex-detail-title")?.focus();
     }
   }
-  window.SceneManager = Object.freeze({ createState, normalize, render, deactivate });
+  window.SceneManager = Object.freeze({ createState, normalize, render, deactivate, preloadArt, prepareRooms });
 })();

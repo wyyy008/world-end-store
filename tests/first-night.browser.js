@@ -87,9 +87,24 @@ async (page) => {
   await click('[data-visitor-choice="wait"]');
   await click("#continue-after-third-visitor");
   await click("#customer-actions button");
+  const beforeGift = await get();
+  await click("[data-counter-coffee]");
+  assert((await get()).transactions.length === beforeGift.transactions.length, "placing the can completed the sale");
+  await click('[data-commuter-deal="station-gift"]');
+  await page.reload();
+  await enter();
+  const gifted = await get();
+  assert(gifted.cash === beforeGift.cash && gifted.time === beforeGift.time &&
+    gifted.stock.coffee === beforeGift.stock.coffee - 1 && gifted.flags.stationCoffeeGift,
+    "commuter gift did not persist once");
+  assert(await page.locator(".choice-feedback").getByText("店里请客", {exact:false}).count() > 0, "gift feedback did not restore");
   await click("#trade-continue");
   await click("#customer-actions button");
-  await click('[data-trade-price="normal"]');
+  const beforePremium = await get();
+  await click('[data-trade-price="high"]');
+  const premium = await get();
+  assert(premium.cash === beforePremium.cash + 20 && premium.flags.shenPackedBoth && !premium.flags.unopenedCoffee,
+    "premium sale did not change the keepsake");
   await click("#trade-continue");
   await consumeStory();
   const end = await get();

@@ -1,5 +1,7 @@
 (() => {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  const ambienceBoost = 1.35;
+  const effectsBoost = 1.5;
   let context = null;
   let masterGain = null;
   let bgmGain = null;
@@ -22,9 +24,21 @@
       masterGain = context.createGain();
       bgmGain = context.createGain();
       sfxGain = context.createGain();
+      const limiter = context.createDynamicsCompressor();
+      limiter.threshold.value = -9;
+      limiter.knee.value = 3;
+      limiter.ratio.value = 12;
+      limiter.attack.value = 0.003;
+      limiter.release.value = 0.16;
+      const limiterOutput = context.createGain();
+      // Leave headroom for the compressor's makeup gain and the station clip.
+      limiterOutput.gain.value = 0.64;
+      masterGain.gain.value = volumes.muted ? 0 : volumes.master;
+      bgmGain.gain.value = volumes.bgm * ambienceBoost;
+      sfxGain.gain.value = volumes.sfx * effectsBoost;
       bgmGain.connect(masterGain);
       sfxGain.connect(masterGain);
-      masterGain.connect(context.destination);
+      masterGain.connect(limiter).connect(limiterOutput).connect(context.destination);
       applyVolumes();
     }
     if (context.state === "suspended") {
@@ -33,18 +47,23 @@
     return context;
   }
 
+  function applyAnnouncementVolume() {
+    if (!chapterAnnouncement) return;
+    // HTML audio stays independent of Web Audio so this also works from file://.
+    // The curve raises normal playback and still lets both sliders reach zero.
+    chapterAnnouncement.volume = volumes.muted ? 0 : volumes.master * (1 - (1 - volumes.sfx) ** 2);
+  }
+
   function applyVolumes() {
-    if (chapterAnnouncement) {
-      chapterAnnouncement.volume = volumes.muted ? 0 : volumes.master * volumes.sfx;
-    }
+    applyAnnouncementVolume();
     if (!context) {
       return;
     }
     const now = context.currentTime;
     const master = volumes.muted ? 0 : volumes.master;
     masterGain.gain.setTargetAtTime(master, now, 0.04);
-    bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm, now, 0.04);
-    sfxGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.sfx, now, 0.03);
+    bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm * ambienceBoost, now, 0.04);
+    sfxGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.sfx * effectsBoost, now, 0.03);
   }
 
   function applyShopMood() {
@@ -275,7 +294,7 @@
       if (!chapterAnnouncement) {
         chapterAnnouncement = new Audio("assets/audio/station-announcement.wav");
       }
-      chapterAnnouncement.volume = volumes.muted ? 0 : volumes.master * volumes.sfx;
+      applyAnnouncementVolume();
       chapterAnnouncement.currentTime = 0;
       // Start on the route-selection gesture. The clip itself times the platform
       // chime and voice to the window dissolve, including on touch browsers.
@@ -307,7 +326,7 @@
       if (!context || !bgmGain) {
         return;
       }
-      bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm, context.currentTime, 0.5);
+      bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm * ambienceBoost, context.currentTime, 0.5);
     },
     stop() {
       if (bgmTimer) {
