@@ -1,5 +1,7 @@
 (() => {
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  const ambienceBoost = 1.35;
+  const effectsBoost = 1.5;
   let context = null;
   let masterGain = null;
   let bgmGain = null;
@@ -7,6 +9,9 @@
   let ambienceStarted = false;
   let bgmTimer = null;
   let bgmIndex = 0;
+  let chapterAnnouncement = null;
+  let shopMood = "normal";
+  let rainGain, droneGain, musicGain, rainMotion;
   const ambienceNodes = [];
   let volumes = { master: 0.8, bgm: 0.55, sfx: 0.7, muted: false };
 
@@ -19,9 +24,21 @@
       masterGain = context.createGain();
       bgmGain = context.createGain();
       sfxGain = context.createGain();
+      const limiter = context.createDynamicsCompressor();
+      limiter.threshold.value = -9;
+      limiter.knee.value = 3;
+      limiter.ratio.value = 12;
+      limiter.attack.value = 0.003;
+      limiter.release.value = 0.16;
+      const limiterOutput = context.createGain();
+      // Leave headroom for the compressor's makeup gain and the station clip.
+      limiterOutput.gain.value = 0.64;
+      masterGain.gain.value = volumes.muted ? 0 : volumes.master;
+      bgmGain.gain.value = volumes.bgm * ambienceBoost;
+      sfxGain.gain.value = volumes.sfx * effectsBoost;
       bgmGain.connect(masterGain);
       sfxGain.connect(masterGain);
-      masterGain.connect(context.destination);
+      masterGain.connect(limiter).connect(limiterOutput).connect(context.destination);
       applyVolumes();
     }
     if (context.state === "suspended") {
@@ -30,15 +47,36 @@
     return context;
   }
 
+  function applyAnnouncementVolume() {
+    if (!chapterAnnouncement) return;
+    // HTML audio stays independent of Web Audio so this also works from file://.
+    // The curve raises normal playback and still lets both sliders reach zero.
+    chapterAnnouncement.volume = volumes.muted ? 0 : volumes.master * (1 - (1 - volumes.sfx) ** 2);
+  }
+
   function applyVolumes() {
+    applyAnnouncementVolume();
     if (!context) {
       return;
     }
     const now = context.currentTime;
     const master = volumes.muted ? 0 : volumes.master;
     masterGain.gain.setTargetAtTime(master, now, 0.04);
-    bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm, now, 0.04);
-    sfxGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.sfx, now, 0.03);
+    bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm * ambienceBoost, now, 0.04);
+    sfxGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.sfx * effectsBoost, now, 0.03);
+  }
+
+  function applyShopMood() {
+    if (!rainGain || !droneGain || !musicGain) return;
+    const levels = {
+      receipt: [0.024, 0.006, 0.28, 0.005],
+      camera: [0.014, 0.021, 0.12, 0.003],
+      visitor: [0, 0, 0, 0],
+      "visitor-result": [0.019, 0.004, 0.2, 0.005]
+    }[shopMood] || [0.035, 0.012, 1, 0.01];
+    [rainGain, droneGain, musicGain, rainMotion].forEach((node, index) => {
+      node.gain.setTargetAtTime(levels[index], context.currentTime, 0.25);
+    });
   }
 
   function tone(frequency, type, duration, gain, endFrequency, when) {
@@ -88,6 +126,17 @@
 
   function playSfx(name) {
     switch (name) {
+      case "till-close":
+        noiseBurst(0.12, 0.12, 900);
+        tone(120, "triangle", 0.15, 0.12, 55);
+        break;
+      case "printer":
+        noiseBurst(0.52, 0.07, 2500);
+        [0, 0.12, 0.24, 0.36].forEach(delay => tone(168, "sawtooth", 0.1, 0.026, 215, delay));
+        break;
+      case "cicada":
+        [0, 0.25, 0.5, 0.9, 1.15].forEach(delay => tone(2200, "triangle", 0.2, 0.04, 2530, delay));
+        break;
       case "ui":
         tone(520, "triangle", 0.06, 0.045, 760);
         break;
@@ -100,6 +149,10 @@
       case "scan":
         tone(1350, "sine", 0.075, 0.045, 1850);
         break;
+      case "register-glitch":
+        tone(490, "triangle", 0.1, 0.035, 120);
+        noiseBurst(0.1, 0.018, 2000);
+        break;
       case "coin":
         tone(880, "sine", 0.18, 0.05, 1320);
         tone(1174, "sine", 0.22, 0.04, 1760, 0.06);
@@ -111,6 +164,14 @@
       case "door":
         tone(523, "sine", 0.6, 0.05, 523);
         tone(659, "sine", 0.72, 0.04, 880, 0.12);
+        break;
+      case "third-bell":
+        tone(523, "sine", 0.78, 0.052, 511, 0.28);
+        tone(659, "sine", 0.48, 0.026, 641, 0.45);
+        break;
+      case "umbrella-touch":
+        noiseBurst(0.055, 0.022, 850);
+        tone(290, "triangle", 0.11, 0.018, 180);
         break;
       case "success":
         [523, 659, 784, 1047].forEach((frequency, index) => {
@@ -154,7 +215,7 @@
     envelope.gain.setValueAtTime(0.0001, start);
     envelope.gain.linearRampToValueAtTime(gain, start + 0.6);
     envelope.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    osc.connect(envelope).connect(bgmGain);
+    osc.connect(envelope).connect(musicGain || bgmGain);
     osc.start(start);
     osc.stop(start + duration + 0.1);
   }
@@ -192,7 +253,7 @@
     const rainFilter = c.createBiquadFilter();
     rainFilter.type = "lowpass";
     rainFilter.frequency.value = 1400;
-    const rainGain = c.createGain();
+    rainGain = c.createGain();
     rainGain.gain.value = 0.035;
     rain.connect(rainFilter).connect(rainGain).connect(bgmGain);
     rain.start();
@@ -200,18 +261,21 @@
     const drone = c.createOscillator();
     drone.type = "sine";
     drone.frequency.value = 55;
-    const droneGain = c.createGain();
+    droneGain = c.createGain();
     droneGain.gain.value = 0.012;
     drone.connect(droneGain).connect(bgmGain);
     drone.start();
 
     const lfo = c.createOscillator();
     lfo.frequency.value = 0.07;
-    const lfoGain = c.createGain();
-    lfoGain.gain.value = 0.01;
-    lfo.connect(lfoGain).connect(rainGain.gain);
+    rainMotion = c.createGain();
+    rainMotion.gain.value = 0.01;
+    lfo.connect(rainMotion).connect(rainGain.gain);
     lfo.start();
 
+    musicGain = c.createGain();
+    musicGain.connect(bgmGain);
+    applyShopMood();
     ambienceNodes.push(rain, drone, lfo);
     scheduleBgm();
   }
@@ -226,12 +290,32 @@
 
   window.GameAudio = {
     unlock,
+    playChapterAnnouncement() {
+      if (!chapterAnnouncement) {
+        chapterAnnouncement = new Audio("assets/audio/station-announcement.wav");
+      }
+      applyAnnouncementVolume();
+      chapterAnnouncement.currentTime = 0;
+      // Start on the route-selection gesture. The clip itself times the platform
+      // chime and voice to the window dissolve, including on touch browsers.
+      chapterAnnouncement.play().catch(() => {});
+    },
+    stopChapterAnnouncement() {
+      if (chapterAnnouncement) {
+        chapterAnnouncement.pause();
+        chapterAnnouncement.currentTime = 0;
+      }
+    },
     setVolumes(next) {
       volumes = { ...volumes, ...next };
       applyVolumes();
     },
     playSfx,
     startAmbience,
+    setShopMood(mood) {
+      shopMood = mood;
+      applyShopMood();
+    },
     fadeAmbience(duration = 1.2) {
       if (!context || !bgmGain) {
         return;
@@ -242,7 +326,7 @@
       if (!context || !bgmGain) {
         return;
       }
-      bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm, context.currentTime, 0.5);
+      bgmGain.gain.setTargetAtTime(volumes.muted ? 0 : volumes.bgm * ambienceBoost, context.currentTime, 0.5);
     },
     stop() {
       if (bgmTimer) {

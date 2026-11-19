@@ -382,6 +382,13 @@ window.GAME_CONTENT = {
         product: "coffee",
         quantity: 2,
         prices: { low: 6, normal: 12, high: 18 },
+        v6Premium: {
+          amount: 20,
+          detail: "沈伯会把两罐都带走",
+          quote: "“二十？那两罐都装上吧。下一班有人换零钱，我得把车钱挣回来。”",
+          reaction: "他把原本推向空座的那罐拿了回来。两罐碰了一声，一起进了制服口袋。",
+          memory: "沈伯付了 ¥20，把两罐咖啡都带走了。柜台前那张凳子仍然空着。"
+        },
         scene: [
           "“这凳脚松不松？夜里有人绊一下，你还得扶。”他试了试旁边的凳子，才问两罐咖啡多少钱。",
           "两罐一共 ¥12。他把第二罐的拉环转向外侧，自己那罐随便搁着。",
@@ -462,6 +469,21 @@ window.GAME_CONTENT = {
               cost: "会花掉 1 个营业时间格",
               mode: "special",
               choices: [
+                {
+                  id: "pay-for-a-break",
+                  label: "从钱箱给她留一班工钱",
+                  detail: "支出 ¥24 · 给 0217 一次可以坐下的夜班",
+                  quote: "“钱拿了，货架还歪着也行？……那把凳子借我一会儿。”",
+                  reaction: "她数了两遍，还是把凳子拉了出来。这次没有先去扶价签。",
+                  effect: {
+                    time: 1,
+                    cash: -24,
+                    flagsOn: ["clerkPaidBreak"],
+                    transaction: { label: "0217 的交班工钱", amount: -24 },
+                    memory: "你从钱箱留出 ¥24。那一班，0217 放下手里的活，终于坐了一会儿。",
+                    toast: "0217 把工牌翻了面，坐下来。"
+                  }
+                },
                 {
                   id: "coin",
                   label: "请她喝一罐，收下那枚硬币",
@@ -833,6 +855,21 @@ window.GAME_CONTENT = {
               cost: "会花掉 1 个营业时间格",
               mode: "special",
               choices: [
+                {
+                  id: "buy-a-hot-meal",
+                  label: "替她买一份刚出锅的饭",
+                  detail: "支出 ¥20 · 给她留座，等她吃完再走",
+                  quote: "“不要葱花……要一点也行。你也坐下吗？一会儿就好。”",
+                  reaction: "她掰开筷子，把长短不齐的那双留给自己。饭盒盖朝上放着，谁也没去看外面的天气。",
+                  effect: {
+                    time: 1,
+                    cash: -20,
+                    flagsOn: ["xiaomanHotMeal", "xiaomanWarmStart"],
+                    transaction: { label: "小满的一份热饭", amount: -20 },
+                    memory: "你在隔壁摊位替小满买了一份热饭。她坐下吃完，才想起今天还没问明天的天气。",
+                    toast: "直到小满吃完，柜台边的凳子都空不出来。"
+                  }
+                },
                 {
                   id: "sunny",
                   label: "告诉她，明天会有太阳",
@@ -1589,6 +1626,23 @@ window.GAME_CONTENT = {
             cost: "会花掉 1 个营业时间格",
             mode: "special",
             choices: [
+              {
+                id: "repair-radio",
+                label: "付钱换掉收音机的旧喇叭",
+                detail: "支出 ¥28，交出一只收音机 · 小满带走修好的那只",
+                quote: "“这回沙沙声小了。等播完天气，我就关掉。说到做到。”",
+                reaction: "她把旋钮转小一格。收音机里还在下雨，她把它抱在怀里，照样推开了门。",
+                requiresStock: { radio: 1 },
+                effect: {
+                  time: 1,
+                  stock: { radio: -1 },
+                  cash: -28,
+                  flagsOn: ["xiaomanRadio", "xiaomanRadioRepaired"],
+                  transaction: { label: "旧收音机修理费", amount: -28 },
+                  memory: "你从钱箱付了 ¥28，把旧收音机修给小满。她试着把响个不停的声音调小了。",
+                  toast: "收音机终于能听清人说话了。"
+                }
+              },
               {
                 id: "sell-radio",
                 label: "把旧收音机卖给她",

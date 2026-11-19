@@ -8,17 +8,23 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="世界尽头的便利店 · 免费试玩版">
     <meta property="og:description" content="八个雨夜，五封没有送出的信。">
-    <meta property="og:image" content="https://wyyy008.github.io/world-end-store/assets/logo.jpg">
+    <meta property="og:image" content="https://wyyy008.github.io/world-end-store/assets/scenes/road-wide.jpg">
     <title>世界尽头的便利店 · 第一夜</title>
-    <link rel="icon" href="assets/logo-128.png" type="image/png">
-    <link rel="apple-touch-icon" href="assets/logo-256.png">
+    <link rel="icon" href="assets/brand-mark.svg" type="image/svg+xml">
     <link rel="preload" href="assets/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="assets/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=20261109224206">
-    <script src="content.js?v=20261109224206" defer></script>
-    <script src="audio.js?v=20261109224206" defer></script>
-    <script src="game.js?v=20261109224206" defer></script>
-    <script src="save-tools.js?v=20261109224206" defer></script>
+    <link rel="stylesheet" href="styles.css?v=6.0.2">
+    <link rel="stylesheet" href="exploration.css?v=6.0.2">
+    <link rel="stylesheet" href="chapter-transition.css?v=6.0.2">
+    <link rel="stylesheet" href="opening.css?v=4.4">
+    <script src="content.js?v=6.0.2" defer></script>
+    <script src="audio.js?v=6.0.2" defer></script>
+    <script src="scene-manager.js?v=6.0.2" defer></script>
+    <script src="chapter-transition.js?v=6.0.2" defer></script>
+    <script src="chapter-replay.js?v=6.0" defer></script>
+    <script src="game.js?v=6.0.2" defer></script>
+    <script src="save-tools.js?v=6.0" defer></script>
+    <script src="opening.js?v=4.1" defer></script>
   </head>
   <body>
     <svg class="portrait-sprite" aria-hidden="true" focusable="false">
@@ -58,24 +64,44 @@
         </symbol>
       </defs>
     </svg>
+    <dialog class="opening-film" id="opening-film" aria-label="世界尽头的便利店开屏动画">
+      <div class="opening-scene">
+        <div class="opening-art" aria-hidden="true"></div>
+        <div class="opening-shade" aria-hidden="true"></div>
+        <div class="opening-rain" aria-hidden="true"></div>
+        <div class="opening-lamps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="opening-copy" aria-live="polite">
+          <p class="opening-line opening-line-one">如果你有机会留住一段即将消失的过去，</p>
+          <p class="opening-line opening-line-two">你愿意付出什么代价？</p>
+        </div>
+        <div class="opening-end">
+          <img src="assets/brand-mark.svg" alt="" width="64" height="64">
+          <h2>世界尽头的<br>便利店</h2>
+          <p>EVERY MEMORY HAS A PRICE.</p>
+          <button type="button" id="opening-start">开始营业</button>
+        </div>
+        <button type="button" class="opening-skip" id="opening-skip">跳过动画</button>
+        <button type="button" class="opening-sound" id="opening-sound">开启雨声</button>
+      </div>
+    </dialog>
     <section class="title-screen" id="title-screen" aria-labelledby="game-title">
       <div class="title-panel">
         <div class="title-main">
           <div>
-            <h1 id="game-title"><img class="title-wordmark" src="assets/logo.png" alt="世界尽头的便利店" width="1774" height="887"></h1>
+            <h1 id="game-title" class="title-brand"><img src="assets/brand-mark.svg" alt="" width="72" height="72"><span>世界尽头的<br><strong>便利店</strong></span></h1>
             <p class="title-subtitle">没有收件人的包裹</p>
-            <p class="title-edition">免费试玩 · 八夜</p>
-            <p class="title-premise">接待走进店里的人，听他们把话说完，再决定打烊时留下什么。五个人的往事，会在交谈中慢慢浮现。第八夜第一班车来以前，替柜台下的包裹找到去处。</p>
+            <p class="title-edition">八夜试玩</p>
+            <p class="title-premise">末班车走了，门边的女孩还在等人。货架上有三件货没摆好，柜台下还有一个没写收件人的包裹。第八夜的第一班车来以前，得替它找到去处。</p>
             <div class="title-ticket" aria-hidden="true">
               <span class="title-ticket-stub">雾港 · 末班车</span>
               <strong>第八夜 · 第一班车</strong>
-              <span class="title-ticket-status">等待中</span>
+              <span class="title-ticket-status">未到站</span>
             </div>
           </div>
           <div class="title-actions">
             <button class="title-action primary-button" id="new-game-button" type="button">
               <span>推门进去</span>
-              <small id="new-game-meta">新游戏 · 从第一夜开始</small>
+          <small id="new-game-meta">新游戏 · 从第一夜开始</small>
             </button>
             <button class="title-action secondary-button" id="continue-game-button" type="button">
               <span id="continue-game-label">继续游戏</span>
@@ -87,12 +113,13 @@
               <span id="achievement-count">0 / 10</span>
             </button>
             <button class="text-button title-help-button" id="open-settings" type="button">设置</button>
+            <button class="text-button title-help-button" id="replay-opening" type="button">重看开屏动画</button>
           </div>
         </div>
         <aside class="title-side" aria-label="夜里的店">
           <div class="title-street" aria-hidden="true">
             <div class="title-window">
-              <img class="title-logo" src="assets/logo.svg" alt="雨夜里亮着灯的便利店门口，放着一个没有署名的包裹">
+              <img class="title-logo" src="assets/scenes/opening-wide.jpg" alt="雨夜的便利店与公交站">
             </div>
             <div class="title-timetable" aria-hidden="true">
               <span>末班车 · 23:40</span>
@@ -102,7 +129,7 @@
           </div>
           <div class="title-route-copy">
             <strong>“请在第八夜第一班车前，替我找到去处。”</strong>
-            <p>雨还没有停。柜台比你的记忆更早认识你。</p>
+            <p>柜台下面的包裹，一直没有人来取。</p>
           </div>
         </aside>
       </div>
@@ -112,7 +139,7 @@
       <aside class="sidebar" aria-label="主菜单">
         <a class="brand" id="brand-home" href="#" aria-label="返回游戏标题页">
           <span class="brand-mark" aria-hidden="true">
-            <img src="assets/logo-128.png" alt="">
+            <img src="assets/brand-mark.svg" alt="">
           </span>
           <span>
             <strong>世界尽头</strong>
@@ -155,7 +182,7 @@
             <span></span><span></span><span></span>
           </button>
           <div class="mobile-brand">
-            <span class="mini-mark" aria-hidden="true"><img src="assets/logo-128.png" alt=""></span>
+            <span class="mini-mark" aria-hidden="true"><img src="assets/brand-mark.svg" alt=""></span>
             世界尽头的便利店
           </div>
           <p class="topbar-scope" id="topbar-scope">第 1 夜 · 雾港公交站</p>
@@ -167,6 +194,7 @@
 
         <main class="sheet">
           <p class="save-warning" id="save-warning" role="status" hidden></p>
+          <button class="secondary-button" id="chapter-replay-active" type="button" hidden>临时重玩 · 旅途选项</button>
           <div class="page-head">
             <div>
               <h1 id="page-title">今晚的便利店</h1>
@@ -175,21 +203,14 @@
             <button class="secondary-button" id="open-closing" type="button">准备打烊</button>
           </div>
 
+          <section id="exploration-root" aria-label="雾港便利店 · 场景探索" hidden></section>
+          <button class="secondary-button" id="revisit-shop" type="button" hidden>回店内查看 · 背包与线索册</button>
           <section class="next-step" aria-label="接下来做什么">
             <div>
               <h2 id="next-step-title">先接待门边的人</h2>
               <p id="next-step-detail">阅读和思考不耗时间。先听他说完，再决定留下什么。</p>
             </div>
             <button class="primary-button" id="next-step-button" type="button" aria-describedby="next-step-detail">去柜台</button>
-          </section>
-
-          <section class="chapter-goal" aria-label="首章目标">
-            <span class="goal-label">首章主线</span>
-            <div class="goal-copy">
-              <strong>替没有收件人的包裹找到去处</strong>
-              <span id="goal-progress">距离第一班车还有 8 夜</span>
-            </div>
-            <span class="goal-route" id="goal-route">包裹还没有地址</span>
           </section>
 
           <section class="shift-strip" aria-label="今晚营业情况">
@@ -206,17 +227,11 @@
             <div class="shift-cell">
               <span class="cell-label">收银盒</span>
               <strong>¥<span id="cash-value">30</span></strong>
-              <small>现金会跟着店去下一站</small>
             </div>
             <div class="shift-cell">
               <span class="cell-label">车票</span>
               <strong><span id="ticket-value">7</span> 张</strong>
-              <small id="ticket-hint">还能再坐 7 次车</small>
-            </div>
-            <div class="shift-cell">
-              <span class="cell-label">记忆</span>
-              <strong><span id="memory-count">0</span> 件</strong>
-              <small>自动写进记忆册</small>
+              <small id="ticket-hint" hidden>还能再坐 7 次车</small>
             </div>
           </section>
 
@@ -240,14 +255,6 @@
                 </div>
 
                 <div class="scene-grid">
-                  <div class="shelf-zone">
-                    <div class="section-line">
-                      <h3>货架</h3>
-                      <span>6 个位置</span>
-                    </div>
-                    <div class="shelf-grid" id="shelf-grid"></div>
-                  </div>
-
                   <div class="counter-zone">
                     <div class="counter-top">
                       <span>柜台</span>
@@ -256,6 +263,14 @@
                     <div class="counter-stage" id="counter-stage" aria-label="柜台场景中的可交互物品"></div>
                     <div class="customer-frame" id="customer-scene"></div>
                     <div id="customer-actions" class="customer-actions"></div>
+                  </div>
+
+                  <div class="shelf-zone">
+                    <div class="section-line">
+                      <h3>货架</h3>
+                      <span>6 个位置</span>
+                    </div>
+                    <div class="shelf-grid" id="shelf-grid"></div>
                   </div>
                 </div>
               </div>
@@ -270,13 +285,22 @@
                 <div class="task-list" id="task-list"></div>
               </section>
 
-              <section class="rail-card memory-card">
-                <header class="rail-head">
-                  <h2>今晚记住的事</h2>
-                  <button class="text-button" id="open-memory-secondary" type="button">打开记忆册</button>
-                </header>
-                <div id="memory-preview"></div>
+              <section class="chapter-goal" aria-label="首章目标">
+                <div class="goal-copy">
+                  <strong>替没有收件人的包裹找到去处</strong>
+                  <span id="goal-progress">距离第一班车还有 8 夜</span>
+                </div>
+                <span class="goal-route" id="goal-route" hidden>包裹还没有地址</span>
               </section>
+
+              <details class="rail-card memory-card">
+                <summary class="memory-summary">
+                  <span>今晚记住的事</span>
+                  <small><span id="memory-count">0</span> 件</small>
+                </summary>
+                <div id="memory-preview"></div>
+                <button class="text-button" id="open-memory-secondary" type="button">打开记忆册</button>
+              </details>
             </aside>
           </div>
         </main>
@@ -458,7 +482,8 @@
         <p><strong>主线</strong>在第八夜第一班车到站前，把五封没有送出的信送到五个人手里，再决定没有收件人的包裹去哪里。</p>
         <p><strong>今晚</strong>首章目标下方会直接写出这一夜的可执行目标。完成上车条件，旧票机才会给你车票。</p>
         <p><strong>人物回忆</strong>会随着柜台前的交谈自然穿插，读完就回到当前这一夜。人物档案只用来回看你已经历的片段。</p>
-        <p><strong>时间</strong>每夜有六盏灯，也就是六件可以做的事。补货、整理和接待常客会消耗一格，查看商品与对话不耗时。</p>
+        <p><strong>第一夜</strong>先点收银机，为第一位客人结账。接待阿澄后整理货架。查到不对劲的地方，可以在记忆册把两条线索放在一起。</p>
+        <p><strong>时间</strong>每夜有六盏灯。经营补货、打烊前的小事和接待常客会消耗时间。探索、解谜、返回和阅读线索都不耗时。</p>
         <p><strong>顾客</strong>读他们做了什么、留下了什么，而不是刷好感度。</p>
         <p><strong>打烊</strong>选择留下一件东西。它会跟着店进入下一夜。</p>
         <p><strong>通行</strong>每夜都有通行条件。达成后打烊时会从特殊渠道得到一张车票；没有车票也能走，但店会被动漂移并损失 ¥5。</p>
@@ -532,6 +557,7 @@
           <p class="save-status" id="save-status" role="status" aria-live="polite">正在读取存档状态…</p>
           <div class="save-actions">
             <button class="secondary-button" id="export-save" type="button">下载存档</button>
+            <button class="secondary-button" id="open-chapter-replay" type="button">章节回溯</button>
             <button class="secondary-button" id="import-save" type="button">导入存档</button>
             <input id="import-save-file" type="file" accept=".json,application/json" hidden>
           </div>
@@ -572,11 +598,6 @@
         <button class="dialog-close" type="button" data-close="character-dialog" aria-label="关闭">×</button>
       </div>
       <p class="dialog-intro">他们的过去会在柜台前的故事里自然出现。这里收好你已经认识的人，也可以回看已经历的片段。</p>
-      <div class="character-web">
-        <strong>他们不是五条独立的故事</strong>
-        <p>阿澄和沈伯都在替没有回来的人留位置；0217 和小满都在等自己被看见；无名旅人把五封信带到同一间店。</p>
-        <p><span>你</span>不记得自己的过去，却是他们最后的地址。</p>
-      </div>
       <div class="character-list" id="character-list"></div>
     </dialog>
 
@@ -590,6 +611,12 @@
       <div class="history-list" id="history-list"></div>
     </dialog>
 
+    <dialog class="game-dialog" id="chapter-replay-dialog" aria-labelledby="chapter-replay-title">
+      <div class="dialog-head"><h2 id="chapter-replay-title">章节回溯</h2><button class="dialog-close" type="button" data-close="chapter-replay-dialog" aria-label="关闭">×</button></div>
+      <p class="dialog-intro" id="chapter-replay-note" role="status"></p>
+      <div class="save-actions" id="chapter-replay-list"></div>
+    </dialog>
+    <dialog id="chapter-transition" aria-label="第一夜驶向第二夜" hidden></dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>
